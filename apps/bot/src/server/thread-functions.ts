@@ -1,8 +1,7 @@
-import { createServerFn } from "@tanstack/react-start";
 import { mastra } from "@/mastra/index";
-import type { MastraMessagePart } from "@mastra/core/agent/message-list";
 import { toAISdkV5Messages } from "@mastra/ai-sdk/ui";
-import type { TriageMessage } from "@/mastra/tools/triage-types";
+import type { MastraMessagePart } from "@mastra/core/agent/message-list";
+import { createServerFn } from "@tanstack/react-start";
 
 const RESOURCE_ID = "default-patient";
 

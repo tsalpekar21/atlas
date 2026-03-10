@@ -18,7 +18,7 @@ const config = defineConfig({
     devtools(),
     nitro({
       preset: "vercel",
-      rollupConfig: { external: [/^@sentry\//, /^@mastra\//] },
+      rollupConfig: { external: [/^@sentry\//] },
     }),
     tsconfigPaths({ projects: ["./tsconfig.json"] }),
     tailwindcss(),
