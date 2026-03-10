@@ -2,12 +2,21 @@ Welcome to your new TanStack Start app!
 
 # Getting Started
 
-To run this application:
+Start local PostgreSQL (from repo root):
 
 ```bash
+docker compose up -d
+```
+
+Copy env and run the app:
+
+```bash
+cp .env.example .env
 pnpm install
 pnpm dev
 ```
+
+The app uses PostgreSQL for Drizzle (database `postgres`) and Mastra uses a separate database (`mastra`). Set `DATABASE_URL` and `MASTRA_DATABASE_URL` in `.env` (see `.env.example`).
 
 # Building For Production
 

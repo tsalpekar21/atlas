@@ -23,5 +23,6 @@ apps/bot/.mastra/
 # Misc
 todos.json
 
-# Database
+# Database (SQLite leftovers)
+dev.db
 mastra.db*
