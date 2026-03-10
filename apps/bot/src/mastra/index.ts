@@ -1,15 +1,15 @@
 import { Mastra } from "@mastra/core/mastra";
 import { PinoLogger } from "@mastra/loggers";
-import { PostgresStore } from "@mastra/pg";
 import {
-  Observability,
-  DefaultExporter,
   CloudExporter,
+  DefaultExporter,
+  Observability,
   SensitiveDataFilter,
 } from "@mastra/observability";
-import { weatherWorkflow } from "./workflows/weather-workflow";
-import { weatherAgent } from "./agents/weather-agent";
+import { PostgresStore } from "@mastra/pg";
 import { triageAgent } from "./agents/triage-agent";
+import { weatherAgent } from "./agents/weather-agent";
+import { weatherWorkflow } from "./workflows/weather-workflow";
 
 export const mastra = new Mastra({
   workflows: { weatherWorkflow },
