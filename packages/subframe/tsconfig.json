@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "moduleResolution": "bundler",
+    "module": "esnext",
+    "outDir": "dist",
+    "paths": {
+      "@/ui/*": ["./ui/*"]
+    }
+  },
+  "include": ["ui"],
+  "exclude": ["node_modules", "dist"]
+}

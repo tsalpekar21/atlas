@@ -1,0 +1,7 @@
+{
+  "directory": "ui",
+  "importAlias": "@atlas/subframe/*",
+  "projectId": "1a56b7bac267",
+  "teamId": 35848,
+  "cssType": "tailwind-v4"
+}

@@ -1,0 +1,17 @@
+{
+  "name": "@atlas/subframe",
+  "version": "0.0.0",
+  "private": true,
+  "exports": {
+    ".": "./ui/index.ts",
+    "./components/*": "./ui/components/*.tsx",
+    "./layouts/*": "./ui/layouts/*.tsx"
+  },
+  "dependencies": {
+    "@subframe/core": "1.154.0"
+  },
+  "devDependencies": {
+    "@types/react": "catalog:",
+    "react": "catalog:"
+  }
+}
