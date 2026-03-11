@@ -16,12 +16,6 @@ export default defineConfig({
   plugins: [
     devtools(),
     nitro({
-      preset: "vercel",
-      vercel: {
-        functions: {
-          runtime: "nodejs22.x",
-        },
-      },
       rollupConfig: {
         external: [/^@sentry\//, /^@mastra\//],
       },
