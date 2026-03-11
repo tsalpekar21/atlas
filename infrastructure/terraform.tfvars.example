@@ -1,0 +1,16 @@
+# Copy to terraform.tfvars and fill in. Do not commit terraform.tfvars if it contains secrets.
+
+project_id              = "your-gcp-project-id"
+region                  = "us-central1"
+github_owner            = "your-github-org-or-username"
+github_repo             = "atlas"
+github_connection_name  = "github-atlas"   # Name from Cloud Build Console after connecting the repo
+github_branch           = "main"
+
+# Optional overrides
+# cloud_run_service_name   = "atlas-bot"
+# artifact_registry_repo   = "atlas"
+
+# Set to true on first apply (deploys a public hello-world image so Cloud Run succeeds).
+# After the first Cloud Build trigger runs, set to false to use the real image from Artifact Registry.
+use_placeholder_image      = true

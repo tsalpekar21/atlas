@@ -1,0 +1,41 @@
+# Dependencies and build artifacts
+node_modules
+**/node_modules
+.output
+**/.output
+.vinxi
+.nitro
+.tanstack
+.turbo
+dist
+**/dist
+
+# Git and IDE
+.git
+.gitignore
+.cursor
+*.local
+
+# Env and secrets
+.env
+.env.*
+!.env.example
+
+# Docs and misc
+*.md
+!README.md
+.DS_Store
+todos.json
+**/dev.db
+**/mastra.db*
+
+# Terraform (not needed in image)
+infrastructure
+*.tf
+*.tfstate*
+.terraform
+
+# Test and lint
+**/__tests__
+**/*.test.*
+**/*.spec.*

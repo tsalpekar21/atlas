@@ -1,0 +1,57 @@
+# Cloud Build: build atlas-bot image and deploy to Cloud Run
+# Triggered by push to the configured branch (e.g. main).
+# Substitutions _REGION, _SERVICE, _REPO are set by the Terraform-managed trigger.
+# Uses repo-root context with the bot Dockerfile:
+#   docker build -f apps/bot/Dockerfile .
+
+substitutions:
+  _REGION: us-central1
+  _SERVICE: atlas-bot
+  _REPO: atlas
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+
+steps:
+  # Build image from repo root context
+  - name: "gcr.io/cloud-builders/docker"
+    id: build
+    args:
+      - "build"
+      - "-f"
+      - "apps/bot/Dockerfile"
+      - "-t"
+      - "${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/${_SERVICE}:${SHORT_SHA}"
+      - "-t"
+      - "${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/${_SERVICE}:latest"
+      - "."
+
+  # Push to Artifact Registry
+  - name: "gcr.io/cloud-builders/docker"
+    id: push
+    args:
+      - "push"
+      - "--all-tags"
+      - "${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/${_SERVICE}"
+    waitFor: ["build"]
+
+  # Deploy to Cloud Run
+  - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
+    id: deploy
+    entrypoint: gcloud
+    args:
+      - "run"
+      - "deploy"
+      - "${_SERVICE}"
+      - "--image"
+      - "${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/${_SERVICE}:${SHORT_SHA}"
+      - "--region"
+      - "${_REGION}"
+      - "--platform"
+      - "managed"
+      - "--allow-unauthenticated"
+    waitFor: ["push"]
+
+images:
+  - "${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/${_SERVICE}:${SHORT_SHA}"
+  - "${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/${_SERVICE}:latest"

@@ -21,6 +21,13 @@ apps/bot/.mastra/
 # Environment variables
 .env
 
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+.terraform.lock.hcl
+terraform.tfvars
+
 # Misc
 todos.json
 
