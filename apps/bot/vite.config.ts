@@ -1,14 +1,13 @@
+// vite.config.ts
 import { defineConfig } from "vite";
 import { devtools } from "@tanstack/devtools-vite";
 import tsconfigPaths from "vite-tsconfig-paths";
-
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
-
 import viteReact from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import { nitro } from "nitro/vite";
 
-const config = defineConfig({
+export default defineConfig({
   build: {
     rollupOptions: {
       external: ["fsevents"],
@@ -17,7 +16,15 @@ const config = defineConfig({
   plugins: [
     devtools(),
     nitro({
-      rollupConfig: { external: [/^@sentry\//] },
+      preset: "vercel",
+      vercel: {
+        functions: {
+          runtime: "nodejs22.x",
+        },
+      },
+      rollupConfig: {
+        external: [/^@sentry\//, /^@mastra\//],
+      },
     }),
     tsconfigPaths({ projects: ["./tsconfig.json"] }),
     tailwindcss(),
@@ -29,5 +36,3 @@ const config = defineConfig({
     }),
   ],
 });
-
-export default config;
