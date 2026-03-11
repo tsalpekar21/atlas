@@ -17,7 +17,6 @@ const config = defineConfig({
   plugins: [
     devtools(),
     nitro({
-      preset: "vercel",
       rollupConfig: { external: [/^@sentry\//] },
     }),
     tsconfigPaths({ projects: ["./tsconfig.json"] }),
