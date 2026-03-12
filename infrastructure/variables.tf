@@ -71,3 +71,17 @@ variable "google_generative_ai_api_key" {
   type        = string
   sensitive   = true
 }
+
+# --- AI service (Mastra server) ---
+
+variable "ai_cloud_run_service_name" {
+  description = "Name of the Cloud Run service for the Mastra AI server"
+  type        = string
+  default     = "atlas-ai"
+}
+
+variable "mastra_api_token" {
+  description = "Shared API token for bot-to-AI server authentication"
+  type        = string
+  sensitive   = true
+}

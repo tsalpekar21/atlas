@@ -13,7 +13,7 @@ import {
   FeatherMessageSquare,
   FeatherThermometer,
 } from "@subframe/core";
-import type { TriageSummaryInput } from "@/mastra/tools/triage-types";
+import type { TriageSummaryInput } from "@atlas/schemas/triage";
 
 const iconMap: Record<string, React.ReactNode> = {
   calendar: <FeatherCalendar />,

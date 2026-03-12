@@ -27,17 +27,14 @@ importers:
         specifier: ^2.8.10
         version: 2.8.10
 
-  apps/bot:
+  apps/ai:
     dependencies:
       '@ai-sdk/google':
         specifier: ^3.0.43
         version: 3.0.43(zod@4.3.6)
-      '@ai-sdk/react':
-        specifier: ^3.0.102
-        version: 3.0.102(react@19.2.4)(zod@4.3.6)
-      '@atlas/subframe':
+      '@atlas/schemas':
         specifier: workspace:*
-        version: link:../../packages/subframe
+        version: link:../../packages/schemas
       '@mastra/ai-sdk':
         specifier: ^1.0.5
         version: 1.0.5(@mastra/core@1.7.0(@standard-community/standard-json@0.3.5(@standard-schema/spec@1.1.0)(@types/json-schema@7.0.15)(quansync@0.2.11)(zod-to-json-schema@3.25.1(zod@4.3.6))(zod@4.3.6))(@standard-community/standard-openapi@0.2.9(@standard-community/standard-json@0.3.5(@standard-schema/spec@1.1.0)(@types/json-schema@7.0.15)(quansync@0.2.11)(zod-to-json-schema@3.25.1(zod@4.3.6))(zod@4.3.6))(@standard-schema/spec@1.1.0)(openapi-types@12.1.3)(zod@4.3.6))(@types/json-schema@7.0.15)(openapi-types@12.1.3)(zod@4.3.6))(zod@4.3.6)
@@ -56,6 +53,31 @@ importers:
       '@mastra/pg':
         specifier: ^1.0.0
         version: 1.7.2(@mastra/core@1.7.0(@standard-community/standard-json@0.3.5(@standard-schema/spec@1.1.0)(@types/json-schema@7.0.15)(quansync@0.2.11)(zod-to-json-schema@3.25.1(zod@4.3.6))(zod@4.3.6))(@standard-community/standard-openapi@0.2.9(@standard-community/standard-json@0.3.5(@standard-schema/spec@1.1.0)(@types/json-schema@7.0.15)(quansync@0.2.11)(zod-to-json-schema@3.25.1(zod@4.3.6))(zod@4.3.6))(@standard-schema/spec@1.1.0)(openapi-types@12.1.3)(zod@4.3.6))(@types/json-schema@7.0.15)(openapi-types@12.1.3)(zod@4.3.6))
+      ai:
+        specifier: ^6.0.100
+        version: 6.0.100(zod@4.3.6)
+      mastra:
+        specifier: ^1.3.4
+        version: 1.3.4(@mastra/core@1.7.0(@standard-community/standard-json@0.3.5(@standard-schema/spec@1.1.0)(@types/json-schema@7.0.15)(quansync@0.2.11)(zod-to-json-schema@3.25.1(zod@4.3.6))(zod@4.3.6))(@standard-community/standard-openapi@0.2.9(@standard-community/standard-json@0.3.5(@standard-schema/spec@1.1.0)(@types/json-schema@7.0.15)(quansync@0.2.11)(zod-to-json-schema@3.25.1(zod@4.3.6))(zod@4.3.6))(@standard-schema/spec@1.1.0)(openapi-types@12.1.3)(zod@4.3.6))(@types/json-schema@7.0.15)(openapi-types@12.1.3)(zod@4.3.6))(typescript@5.9.3)(zod@4.3.6)
+      zod:
+        specifier: ^4.3.6
+        version: 4.3.6
+    devDependencies:
+      typescript:
+        specifier: ^5.7.2
+        version: 5.9.3
+
+  apps/bot:
+    dependencies:
+      '@ai-sdk/react':
+        specifier: ^3.0.102
+        version: 3.0.102(react@19.2.4)(zod@4.3.6)
+      '@atlas/schemas':
+        specifier: workspace:*
+        version: link:../../packages/schemas
+      '@atlas/subframe':
+        specifier: workspace:*
+        version: link:../../packages/subframe
       '@subframe/core':
         specifier: 1.154.0
         version: 1.154.0(28f582648d875df213a7eb4463864931)
@@ -98,12 +120,9 @@ importers:
       lucide-react:
         specifier: ^0.545.0
         version: 0.545.0(react@19.2.4)
-      mastra:
-        specifier: ^1.3.4
-        version: 1.3.4(@mastra/core@1.7.0(@standard-community/standard-json@0.3.5(@standard-schema/spec@1.1.0)(@types/json-schema@7.0.15)(quansync@0.2.11)(zod-to-json-schema@3.25.1(zod@4.3.6))(zod@4.3.6))(@standard-community/standard-openapi@0.2.9(@standard-community/standard-json@0.3.5(@standard-schema/spec@1.1.0)(@types/json-schema@7.0.15)(quansync@0.2.11)(zod-to-json-schema@3.25.1(zod@4.3.6))(zod@4.3.6))(@standard-schema/spec@1.1.0)(openapi-types@12.1.3)(zod@4.3.6))(@types/json-schema@7.0.15)(openapi-types@12.1.3)(zod@4.3.6))(typescript@5.9.3)(zod@4.3.6)
       nitro:
         specifier: npm:nitro-nightly@latest
-        version: nitro-nightly@3.0.1-20260311-162305-0f366e59(@libsql/client@0.15.15)(better-sqlite3@12.6.2)(dotenv@16.6.1)(drizzle-orm@0.45.1(@libsql/client@0.15.15)(@opentelemetry/api@1.9.0)(@types/better-sqlite3@7.6.13)(@types/pg@8.18.0)(better-sqlite3@12.6.2)(pg@8.20.0))(jiti@2.6.1)(lru-cache@11.2.6)(rollup@4.55.3)(vite@7.3.1(@types/node@22.19.11)(jiti@2.6.1)(lightningcss@1.31.1)(tsx@4.21.0)(yaml@2.8.2))
+        version: nitro-nightly@3.0.1-20260311-162305-0f366e59(@libsql/client@0.15.15)(better-sqlite3@12.6.2)(dotenv@16.6.1)(drizzle-orm@0.45.1(@libsql/client@0.15.15)(@opentelemetry/api@1.9.0)(@types/better-sqlite3@7.6.13)(@types/pg@8.18.0)(better-sqlite3@12.6.2)(pg@8.20.0))(jiti@2.6.1)(lru-cache@11.2.6)(rollup@4.59.0)(vite@7.3.1(@types/node@22.19.11)(jiti@2.6.1)(lightningcss@1.31.1)(tsx@4.21.0)(yaml@2.8.2))
       pg:
         specifier: ^8.13.0
         version: 8.20.0
@@ -171,6 +190,19 @@ importers:
       vitest:
         specifier: ^3.0.5
         version: 3.2.4(@types/node@22.19.11)(jiti@2.6.1)(jsdom@27.4.0)(lightningcss@1.31.1)(tsx@4.21.0)(yaml@2.8.2)
+
+  packages/schemas:
+    dependencies:
+      ai:
+        specifier: ^6.0.100
+        version: 6.0.100(zod@4.3.6)
+      zod:
+        specifier: ^4.3.6
+        version: 4.3.6
+    devDependencies:
+      typescript:
+        specifier: ^5.7.2
+        version: 5.9.3
 
   packages/subframe:
     dependencies:
@@ -9352,7 +9384,7 @@ snapshots:
 
   nf3@0.3.11: {}
 
-  nitro-nightly@3.0.1-20260311-162305-0f366e59(@libsql/client@0.15.15)(better-sqlite3@12.6.2)(dotenv@16.6.1)(drizzle-orm@0.45.1(@libsql/client@0.15.15)(@opentelemetry/api@1.9.0)(@types/better-sqlite3@7.6.13)(@types/pg@8.18.0)(better-sqlite3@12.6.2)(pg@8.20.0))(jiti@2.6.1)(lru-cache@11.2.6)(rollup@4.55.3)(vite@7.3.1(@types/node@22.19.11)(jiti@2.6.1)(lightningcss@1.31.1)(tsx@4.21.0)(yaml@2.8.2)):
+  nitro-nightly@3.0.1-20260311-162305-0f366e59(@libsql/client@0.15.15)(better-sqlite3@12.6.2)(dotenv@16.6.1)(drizzle-orm@0.45.1(@libsql/client@0.15.15)(@opentelemetry/api@1.9.0)(@types/better-sqlite3@7.6.13)(@types/pg@8.18.0)(better-sqlite3@12.6.2)(pg@8.20.0))(jiti@2.6.1)(lru-cache@11.2.6)(rollup@4.59.0)(vite@7.3.1(@types/node@22.19.11)(jiti@2.6.1)(lightningcss@1.31.1)(tsx@4.21.0)(yaml@2.8.2)):
     dependencies:
       consola: 3.4.2
       crossws: 0.4.4(srvx@0.11.9)
@@ -9371,7 +9403,7 @@ snapshots:
     optionalDependencies:
       dotenv: 16.6.1
       jiti: 2.6.1
-      rollup: 4.55.3
+      rollup: 4.59.0
       vite: 7.3.1(@types/node@22.19.11)(jiti@2.6.1)(lightningcss@1.31.1)(tsx@4.21.0)(yaml@2.8.2)
     transitivePeerDependencies:
       - '@azure/app-configuration'

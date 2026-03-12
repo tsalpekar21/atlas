@@ -2,11 +2,6 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-This is a Mastra project - an AI framework for building agents, workflows, and tools. The project structure follows Mastra conventions with agents, tools, and workflows organized in the `src/mastra/` directory.
+This is a TanStack Start application (React + Nitro). It serves the frontend UI and proxies AI requests to the standalone Mastra server in `apps/ai/`.
 
-For complete setup and usage instructions, see [AGENTS.md](./AGENTS.md), which includes:
-
-- Quick start commands
-- Project structure details
-- Mastra skills usage
-- Links to relevant documentation
+For setup details, see [AGENTS.md](./AGENTS.md).

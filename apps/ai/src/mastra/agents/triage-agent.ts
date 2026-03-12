@@ -134,5 +134,9 @@ Every pathway must include a clear call-to-action — a phone number, a prompt t
     present_question: presentQuestionTool,
     generate_triage_summary: generateTriageSummaryTool,
   },
-  memory: new Memory(),
+  memory: new Memory({
+    options: {
+      generateTitle: true,
+    },
+  }),
 });

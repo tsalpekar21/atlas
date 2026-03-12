@@ -1,19 +1,29 @@
+import { mastraClient } from "@/lib/mastra-client";
 import { createFileRoute } from "@tanstack/react-router";
-import { createUIMessageStreamResponse } from "ai";
-import { mastra } from "@/mastra/index";
-import { handleChatStream } from "@mastra/ai-sdk";
 
 export const Route = createFileRoute("/api/chat")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const body = await request.json();
-        const stream = await handleChatStream({
-          mastra,
-          agentId: "triageAgent",
-          params: body,
+        const body = await request.text();
+        const response = await fetch(mastraClient.chatUrl(), {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...(process.env.MASTRA_API_TOKEN && {
+              Authorization: `Bearer ${process.env.MASTRA_API_TOKEN}`,
+            }),
+          },
+          body,
         });
-        return createUIMessageStreamResponse({ stream });
+
+        return new Response(response.body, {
+          status: response.status,
+          headers: {
+            "Content-Type":
+              response.headers.get("Content-Type") || "text/event-stream",
+          },
+        });
       },
     },
   },

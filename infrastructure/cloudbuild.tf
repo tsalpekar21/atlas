@@ -70,3 +70,29 @@ resource "google_cloudbuild_trigger" "atlas_bot" {
     google_project_service.cloudbuild,
   ]
 }
+
+resource "google_cloudbuild_trigger" "atlas_ai" {
+  name            = "atlas-ai-deploy"
+  location        = var.region
+  description     = "Build and deploy atlas-ai (Mastra server) from GitHub to Cloud Run"
+  service_account = "projects/${var.project_id}/serviceAccounts/${local.build_sa}"
+
+  repository_event_config {
+    repository = local.github_repository_id
+    push {
+      branch = "^${var.github_branch}$"
+    }
+  }
+
+  filename = "cloudbuild-ai.yaml"
+
+  substitutions = {
+    _REGION   = var.region
+    _SERVICE  = var.ai_cloud_run_service_name
+    _REPO     = google_artifact_registry_repository.atlas.repository_id
+  }
+
+  depends_on = [
+    google_project_service.cloudbuild,
+  ]
+}
