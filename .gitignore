@@ -12,7 +12,7 @@ dist-ssr/
 .vercel/
 .turbo/
 __unconfig*
-apps/bot/.mastra/
+.mastra/
 
 # System files
 .DS_Store

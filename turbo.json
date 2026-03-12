@@ -5,13 +5,9 @@
       "persistent": true,
       "cache": false
     },
-    "dev:mastra": {
-      "persistent": true,
-      "cache": false
-    },
     "build": {
       "dependsOn": ["^build"],
-      "outputs": [".output/**"]
+      "outputs": [".output/**", ".mastra/**", "dist/**"]
     },
     "lint": {
       "dependsOn": ["^build"]

@@ -2,7 +2,7 @@
 
 import React from "react";
 import { Button } from "@atlas/subframe/components/Button";
-import type { PresentQuestionInput } from "@/mastra/tools/triage-types";
+import type { PresentQuestionInput } from "@atlas/schemas/triage";
 
 interface QuestionOptionsProps {
   data: PresentQuestionInput | undefined;

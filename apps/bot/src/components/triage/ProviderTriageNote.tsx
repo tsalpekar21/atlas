@@ -3,7 +3,7 @@
 import React from "react";
 import { Accordion } from "@atlas/subframe/components/Accordion";
 import { TriageSummaryCard } from "@/components/triage/TriageSummaryCard";
-import type { TriageSummaryInput } from "@/mastra/tools/triage-types";
+import type { TriageSummaryInput } from "@atlas/schemas/triage";
 
 interface ProviderTriageNoteProps {
   data: TriageSummaryInput | undefined;

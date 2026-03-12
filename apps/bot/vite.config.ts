@@ -17,7 +17,7 @@ export default defineConfig({
     devtools(),
     nitro({
       rollupConfig: {
-        external: [/^@sentry\//, /^@mastra\//],
+        external: [/^@sentry\//],
       },
     }),
     tsconfigPaths({ projects: ["./tsconfig.json"] }),

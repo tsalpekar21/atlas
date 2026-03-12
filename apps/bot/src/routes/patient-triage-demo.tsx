@@ -5,7 +5,7 @@ import { NextStepsCard } from "@/components/triage/NextStepsCard";
 import { ProviderTriageNote } from "@/components/triage/ProviderTriageNote";
 import { QuestionOptions } from "@/components/triage/QuestionOptions";
 import { ThreadSidebar } from "@/components/triage/ThreadSidebar";
-import type { TriageMessage } from "@/mastra/tools/triage-types";
+import type { TriageMessage } from "@atlas/schemas/triage";
 import {
   deleteThread,
   getThreadMessages,
@@ -22,7 +22,11 @@ import {
   FeatherSend,
 } from "@subframe/core";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import {
+  createFileRoute,
+  useNavigate,
+  useRouter,
+} from "@tanstack/react-router";
 import {
   DefaultChatTransport,
   lastAssistantMessageIsCompleteWithToolCalls,
@@ -60,6 +64,7 @@ function formatTime(date?: Date): string {
 function PatientTriagePage() {
   const { threadId } = Route.useSearch();
   const { threads } = Route.useLoaderData();
+  const router = useRouter();
   const navigate = useNavigate({ from: Route.fullPath });
   const queryClient = useQueryClient();
 
@@ -78,7 +83,7 @@ function PatientTriagePage() {
   const deleteMutation = useMutation({
     mutationFn: (id: string) => deleteThread({ data: { threadId: id } }),
     onSuccess: (_, deletedId) => {
-      queryClient.invalidateQueries({ queryKey: ["threads"] });
+      router.invalidate();
       if (threadId === deletedId) {
         navigate({ search: {} });
       }
@@ -86,7 +91,7 @@ function PatientTriagePage() {
   });
 
   const handleThreadUpdate = React.useCallback(() => {
-    queryClient.invalidateQueries({ queryKey: ["threads"] });
+    router.invalidate();
   }, [queryClient]);
 
   return (
@@ -155,7 +160,9 @@ function ChatArea({
       ) : (
         <ChatContent
           threadId={threadId}
-          initialMessages={messagesQuery.data?.messages ?? []}
+          initialMessages={
+            (messagesQuery.data?.messages ?? []) as TriageMessage[]
+          }
           onThreadUpdate={onThreadUpdate}
         />
       )}

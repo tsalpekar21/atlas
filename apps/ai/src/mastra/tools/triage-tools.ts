@@ -3,7 +3,7 @@ import {
   presentQuestionInputSchema,
   presentQuestionOutputSchema,
   triageSummaryInputSchema,
-} from "./triage-types";
+} from "@atlas/schemas/triage";
 
 /**
  * Client-side tool: the agent calls this to present the user with
