@@ -17,6 +17,12 @@ resource "google_project_service" "cloudbuild" {
   disable_on_destroy = false
 }
 
+resource "google_project_service" "vertexai" {
+  project            = var.project_id
+  service            = "aiplatform.googleapis.com"
+  disable_on_destroy = false
+}
+
 # Artifact Registry repository for Docker images
 resource "google_artifact_registry_repository" "atlas" {
   location      = var.region
@@ -56,9 +62,26 @@ resource "google_cloud_run_v2_service" "atlas_bot" {
 
       resources {
         limits = {
-          cpu    = "1"
+          cpu    = "1000m"
           memory = "512Mi"
         }
+      }
+
+      env {
+        name  = "DATABASE_URL"
+        value = var.database_url
+      }
+      env {
+        name  = "MASTRA_DATABASE_URL"
+        value = var.mastra_database_url
+      }
+      env {
+        name  = "OPENAI_API_KEY"
+        value = var.openai_api_key
+      }
+      env {
+        name  = "GOOGLE_GENERATIVE_AI_API_KEY"
+        value = var.google_generative_ai_api_key
       }
     }
   }

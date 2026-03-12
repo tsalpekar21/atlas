@@ -21,6 +21,7 @@
     "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
+    "@ai-sdk/google": "^3.0.43",
     "@ai-sdk/react": "^3.0.102",
     "@atlas/subframe": "workspace:*",
     "@mastra/ai-sdk": "^1.0.5",

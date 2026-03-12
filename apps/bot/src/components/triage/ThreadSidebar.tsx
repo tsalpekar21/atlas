@@ -21,7 +21,6 @@ interface ThreadSidebarProps {
   onSelectThread: (threadId: string) => void;
   onNewThread: () => void;
   onDeleteThread: (threadId: string) => void;
-  isLoading?: boolean;
 }
 
 function formatThreadDate(date: string): string {
@@ -48,7 +47,6 @@ export function ThreadSidebar({
   onSelectThread,
   onNewThread,
   onDeleteThread,
-  isLoading,
 }: ThreadSidebarProps) {
   return (
     <SidebarWithSections
@@ -69,13 +67,7 @@ export function ThreadSidebar({
       }
     >
       <SidebarWithSections.NavSection label="Conversations">
-        {isLoading ? (
-          <div className="flex w-full items-center justify-center py-4">
-            <span className="text-caption font-caption text-subtext-color">
-              Loading...
-            </span>
-          </div>
-        ) : threads.length === 0 ? (
+        {threads.length === 0 ? (
           <div className="flex w-full flex-col items-center gap-2 py-4">
             <span className="text-caption font-caption text-subtext-color">
               No triages yet

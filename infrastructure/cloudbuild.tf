@@ -40,7 +40,11 @@ resource "google_project_iam_member" "build_sa_act_as" {
   role    = "roles/iam.serviceAccountUser"
   member  = "serviceAccount:${local.build_sa}"
 }
-
+resource "google_project_iam_member" "build_sa_vertex_ai_user" {
+  project = var.project_id
+  role    = "roles/aiplatform.user"
+  member  = "serviceAccount:${local.build_sa}"
+}
 resource "google_cloudbuild_trigger" "atlas_bot" {
   name            = "atlas-bot-deploy"
   location        = var.region

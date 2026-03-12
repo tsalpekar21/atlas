@@ -45,5 +45,29 @@ variable "github_connection_name" {
 variable "use_placeholder_image" {
   description = "Use a public placeholder image for initial Cloud Run deploy (set to false after first Cloud Build run)"
   type        = bool
-  default     = true
+  default     = false
+}
+
+variable "database_url" {
+  description = "PostgreSQL connection string for the app database"
+  type        = string
+  sensitive   = true
+}
+
+variable "mastra_database_url" {
+  description = "PostgreSQL connection string for Mastra storage"
+  type        = string
+  sensitive   = true
+}
+
+variable "openai_api_key" {
+  description = "OpenAI API key for AI model access"
+  type        = string
+  sensitive   = true
+}
+
+variable "google_generative_ai_api_key" {
+  description = "Google Generative AI API key for AI model access"
+  type        = string
+  sensitive   = true
 }

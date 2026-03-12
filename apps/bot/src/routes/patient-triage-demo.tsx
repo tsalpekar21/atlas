@@ -10,7 +10,6 @@ import {
   deleteThread,
   getThreadMessages,
   listThreads,
-  type SerializedMessage,
 } from "@/server/thread-functions";
 import { useChat } from "@ai-sdk/react";
 import { Avatar } from "@atlas/subframe/components/Avatar";
@@ -24,9 +23,13 @@ import {
 } from "@subframe/core";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { DefaultChatTransport, type UIMessage } from "ai";
+import {
+  DefaultChatTransport,
+  lastAssistantMessageIsCompleteWithToolCalls,
+} from "ai";
 import React from "react";
 import { z } from "zod";
+import { ChatContentSkeleton } from "./-patient-triage-skeletons";
 
 const RESOURCE_ID = "default-patient";
 
@@ -36,16 +39,12 @@ const searchSchema = z.object({
 
 export const Route = createFileRoute("/patient-triage-demo")({
   validateSearch: searchSchema,
-  loaderDeps: ({ search }) => ({ threadId: search.threadId }),
-  loader: async ({ deps: { threadId } }) => {
+  loader: async () => {
     try {
-      const { messages } = await getThreadMessages({
-        data: { threadId: threadId },
-      });
-
-      return { messages };
+      const { threads } = await listThreads();
+      return { threads };
     } catch (error) {
-      return { messages: [] };
+      return { threads: [] };
     }
   },
   component: PatientTriagePage,
@@ -60,21 +59,9 @@ function formatTime(date?: Date): string {
 
 function PatientTriagePage() {
   const { threadId } = Route.useSearch();
-  const { messages } = Route.useLoaderData();
+  const { threads } = Route.useLoaderData();
   const navigate = useNavigate({ from: Route.fullPath });
   const queryClient = useQueryClient();
-
-  const threadsQuery = useQuery({
-    queryKey: ["threads"],
-    queryFn: () => listThreads(),
-  });
-
-  const messagesQuery = useQuery({
-    queryKey: ["thread-messages", threadId],
-    initialData: { messages },
-    queryFn: () => getThreadMessages({ data: { threadId } }),
-    enabled: !!threadId,
-  });
 
   const handleNewThread = React.useCallback(() => {
     const newId = crypto.randomUUID();
@@ -105,18 +92,16 @@ function PatientTriagePage() {
   return (
     <div className="flex h-screen w-full">
       <ThreadSidebar
-        threads={threadsQuery.data?.threads ?? []}
+        threads={threads ?? []}
         currentThreadId={threadId}
         onSelectThread={handleSelectThread}
         onNewThread={handleNewThread}
         onDeleteThread={(id) => deleteMutation.mutate(id)}
-        isLoading={threadsQuery.isLoading}
       />
 
       <ChatArea
         key={threadId}
         threadId={threadId}
-        initialMessages={messagesQuery.data?.messages ?? []}
         onThreadUpdate={handleThreadUpdate}
       />
     </div>
@@ -125,60 +110,15 @@ function PatientTriagePage() {
 
 function ChatArea({
   threadId,
-  initialMessages,
   onThreadUpdate,
 }: {
   threadId: string;
-  initialMessages: TriageMessage[];
   onThreadUpdate: () => void;
 }) {
-  const scrollRef = React.useRef<HTMLDivElement>(null);
-  const fileInputRef = React.useRef<HTMLInputElement>(null);
-  const [inputValue, setInputValue] = React.useState("");
-
-  const { messages, sendMessage, status } = useChat<TriageMessage>({
-    id: threadId,
-    messages: initialMessages,
-    transport: new DefaultChatTransport({
-      api: "/api/chat",
-      body: {
-        memory: {
-          thread: threadId,
-          resource: RESOURCE_ID,
-        },
-      },
-    }),
-    onFinish: onThreadUpdate,
+  const messagesQuery = useQuery({
+    queryKey: ["thread-messages", threadId],
+    queryFn: () => getThreadMessages({ data: { threadId } }),
   });
-
-  const isLoading = status === "streaming" || status === "submitted";
-
-  // Auto-scroll to bottom on new messages
-  React.useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }
-  }, [messages]);
-
-  const handleSendText = (text: string) => {
-    if (!text.trim() || isLoading) return;
-    sendMessage({ text: text.trim() });
-    setInputValue("");
-  };
-
-  const handleFileUpload = (files: FileList) => {
-    sendMessage({
-      text: "Here's a photo of the affected area.",
-      files,
-    });
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      handleSendText(inputValue);
-    }
-  };
 
   return (
     <div className="flex grow shrink-0 basis-0 flex-col items-start bg-neutral-50 h-screen">
@@ -210,6 +150,88 @@ function ChatArea({
         </div>
       </div>
 
+      {!messagesQuery.isFetched ? (
+        <ChatContentSkeleton />
+      ) : (
+        <ChatContent
+          threadId={threadId}
+          initialMessages={messagesQuery.data?.messages ?? []}
+          onThreadUpdate={onThreadUpdate}
+        />
+      )}
+
+      {/* Footer Disclaimer */}
+      <div className="flex w-full flex-col items-start border-t border-solid border-neutral-border bg-default-background px-6 py-3">
+        <span className="text-caption font-caption text-subtext-color">
+          This triage is for informational purposes only and does not replace
+          medical advice. For emergencies, call 911 or visit your nearest
+          emergency room.
+        </span>
+      </div>
+    </div>
+  );
+}
+
+function ChatContent({
+  threadId,
+  initialMessages,
+  onThreadUpdate,
+}: {
+  threadId: string;
+  initialMessages: TriageMessage[];
+  onThreadUpdate: () => void;
+}) {
+  const scrollRef = React.useRef<HTMLDivElement>(null);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const [inputValue, setInputValue] = React.useState("");
+
+  const { messages, sendMessage, addToolOutput, status } =
+    useChat<TriageMessage>({
+      id: threadId,
+      messages: initialMessages,
+      transport: new DefaultChatTransport({
+        api: "/api/chat",
+        body: {
+          memory: {
+            thread: threadId,
+            resource: RESOURCE_ID,
+          },
+        },
+      }),
+      sendAutomaticallyWhen: lastAssistantMessageIsCompleteWithToolCalls,
+      onFinish: onThreadUpdate,
+    });
+
+  const isLoading = status === "streaming" || status === "submitted";
+
+  React.useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [messages]);
+
+  const handleSendText = (text: string) => {
+    if (!text.trim() || isLoading) return;
+    sendMessage({ text: text.trim() });
+    setInputValue("");
+  };
+
+  const handleFileUpload = (files: FileList) => {
+    sendMessage({
+      text: "Here's a photo of the affected area.",
+      files,
+    });
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSendText(inputValue);
+    }
+  };
+
+  return (
+    <>
       {/* Messages Area */}
       <div
         ref={scrollRef}
@@ -223,19 +245,17 @@ function ChatArea({
               <MessageRenderer
                 key={message.id}
                 message={message}
-                onOptionSelect={(text) => handleSendText(text)}
+                onOptionSelect={(toolCallId, text) => {
+                  addToolOutput({
+                    tool: "present_question",
+                    toolCallId,
+                    output: { selection: text },
+                  });
+                }}
                 isLoading={isLoading}
                 showTypingIndicator={isLoading && i === messages.length - 1}
               />
             ))}
-
-            {/* {isLoading &&
-              messages.length > 0 &&
-              messages[messages.length - 1].role === "user" && (
-                <ChatMessageBubble role="assistant">
-                  <TypingDots />
-                </ChatMessageBubble>
-              )} */}
           </>
         )}
       </div>
@@ -277,16 +297,7 @@ function ChatArea({
           Send
         </Button>
       </div>
-
-      {/* Footer Disclaimer */}
-      <div className="flex w-full flex-col items-start border-t border-solid border-neutral-border bg-default-background px-6 py-3">
-        <span className="text-caption font-caption text-subtext-color">
-          This triage is for informational purposes only and does not replace
-          medical advice. For emergencies, call 911 or visit your nearest
-          emergency room.
-        </span>
-      </div>
-    </div>
+    </>
   );
 }
 
@@ -364,7 +375,7 @@ function MessageRenderer({
   showTypingIndicator,
 }: {
   message: TriageMessage;
-  onOptionSelect: (text: string) => void;
+  onOptionSelect: (toolCallId: string, text: string) => void;
   isLoading: boolean;
   showTypingIndicator: boolean;
 }) {
@@ -391,16 +402,26 @@ function MessageRenderer({
 
       if (part.type === "tool-present_question") {
         if (part.state === "input-streaming") {
-          return <div>Loading...</div>;
+          return <div key={index}>Loading...</div>;
         }
 
+        const hasOutput = part.state === "output-available";
+
         return (
-          <QuestionOptions
-            key={index}
-            data={part.input}
-            onSelect={onOptionSelect}
-            disabled={isLoading}
-          />
+          <React.Fragment key={index}>
+            <QuestionOptions
+              data={part.input}
+              onSelect={(selection) =>
+                onOptionSelect(part.toolCallId, selection)
+              }
+              disabled={isLoading || hasOutput}
+            />
+            {hasOutput && (
+              <ChatMessageBubble role="user">
+                {part.output.selection}
+              </ChatMessageBubble>
+            )}
+          </React.Fragment>
         );
       }
 

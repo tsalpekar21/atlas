@@ -8,12 +8,9 @@ import {
 } from "@mastra/observability";
 import { PostgresStore } from "@mastra/pg";
 import { triageAgent } from "./agents/triage-agent";
-import { weatherAgent } from "./agents/weather-agent";
-import { weatherWorkflow } from "./workflows/weather-workflow";
 
 export const mastra = new Mastra({
-  workflows: { weatherWorkflow },
-  agents: { weatherAgent, triageAgent },
+  agents: { triageAgent },
   storage: new PostgresStore({
     id: "mastra-storage",
     connectionString: process.env.MASTRA_DATABASE_URL!,

@@ -4,7 +4,14 @@ import {
   presentQuestionTool,
   generateTriageSummaryTool,
 } from "../tools/triage-tools";
+import {
+  createGoogleGenerativeAI,
+  type GoogleLanguageModelOptions,
+} from "@ai-sdk/google";
 
+const google = createGoogleGenerativeAI({
+  apiKey: process.env.GOOGLE_GENERATIVE_AI_API_KEY!,
+});
 export const triageAgent = new Agent({
   id: "triageAgent",
   name: "Dermatology Triage Agent",
@@ -98,8 +105,8 @@ Every pathway must include a clear call-to-action — a phone number, a prompt t
 
 ## Communication Style
 
-- Ask ONE question at a time. This means only call the present_question tool once per turn. Wait for the patient to respond before asking the next question.
-YOU MUST WAIT FOR THE PATIENT TO RESPOND BEFORE ASKING THE NEXT QUESTION.
+- Ask ONE question at a time. 
+- Wait for the patient to respond before asking the next question. 
 - Use warm, conversational language. Say "skin" not "cutaneous," "spreading" not "disseminating."
 - Be reassuring but honest. Don't minimize concerns and don't create unnecessary alarm.
 - If the patient seems anxious, acknowledge their feelings before continuing.
@@ -109,10 +116,20 @@ YOU MUST WAIT FOR THE PATIENT TO RESPOND BEFORE ASKING THE NEXT QUESTION.
 ## Important Boundaries
 
 - You are NOT diagnosing. You are conducting a clinical intake to recommend the right level of care.
+- YOU MUST DECIDE WHETHER TO ASK A QUESTION OR TO CALL THE present_question tool IN THE SAME RESPONSE.
+  THIS IS EXTREMELY UNBELIEVABLY IMPORTANT. This helps the patient to understand what they should do.
+  DO NOT CALL THE present_question tool AND RESPOND IN TEXT IN THE SAME RESPONSE.
 - Never name specific diagnoses or prescribe treatments.
 - Always include an emergency warning in the triage summary.
 - Next steps should always include a concrete action: the clinic phone number, a prompt to schedule online, or a clear instruction for emergency care.`,
-  model: "openai/o4-mini",
+  model: google("gemini-3-flash-preview"),
+  defaultOptions: {
+    providerOptions: {
+      google: {
+        thinkingConfig: { thinkingLevel: "high" },
+      } satisfies GoogleLanguageModelOptions,
+    },
+  },
   tools: {
     present_question: presentQuestionTool,
     generate_triage_summary: generateTriageSummaryTool,

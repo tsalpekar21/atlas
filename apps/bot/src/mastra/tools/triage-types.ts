@@ -1,9 +1,5 @@
-import type { Tool, UIMessage } from "ai";
+import type { UIMessage } from "ai";
 import { z } from "zod";
-import type {
-  generateTriageSummaryTool,
-  presentQuestionTool,
-} from "./triage-tools";
 
 // --- present_question tool ---
 
@@ -18,7 +14,7 @@ export const presentQuestionInputSchema = z.object({
 export type PresentQuestionInput = z.infer<typeof presentQuestionInputSchema>;
 
 export const presentQuestionOutputSchema = z.object({
-  presented: z.literal(true),
+  selection: z.string().describe("The option(s) the patient selected"),
 });
 
 // --- generate_triage_summary tool ---
@@ -75,17 +71,17 @@ export const triageSummaryInputSchema = z.object({
 
 export type TriageSummaryInput = z.infer<typeof triageSummaryInputSchema>;
 
-export const triageSummaryOutputSchema = z.object({
-  summaryGenerated: z.literal(true),
-});
-
-type InferToolUI<T> =
-  // biome-ignore lint/suspicious/noExplicitAny: Tool generic has 7 type params; only TIn/TOut matter
-  T extends Tool<infer TIn, infer TOut> ? { input: TIn; output: TOut } : never;
+export type PresentQuestionOutput = z.infer<typeof presentQuestionOutputSchema>;
 
 type TriageTools = {
-  present_question: InferToolUI<typeof presentQuestionTool>;
-  generate_triage_summary: InferToolUI<typeof generateTriageSummaryTool>;
+  present_question: {
+    input: PresentQuestionInput;
+    output: PresentQuestionOutput;
+  };
+  generate_triage_summary: {
+    input: TriageSummaryInput;
+    output: undefined;
+  };
 };
 
 export type TriageMessage = UIMessage<

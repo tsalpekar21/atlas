@@ -14,3 +14,8 @@ github_branch           = "main"
 # Set to true on first apply (deploys a public hello-world image so Cloud Run succeeds).
 # After the first Cloud Build trigger runs, set to false to use the real image from Artifact Registry.
 use_placeholder_image      = true
+
+# Sensitive values — keep out of version control
+database_url               = "postgres://user:pass@host/dbname?sslmode=require"
+mastra_database_url        = "postgres://user:pass@host/mastra?sslmode=require"
+openai_api_key             = "sk-..."
