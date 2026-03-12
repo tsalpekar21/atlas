@@ -29,7 +29,7 @@ export const mastra = new Mastra({
     connectionString: process.env.MASTRA_DATABASE_URL!,
   }),
   server: {
-    port: 4111,
+    port: process.env.PORT ? parseInt(process.env.PORT) : 4111,
     ...(Object.keys(tokens).length > 0 && {
       auth: new SimpleAuth({ tokens }),
     }),
