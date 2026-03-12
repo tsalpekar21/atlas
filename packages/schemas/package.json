@@ -5,6 +5,7 @@
   "type": "module",
   "exports": {
     ".": "./dist/index.js",
+    "./api": "./dist/api.js",
     "./triage": "./dist/triage.js"
   },
   "scripts": {

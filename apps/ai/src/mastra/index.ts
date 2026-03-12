@@ -48,13 +48,8 @@ export const mastra = new Mastra({
     configs: {
       default: {
         serviceName: "mastra",
-        exporters: [
-          new DefaultExporter(),
-          new CloudExporter(),
-        ],
-        spanOutputProcessors: [
-          new SensitiveDataFilter(),
-        ],
+        exporters: [new DefaultExporter(), new CloudExporter()],
+        spanOutputProcessors: [new SensitiveDataFilter()],
       },
     },
   }),

@@ -160,9 +160,7 @@ function ChatArea({
       ) : (
         <ChatContent
           threadId={threadId}
-          initialMessages={
-            (messagesQuery.data?.messages ?? []) as TriageMessage[]
-          }
+          initialMessages={messagesQuery.data?.messages ?? []}
           onThreadUpdate={onThreadUpdate}
         />
       )}
