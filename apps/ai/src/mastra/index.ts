@@ -27,6 +27,7 @@ export const mastra = new Mastra({
   agents: { triageAgent },
   deployer: new VercelDeployer({
     studio: true,
+    maxDuration: 10 * 60 * 1000, // 10 minutes
   }),
   storage: new PostgresStore({
     id: "mastra-storage",
