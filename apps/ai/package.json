@@ -11,6 +11,7 @@
     "@atlas/schemas": "workspace:*",
     "@mastra/ai-sdk": "^1.0.5",
     "@mastra/core": "^1.7.0",
+    "@mastra/deployer-vercel": "^1.1.4",
     "@mastra/loggers": "^1.0.2",
     "@mastra/memory": "^1.5.1",
     "@mastra/observability": "^1.2.1",

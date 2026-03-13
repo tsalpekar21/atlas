@@ -9,6 +9,7 @@ import {
 } from "@mastra/observability";
 import { PostgresStore } from "@mastra/pg";
 import { triageAgent } from "./agents/triage-agent";
+import { VercelDeployer } from "@mastra/deployer-vercel";
 import { chatRoute } from "./routes/chat";
 import {
   listThreadsRoute,
@@ -24,6 +25,7 @@ if (apiToken) {
 
 export const mastra = new Mastra({
   agents: { triageAgent },
+  deployer: new VercelDeployer(),
   storage: new PostgresStore({
     id: "mastra-storage",
     connectionString: process.env.MASTRA_DATABASE_URL!,
