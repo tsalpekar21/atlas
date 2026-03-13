@@ -25,7 +25,9 @@ if (apiToken) {
 
 export const mastra = new Mastra({
   agents: { triageAgent },
-  deployer: new VercelDeployer(),
+  deployer: new VercelDeployer({
+    studio: true,
+  }),
   storage: new PostgresStore({
     id: "mastra-storage",
     connectionString: process.env.MASTRA_DATABASE_URL!,
