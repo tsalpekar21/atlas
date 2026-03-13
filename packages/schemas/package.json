@@ -9,7 +9,8 @@
     "./triage": "./dist/triage.js"
   },
   "scripts": {
-    "build": "tsc --project tsconfig.json"
+    "build": "tsc --project tsconfig.json",
+    "dev": "tsc --watch --project tsconfig.json"
   },
   "dependencies": {
     "ai": "^6.0.100",

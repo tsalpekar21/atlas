@@ -20,7 +20,7 @@
     "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
-    "@ai-sdk/react": "^3.0.102",
+    "@ai-sdk/react": "^3.0.118",
     "@atlas/schemas": "workspace:*",
     "@atlas/subframe": "workspace:*",
     "@subframe/core": "1.154.0",
@@ -33,7 +33,7 @@
     "@tanstack/react-router-ssr-query": "^1.131.7",
     "@tanstack/react-start": "^1.132.0",
     "@tanstack/router-plugin": "^1.132.0",
-    "ai": "^6.0.100",
+    "ai": "^6.0.116",
     "drizzle-kit": "^0.31.8",
     "drizzle-orm": "^0.45.0",
     "lucide-react": "^0.545.0",

@@ -1,10 +1,7 @@
 import {
-  listThreadsResponseSchema,
-  getThreadMessagesResponseSchema,
   deleteThreadResponseSchema,
-  type ListThreadsResponse,
-  type GetThreadMessagesResponse,
-  type DeleteThreadResponse,
+  getThreadMessagesResponseSchema,
+  listThreadsResponseSchema,
 } from "@atlas/schemas/api";
 import type { ZodType } from "zod";
 
@@ -40,24 +37,21 @@ async function request<T>(
 }
 
 export const mastraClient = {
-  listThreads(resourceId: string): Promise<ListThreadsResponse> {
+  listThreads(resourceId: string) {
     return request(
       `/threads?resourceId=${encodeURIComponent(resourceId)}`,
       listThreadsResponseSchema,
     );
   },
 
-  getThreadMessages(
-    threadId: string,
-    resourceId: string,
-  ): Promise<GetThreadMessagesResponse> {
+  getThreadMessages(threadId: string, resourceId: string) {
     return request(
       `/threads/${encodeURIComponent(threadId)}/messages?resourceId=${encodeURIComponent(resourceId)}`,
       getThreadMessagesResponseSchema,
     );
   },
 
-  deleteThread(threadId: string): Promise<DeleteThreadResponse> {
+  deleteThread(threadId: string) {
     return request(
       `/threads/${encodeURIComponent(threadId)}`,
       deleteThreadResponseSchema,

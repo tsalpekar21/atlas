@@ -3,8 +3,6 @@ import { TriageMessage } from "./triage";
 
 // --- Thread API response schemas ---
 
-export const triageMessageSchema = z.custom<TriageMessage>();
-
 export const threadSummarySchema = z.object({
   id: z.string(),
   title: z
@@ -30,7 +28,7 @@ export type ListThreadsResponse = z.infer<typeof listThreadsResponseSchema>;
 // Messages are AI SDK UIMessage objects with a complex union type.
 // We validate the wrapper and treat individual messages as opaque objects.
 export const getThreadMessagesResponseSchema = z.object({
-  messages: z.array(triageMessageSchema),
+  messages: z.array(z.custom<TriageMessage>()),
 });
 
 export type GetThreadMessagesResponse = z.infer<

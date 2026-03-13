@@ -1,17 +1,13 @@
 "use client";
 
+import { AppSidebar } from "@/components/AppSidebar.tsx";
 import { ChatMessageBubble } from "@/components/triage/ChatMessageBubble";
 import { NextStepsCard } from "@/components/triage/NextStepsCard";
 import { ProviderTriageNote } from "@/components/triage/ProviderTriageNote";
 import { QuestionOptions } from "@/components/triage/QuestionOptions";
-import { ThreadSidebar } from "@/components/triage/ThreadSidebar";
-import type { TriageMessage } from "@atlas/schemas/triage";
-import {
-  deleteThread,
-  getThreadMessages,
-  listThreads,
-} from "@/server/thread-functions";
+import { getThreadMessages } from "@/server/thread-functions";
 import { useChat } from "@ai-sdk/react";
+import type { TriageMessage } from "@atlas/schemas/triage";
 import { Avatar } from "@atlas/subframe/components/Avatar";
 import { Button } from "@atlas/subframe/components/Button";
 import { IconWithBackground } from "@atlas/subframe/components/IconWithBackground";
@@ -21,17 +17,13 @@ import {
   FeatherCircle,
   FeatherSend,
 } from "@subframe/core";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import {
-  createFileRoute,
-  useNavigate,
-  useRouter,
-} from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
+import { createFileRoute, useRouter } from "@tanstack/react-router";
 import {
   DefaultChatTransport,
   lastAssistantMessageIsCompleteWithToolCalls,
 } from "ai";
-import React from "react";
+import React, { useCallback } from "react";
 import { z } from "zod";
 import { ChatContentSkeleton } from "./-patient-triage-skeletons";
 
@@ -43,14 +35,6 @@ const searchSchema = z.object({
 
 export const Route = createFileRoute("/patient-triage-demo")({
   validateSearch: searchSchema,
-  loader: async () => {
-    try {
-      const { threads } = await listThreads();
-      return { threads };
-    } catch (error) {
-      return { threads: [] };
-    }
-  },
   component: PatientTriagePage,
 });
 
@@ -63,46 +47,15 @@ function formatTime(date?: Date): string {
 
 function PatientTriagePage() {
   const { threadId } = Route.useSearch();
-  const { threads } = Route.useLoaderData();
   const router = useRouter();
-  const navigate = useNavigate({ from: Route.fullPath });
-  const queryClient = useQueryClient();
 
-  const handleNewThread = React.useCallback(() => {
-    const newId = crypto.randomUUID();
-    navigate({ search: { threadId: newId } });
-  }, [navigate]);
-
-  const handleSelectThread = React.useCallback(
-    (id: string) => {
-      navigate({ search: { threadId: id } });
-    },
-    [navigate],
-  );
-
-  const deleteMutation = useMutation({
-    mutationFn: (id: string) => deleteThread({ data: { threadId: id } }),
-    onSuccess: (_, deletedId) => {
-      router.invalidate();
-      if (threadId === deletedId) {
-        navigate({ search: {} });
-      }
-    },
-  });
-
-  const handleThreadUpdate = React.useCallback(() => {
+  const handleThreadUpdate = useCallback(() => {
     router.invalidate();
-  }, [queryClient]);
+  }, [router]);
 
   return (
     <div className="flex h-screen w-full">
-      <ThreadSidebar
-        threads={threads ?? []}
-        currentThreadId={threadId}
-        onSelectThread={handleSelectThread}
-        onNewThread={handleNewThread}
-        onDeleteThread={(id) => deleteMutation.mutate(id)}
-      />
+      <AppSidebar threadId={threadId} />
 
       <ChatArea
         key={threadId}
@@ -160,7 +113,7 @@ function ChatArea({
       ) : (
         <ChatContent
           threadId={threadId}
-          initialMessages={messagesQuery.data?.messages ?? []}
+          initialMessages={(messagesQuery.data as TriageMessage[]) ?? []}
           onThreadUpdate={onThreadUpdate}
         />
       )}

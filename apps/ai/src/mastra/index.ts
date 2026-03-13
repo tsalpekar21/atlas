@@ -31,6 +31,7 @@ export const mastra = new Mastra({
   storage: new PostgresStore({
     id: "mastra-storage",
     connectionString: process.env.MASTRA_DATABASE_URL!,
+    schemaName: "mastra",
   }),
   server: {
     port: process.env.PORT ? parseInt(process.env.PORT) : 4111,
