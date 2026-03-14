@@ -8,7 +8,7 @@ import {
   SensitiveDataFilter,
 } from "@mastra/observability";
 import { PostgresStore } from "@mastra/pg";
-import { triageAgent } from "./agents/triage-agent";
+import { triageAgent } from "./agents/triage-agent.ts";
 
 const tokens: Record<string, { id: string; name: string }> = {};
 const apiToken = process.env.API_TOKEN;

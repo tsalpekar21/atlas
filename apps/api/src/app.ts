@@ -6,7 +6,7 @@ import {
 } from "@mastra/hono";
 import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
-import { mastra } from "./mastra";
+import { mastra } from "./mastra/index.ts";
 import { handleChatStream } from "@mastra/ai-sdk";
 import { createUIMessageStreamResponse } from "ai";
 import { toAISdkV5Messages } from "@mastra/ai-sdk/ui";

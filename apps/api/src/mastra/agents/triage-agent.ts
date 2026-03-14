@@ -3,7 +3,7 @@ import { Memory } from "@mastra/memory";
 import {
   presentQuestionTool,
   generateTriageSummaryTool,
-} from "../tools/triage-tools";
+} from "../tools/triage-tools.ts";
 import {
   createGoogleGenerativeAI,
   type GoogleLanguageModelOptions,

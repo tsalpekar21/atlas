@@ -7,7 +7,7 @@
   },
   "scripts": {
     "dev": "tsx watch src/index.ts",
-    "build": "tsup src/index.ts --format esm --target node22 --clean"
+    "build": "tsc"
   },
   "dependencies": {
     "@ai-sdk/google": "^3.0.43",
@@ -29,7 +29,6 @@
   },
   "devDependencies": {
     "@mastra/deployer-vercel": "^1.1.4",
-    "tsup": "^8.5.1",
     "tsx": "^4.21.0",
     "typescript": "^5.7.2"
   }
