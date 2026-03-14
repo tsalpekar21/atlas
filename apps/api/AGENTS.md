@@ -19,23 +19,23 @@ Use these commands to interact with the project.
 ### Installation
 
 ```bash
-npm install
+pnpm install
 ```
 
 ### Development
 
-Start the Mastra Studio at localhost:4111 by running the `dev` script:
+Start the Hono dev server at localhost:4111:
 
 ```bash
-npm run dev
+pnpm dev
 ```
 
 ### Build
 
-In order to build a production-ready server, run the `build` script:
+Build a production-ready server (outputs to `dist/`):
 
 ```bash
-npm run build
+pnpm build
 ```
 
 ## Project Structure

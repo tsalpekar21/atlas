@@ -1,4 +1,4 @@
-import { mastraClient } from "@/lib/mastra-client";
+import { chatUrl } from "@/lib/mastra-client";
 import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/api/chat")({
@@ -6,12 +6,12 @@ export const Route = createFileRoute("/api/chat")({
     handlers: {
       POST: async ({ request }) => {
         const body = await request.text();
-        const response = await fetch(mastraClient.chatUrl(), {
+        const response = await fetch(chatUrl, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            ...(process.env.MASTRA_API_TOKEN && {
-              Authorization: `Bearer ${process.env.MASTRA_API_TOKEN}`,
+            ...(process.env.API_TOKEN && {
+              Authorization: `Bearer ${process.env.API_TOKEN}`,
             }),
           },
           body,

@@ -21,6 +21,7 @@
   },
   "dependencies": {
     "@ai-sdk/react": "^3.0.118",
+    "@atlas/api": "workspace:*",
     "@atlas/schemas": "workspace:*",
     "@atlas/subframe": "workspace:*",
     "@subframe/core": "1.154.0",
@@ -36,6 +37,7 @@
     "ai": "^6.0.116",
     "drizzle-kit": "^0.31.8",
     "drizzle-orm": "^0.45.0",
+    "hono": "^4.12.7",
     "lucide-react": "^0.545.0",
     "nitro": "npm:nitro-nightly@latest",
     "pg": "^8.13.0",

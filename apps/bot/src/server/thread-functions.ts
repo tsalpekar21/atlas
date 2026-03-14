@@ -1,11 +1,14 @@
-import { mastraClient } from "@/lib/mastra-client";
+import { api } from "@/lib/mastra-client";
 import { createServerFn } from "@tanstack/react-start";
 
 const RESOURCE_ID = "default-patient";
 
 export const listThreads = createServerFn({ method: "GET" }).handler(
   async () => {
-    return mastraClient.listThreads(RESOURCE_ID);
+    const res = await api.threads.$get({
+      query: { resourceId: RESOURCE_ID },
+    });
+    return res.json();
   },
 );
 
@@ -15,10 +18,11 @@ export const listThreads = createServerFn({ method: "GET" }).handler(
 export const getThreadMessages = createServerFn({ method: "GET" })
   .inputValidator((data: { threadId: string }) => data)
   .handler(async ({ data }) => {
-    const { messages } = await mastraClient.getThreadMessages(
-      data.threadId,
-      RESOURCE_ID,
-    );
+    const res = await api.threads[":threadId"].messages.$get({
+      param: { threadId: data.threadId },
+      query: { resourceId: RESOURCE_ID },
+    });
+    const { messages } = await res.json();
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return messages as any;
@@ -27,5 +31,8 @@ export const getThreadMessages = createServerFn({ method: "GET" })
 export const deleteThread = createServerFn({ method: "POST" })
   .inputValidator((data: { threadId: string }) => data)
   .handler(async ({ data }) => {
-    return mastraClient.deleteThread(data.threadId);
+    const res = await api.threads[":threadId"].$delete({
+      param: { threadId: data.threadId },
+    });
+    return res.json();
   });

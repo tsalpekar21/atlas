@@ -54,8 +54,8 @@ variable "database_url" {
   sensitive   = true
 }
 
-variable "mastra_database_url" {
-  description = "PostgreSQL connection string for Mastra storage"
+variable "database_url" {
+  description = "PostgreSQL connection string for the API service (Mastra storage)"
   type        = string
   sensitive   = true
 }
@@ -72,16 +72,16 @@ variable "google_generative_ai_api_key" {
   sensitive   = true
 }
 
-# --- AI service (Mastra server) ---
+# --- API service (Hono + Mastra) ---
 
-variable "ai_cloud_run_service_name" {
-  description = "Name of the Cloud Run service for the Mastra AI server"
+variable "api_cloud_run_service_name" {
+  description = "Name of the Cloud Run service for the API server"
   type        = string
-  default     = "atlas-ai"
+  default     = "atlas-api"
 }
 
-variable "mastra_api_token" {
-  description = "Shared API token for bot-to-AI server authentication"
+variable "api_token" {
+  description = "Shared API token for bot-to-API server authentication"
   type        = string
   sensitive   = true
 }

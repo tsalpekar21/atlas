@@ -4,9 +4,9 @@ This document provides guidance for AI coding agents working in the bot app.
 
 ## Project Overview
 
-This is a **TanStack Start** application (React + Nitro server) that serves the frontend UI and proxies AI requests to the standalone Mastra server in `apps/ai/`.
+This is a **TanStack Start** application (React + Nitro server) that serves the frontend UI and proxies AI requests to the standalone Mastra server in `apps/api/`.
 
-Mastra code (agents, tools, workflows) lives in `apps/ai/`, not here. This app communicates with the Mastra server via HTTP.
+Mastra code (agents, tools, workflows) lives in `apps/api/`, not here. This app communicates with the Mastra server via HTTP.
 
 ## Commands
 
@@ -30,8 +30,8 @@ pnpm check        # Full Biome check (lint + format)
 
 | Variable | Description |
 |----------|-------------|
-| `MASTRA_SERVER_URL` | URL of the Mastra AI server (default: `http://localhost:4111`) |
-| `MASTRA_API_TOKEN` | API token for authenticating with the Mastra server |
+| `SERVER_URL` | URL of the API server (default: `http://localhost:4111`) |
+| `API_TOKEN` | API token for authenticating with the API server |
 | `DATABASE_URL` | PostgreSQL connection string for the app database |
 
 ## Shared Types

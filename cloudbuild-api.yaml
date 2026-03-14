@@ -1,12 +1,12 @@
-# Cloud Build: build atlas-ai image and deploy to Cloud Run
+# Cloud Build: build atlas-api image and deploy to Cloud Run
 # Triggered by push to the configured branch (e.g. main).
 # Substitutions _REGION, _SERVICE, _REPO are set by the Terraform-managed trigger.
-# Uses repo-root context with the AI Dockerfile:
-#   docker build -f apps/ai/Dockerfile .
+# Uses repo-root context with the API Dockerfile:
+#   docker build -f apps/api/Dockerfile .
 
 substitutions:
   _REGION: us-central1
-  _SERVICE: atlas-ai
+  _SERVICE: atlas-api
   _REPO: atlas
 
 options:
@@ -19,7 +19,7 @@ steps:
     args:
       - "build"
       - "-f"
-      - "apps/ai/Dockerfile"
+      - "apps/api/Dockerfile"
       - "-t"
       - "${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/${_SERVICE}:${SHORT_SHA}"
       - "-t"

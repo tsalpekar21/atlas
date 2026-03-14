@@ -1,26 +1,36 @@
 {
-  "name": "ai",
+  "name": "@atlas/api",
   "private": true,
   "type": "module",
+  "exports": {
+    "./app": "./src/app.ts"
+  },
   "scripts": {
-    "dev": "mastra dev --env ./.env",
-    "build": "mastra build --studio"
+    "dev": "tsx watch src/index.ts",
+    "build": "tsup src/index.ts --format esm --target node22 --clean"
   },
   "dependencies": {
     "@ai-sdk/google": "^3.0.43",
     "@atlas/schemas": "workspace:*",
+    "@hono/node-server": "^1.19.11",
+    "@hono/zod-validator": "^0.7.6",
     "@mastra/ai-sdk": "^1.1.3",
     "@mastra/core": "^1.13.1",
+    "@mastra/hono": "^1.2.4",
     "@mastra/loggers": "^1.0.2",
     "@mastra/memory": "^1.8.1",
     "@mastra/observability": "^1.5.0",
     "@mastra/pg": "^1.8.0",
     "ai": "^6.0.116",
+    "dotenv": "^16.6.1",
+    "hono": "^4.12.7",
     "mastra": "^1.3.4",
     "zod": "^4.3.6"
   },
   "devDependencies": {
     "@mastra/deployer-vercel": "^1.1.4",
+    "tsup": "^8.5.1",
+    "tsx": "^4.21.0",
     "typescript": "^5.7.2"
   }
 }

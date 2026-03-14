@@ -41,8 +41,8 @@ locals {
   bot_ar_image = "${var.region}-docker.pkg.dev/${var.project_id}/${google_artifact_registry_repository.atlas.repository_id}/${var.cloud_run_service_name}:latest"
   bot_image    = var.use_placeholder_image ? local.placeholder : local.bot_ar_image
 
-  ai_ar_image = "${var.region}-docker.pkg.dev/${var.project_id}/${google_artifact_registry_repository.atlas.repository_id}/${var.ai_cloud_run_service_name}:latest"
-  ai_image    = var.use_placeholder_image ? local.placeholder : local.ai_ar_image
+  api_ar_image = "${var.region}-docker.pkg.dev/${var.project_id}/${google_artifact_registry_repository.atlas.repository_id}/${var.api_cloud_run_service_name}:latest"
+  api_image    = var.use_placeholder_image ? local.placeholder : local.api_ar_image
 }
 
 # --- Bot service (TanStack Start frontend + BFF) ---
@@ -78,16 +78,12 @@ resource "google_cloud_run_v2_service" "atlas_bot" {
         value = var.database_url
       }
       env {
-        name  = "OPENAI_API_KEY"
-        value = var.openai_api_key
+        name  = "SERVER_URL"
+        value = google_cloud_run_v2_service.atlas_api.uri
       }
       env {
-        name  = "MASTRA_SERVER_URL"
-        value = google_cloud_run_v2_service.atlas_ai.uri
-      }
-      env {
-        name  = "MASTRA_API_TOKEN"
-        value = var.mastra_api_token
+        name  = "API_TOKEN"
+        value = var.api_token
       }
     }
   }
@@ -98,10 +94,10 @@ resource "google_cloud_run_v2_service" "atlas_bot" {
   ]
 }
 
-# --- AI service (Mastra server) ---
+# --- API service (Hono + Mastra) ---
 
-resource "google_cloud_run_v2_service" "atlas_ai" {
-  name     = var.ai_cloud_run_service_name
+resource "google_cloud_run_v2_service" "atlas_api" {
+  name     = var.api_cloud_run_service_name
   location = var.region
   ingress             = "INGRESS_TRAFFIC_ALL"
   deletion_protection = false
@@ -113,7 +109,7 @@ resource "google_cloud_run_v2_service" "atlas_ai" {
     }
 
     containers {
-      image = local.ai_image
+      image = local.api_image
 
       ports {
         container_port = 8080
@@ -127,16 +123,16 @@ resource "google_cloud_run_v2_service" "atlas_ai" {
       }
 
       env {
-        name  = "MASTRA_DATABASE_URL"
-        value = var.mastra_database_url
+        name  = "DATABASE_URL"
+        value = var.database_url
       }
       env {
         name  = "GOOGLE_GENERATIVE_AI_API_KEY"
         value = var.google_generative_ai_api_key
       }
       env {
-        name  = "MASTRA_API_TOKEN"
-        value = var.mastra_api_token
+        name  = "API_TOKEN"
+        value = var.api_token
       }
     }
   }

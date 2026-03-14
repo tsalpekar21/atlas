@@ -16,7 +16,7 @@ pnpm install
 pnpm dev
 ```
 
-The app uses PostgreSQL for Drizzle (database `postgres`) and Mastra uses a separate database (`mastra`). Set `DATABASE_URL` and `MASTRA_DATABASE_URL` in `.env` (see `.env.example`).
+The app uses PostgreSQL for Drizzle (database `postgres`). Set `DATABASE_URL` in `.env`. For the API server (apps/api), set `SERVER_URL` and `API_TOKEN` (see `.env.example`).
 
 # Building For Production
 

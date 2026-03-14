@@ -47,7 +47,7 @@ File-based routing via TanStack Router. Routes live in `apps/bot/src/routes/`. T
 The root route (`__root.tsx`) wraps all pages with React Query provider, Header, and devtools.
 
 ### Data Layer
-- **Drizzle ORM** with PostgreSQL (pg). Schema in `apps/bot/src/db/schema.ts`, DB connection in `apps/bot/src/db/index.ts`. Mastra uses a separate Postgres database via `MASTRA_DATABASE_URL`.
+- **Drizzle ORM** with PostgreSQL (pg). Schema in `apps/bot/src/db/schema.ts`, DB connection in `apps/bot/src/db/index.ts`. The API app (apps/api) uses its own Postgres database via `DATABASE_URL`; the bot calls the API using `SERVER_URL` and `API_TOKEN`.
 - **TanStack React Query** for server state. Provider setup in `apps/bot/src/integrations/tanstack-query/`.
 - Server functions handled via Nitro (configured in `vite.config.ts`).
 
