@@ -32,13 +32,6 @@ pnpm --filter bot dev
 pnpm --filter bot build
 ```
 
-Database (Drizzle + PostgreSQL). Local Postgres runs via Docker Compose at repo root (`docker compose up -d`).
-```bash
-pnpm db:generate      # Generate migrations from schema
-pnpm db:push          # Push schema changes directly
-pnpm db:studio        # Open Drizzle Studio GUI
-```
-
 ## Architecture
 
 ### Routing
@@ -47,8 +40,7 @@ File-based routing via TanStack Router. Routes live in `apps/bot/src/routes/`. T
 The root route (`__root.tsx`) wraps all pages with React Query provider, Header, and devtools.
 
 ### Data Layer
-- **Drizzle ORM** with PostgreSQL (pg). Schema in `apps/bot/src/db/schema.ts`, DB connection in `apps/bot/src/db/index.ts`. The API app (apps/api) uses its own Postgres database via `DATABASE_URL`; the bot calls the API using `SERVER_URL` and `API_TOKEN`.
-- **TanStack React Query** for server state. Provider setup in `apps/bot/src/integrations/tanstack-query/`.
+- **TanStack React Query** for server state. Provider setup in `apps/bot/src/integrations/tanstack-query/`. The bot calls the API app (apps/api) using `SERVER_URL` and `API_TOKEN`; the API app uses its own Postgres via `DATABASE_URL`.
 - Server functions handled via Nitro (configured in `vite.config.ts`).
 
 ### UI Components
@@ -72,4 +64,4 @@ Tailwind CSS v4 with Subframe theme tokens. Global styles in `apps/bot/src/style
 - **TypeScript**: Strict mode, target ES2022, path alias `@/*` → `./src/*` (bot app), `#/*` → `./src/*` (package imports)
 - **Vite**: React plugin with React Compiler (Babel), Tailwind plugin, tsconfig-paths, TanStack Start + Nitro
 - **Biome**: Linter + formatter (replaces ESLint + Prettier)
-- **Drizzle config**: `apps/bot/drizzle.config.ts`, uses `DATABASE_URL` env var (PostgreSQL). See `apps/bot/.env.example` for local setup.
+- **Env**: See `apps/bot/.env.example` for `SERVER_URL` and `API_TOKEN` (API server).

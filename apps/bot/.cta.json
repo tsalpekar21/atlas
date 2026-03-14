@@ -5,11 +5,7 @@
   "packageManager": "pnpm",
   "includeExamples": false,
   "tailwind": true,
-  "addOnOptions": {
-    "drizzle": {
-      "database": "sqlite"
-    }
-  },
+  "addOnOptions": {},
   "envVarValues": {},
   "git": false,
   "routerOnly": false,
@@ -19,7 +15,6 @@
     "biome",
     "nitro",
     "compiler",
-    "drizzle",
     "tanstack-query"
   ]
 }

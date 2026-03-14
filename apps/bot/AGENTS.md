@@ -32,7 +32,6 @@ pnpm check        # Full Biome check (lint + format)
 |----------|-------------|
 | `SERVER_URL` | URL of the API server (default: `http://localhost:4111`) |
 | `API_TOKEN` | API token for authenticating with the API server |
-| `DATABASE_URL` | PostgreSQL connection string for the app database |
 
 ## Shared Types
 

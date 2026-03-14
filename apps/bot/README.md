@@ -16,7 +16,7 @@ pnpm install
 pnpm dev
 ```
 
-The app uses PostgreSQL for Drizzle (database `postgres`). Set `DATABASE_URL` in `.env`. For the API server (apps/api), set `SERVER_URL` and `API_TOKEN` (see `.env.example`).
+Set `SERVER_URL` and `API_TOKEN` in `.env` to connect to the API server (see `.env.example`).
 
 # Building For Production
 

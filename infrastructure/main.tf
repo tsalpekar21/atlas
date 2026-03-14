@@ -74,10 +74,6 @@ resource "google_cloud_run_v2_service" "atlas_bot" {
       }
 
       env {
-        name  = "DATABASE_URL"
-        value = var.database_url
-      }
-      env {
         name  = "SERVER_URL"
         value = google_cloud_run_v2_service.atlas_api.uri
       }

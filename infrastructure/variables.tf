@@ -48,18 +48,6 @@ variable "use_placeholder_image" {
   default     = false
 }
 
-variable "database_url" {
-  description = "PostgreSQL connection string for the app database"
-  type        = string
-  sensitive   = true
-}
-
-variable "database_url" {
-  description = "PostgreSQL connection string for the API service (Mastra storage)"
-  type        = string
-  sensitive   = true
-}
-
 variable "openai_api_key" {
   description = "OpenAI API key for AI model access"
   type        = string
@@ -73,6 +61,12 @@ variable "google_generative_ai_api_key" {
 }
 
 # --- API service (Hono + Mastra) ---
+
+variable "database_url" {
+  description = "PostgreSQL connection string for the API service (Mastra storage)"
+  type        = string
+  sensitive   = true
+}
 
 variable "api_cloud_run_service_name" {
   description = "Name of the Cloud Run service for the API server"
