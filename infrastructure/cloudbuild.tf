@@ -63,6 +63,16 @@ resource "google_cloudbuild_trigger" "atlas_bot" {
     }
   }
 
+  # Only trigger when bot app or shared packages change
+  included_files = [
+    "apps/bot/**",
+    "packages/**",
+    "package.json",
+    "pnpm-lock.yaml",
+    "pnpm-workspace.yaml",
+    "turbo.json",
+  ]
+
   filename = "cloudbuild.yaml"
 
   substitutions = {
@@ -88,6 +98,16 @@ resource "google_cloudbuild_trigger" "atlas_api" {
       branch = "^${var.github_branch}$"
     }
   }
+
+  # Only trigger when API app or shared packages change
+  included_files = [
+    "apps/api/**",
+    "packages/**",
+    "package.json",
+    "pnpm-lock.yaml",
+    "pnpm-workspace.yaml",
+    "turbo.json",
+  ]
 
   filename = "cloudbuild-api.yaml"
 

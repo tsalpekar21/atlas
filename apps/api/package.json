@@ -7,7 +7,8 @@
   },
   "scripts": {
     "dev": "tsx watch src/index.ts",
-    "build": "tsc"
+    "build": "tsc",
+    "studio": "pnpm mastra studio"
   },
   "dependencies": {
     "@ai-sdk/google": "^3.0.43",
