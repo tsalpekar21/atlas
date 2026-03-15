@@ -17,7 +17,7 @@ import {
   FeatherCircle,
   FeatherSend,
 } from "@subframe/core";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import {
   DefaultChatTransport,
@@ -47,11 +47,11 @@ function formatTime(date?: Date): string {
 
 function PatientTriagePage() {
   const { threadId } = Route.useSearch();
-  const router = useRouter();
+  const queryClient = useQueryClient();
 
   const handleThreadUpdate = useCallback(() => {
-    router.invalidate();
-  }, [router]);
+    queryClient.invalidateQueries({ queryKey: ["threads"] });
+  }, [queryClient]);
 
   return (
     <div className="flex h-screen w-full">
@@ -113,7 +113,7 @@ function ChatArea({
       ) : (
         <ChatContent
           threadId={threadId}
-          initialMessages={(messagesQuery.data as TriageMessage[]) ?? []}
+          initialMessages={messagesQuery.data ?? []}
           onThreadUpdate={onThreadUpdate}
         />
       )}

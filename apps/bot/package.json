@@ -17,6 +17,7 @@
   "dependencies": {
     "@ai-sdk/react": "^3.0.118",
     "@atlas/api": "workspace:*",
+    "@atlas/logger": "workspace:*",
     "@atlas/schemas": "workspace:*",
     "@atlas/subframe": "workspace:*",
     "@subframe/core": "1.154.0",

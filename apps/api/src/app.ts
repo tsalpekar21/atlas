@@ -6,6 +6,7 @@ import {
 } from "@mastra/hono";
 import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
+import { logger } from "@atlas/logger";
 import { mastra } from "./mastra/index.ts";
 import { handleChatStream } from "@mastra/ai-sdk";
 import { createUIMessageStreamResponse } from "ai";
@@ -15,6 +16,16 @@ const app = new Hono<{ Bindings: HonoBindings; Variables: HonoVariables }>();
 
 const server = new MastraServer({ app, mastra });
 await server.init();
+
+app.use("*", async (c, next) => {
+  const start = Date.now();
+  const method = c.req.method;
+  const path = c.req.path;
+  await next();
+  const durationMs = Date.now() - start;
+  const statusCode = c.res.status;
+  logger.info({ method, path, statusCode, durationMs }, "request");
+});
 
 const routes = app
   .get(
