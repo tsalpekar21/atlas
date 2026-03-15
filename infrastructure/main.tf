@@ -43,6 +43,9 @@ locals {
 
   api_ar_image = "${var.region}-docker.pkg.dev/${var.project_id}/${google_artifact_registry_repository.atlas.repository_id}/${var.api_cloud_run_service_name}:latest"
   api_image    = var.use_placeholder_image ? local.placeholder : local.api_ar_image
+
+  studio_ar_image = "${var.region}-docker.pkg.dev/${var.project_id}/${google_artifact_registry_repository.atlas.repository_id}/${var.studio_cloud_run_service_name}:latest"
+  studio_image    = var.use_placeholder_image ? local.placeholder : local.studio_ar_image
 }
 
 # --- Bot service (TanStack Start frontend + BFF) ---
@@ -129,6 +132,50 @@ resource "google_cloud_run_v2_service" "atlas_api" {
       env {
         name  = "API_TOKEN"
         value = var.api_token
+      }
+    }
+  }
+
+  depends_on = [
+    google_project_service.run,
+    google_artifact_registry_repository.atlas,
+  ]
+}
+
+resource "google_cloud_run_v2_service" "atlas_studio" {
+  name     = var.studio_cloud_run_service_name
+  location = var.region
+  ingress             = "INGRESS_TRAFFIC_ALL"
+  deletion_protection = false
+
+  template {
+    scaling {
+      min_instance_count = 0
+      max_instance_count = 10
+    }
+
+    containers {
+      image = local.placeholder
+
+      ports {
+        container_port = 8080
+      }
+
+      resources {
+        limits = {
+          cpu    = "1000m"
+          memory = "512Mi"
+        }
+      }
+
+      env {
+        name  = "MASTRA_SERVER_HOST"
+        value = "https://atlas-api-836366609663.us-central1.run.app"
+      }
+
+      env {
+        name  = "MASTRA_SERVER_PORT"
+        value = "8080"
       }
     }
   }

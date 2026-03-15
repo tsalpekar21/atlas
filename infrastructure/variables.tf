@@ -74,6 +74,12 @@ variable "api_cloud_run_service_name" {
   default     = "atlas-api"
 }
 
+variable "studio_cloud_run_service_name" {
+  description = "Name of the Cloud Run service for the Studio server"
+  type        = string
+  default     = "atlas-studio"
+}
+
 variable "api_token" {
   description = "Shared API token for bot-to-API server authentication"
   type        = string

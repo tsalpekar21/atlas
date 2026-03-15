@@ -12,6 +12,7 @@ import {
 const google = createGoogleGenerativeAI({
   apiKey: process.env.GOOGLE_GENERATIVE_AI_API_KEY!,
 });
+
 export const triageAgent = new Agent({
   id: "triageAgent",
   name: "Dermatology Triage Agent",

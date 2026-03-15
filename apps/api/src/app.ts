@@ -11,10 +11,14 @@ import { mastra } from "./mastra/index.ts";
 import { handleChatStream } from "@mastra/ai-sdk";
 import { createUIMessageStreamResponse } from "ai";
 import { toAISdkV5Messages } from "@mastra/ai-sdk/ui";
+import { cors } from "hono/cors";
 
 const app = new Hono<{ Bindings: HonoBindings; Variables: HonoVariables }>();
 
+app.use("/*", cors());
+
 const server = new MastraServer({ app, mastra });
+
 await server.init();
 
 app.use("*", async (c, next) => {
