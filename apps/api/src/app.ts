@@ -12,6 +12,7 @@ import { handleChatStream } from "@mastra/ai-sdk";
 import { createUIMessageStreamResponse } from "ai";
 import { toAISdkV5Messages } from "@mastra/ai-sdk/ui";
 import { cors } from "hono/cors";
+import { postDoctorEnrichment } from "./routes/doctor-enrichment.ts";
 
 const app = new Hono<{ Bindings: HonoBindings; Variables: HonoVariables }>();
 
@@ -101,7 +102,20 @@ const routes = app
         typeof createUIMessageStreamResponse
       >[0]["stream"],
     });
-  });
+  })
+  .post(
+    "/npi/enrich",
+    zValidator(
+      "json",
+      z.object({
+        npi: z.string(),
+      }),
+    ),
+    async (c) => {
+      const { npi } = c.req.valid("json");
+      return postDoctorEnrichment(c, [npi]);
+    },
+  );
 
 export type AppType = typeof routes;
 export default app;

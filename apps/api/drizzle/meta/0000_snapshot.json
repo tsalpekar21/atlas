@@ -1,0 +1,231 @@
+{
+  "id": "106f3034-1c15-4ff7-a1c8-7aebadb3dead",
+  "prevId": "00000000-0000-0000-0000-000000000000",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.doctor_site_crawl": {
+      "name": "doctor_site_crawl",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "npi": {
+          "name": "npi",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "search_id": {
+          "name": "search_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "seed_url": {
+          "name": "seed_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "firecrawl_job_id": {
+          "name": "firecrawl_job_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "crawl_status_final": {
+          "name": "crawl_status_final",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "pages": {
+          "name": "pages",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "doctor_site_crawl_npi_idx": {
+          "name": "doctor_site_crawl_npi_idx",
+          "columns": [
+            {
+              "expression": "npi",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "doctor_site_crawl_search_id_doctor_website_search_id_fk": {
+          "name": "doctor_site_crawl_search_id_doctor_website_search_id_fk",
+          "tableFrom": "doctor_site_crawl",
+          "tableTo": "doctor_website_search",
+          "columnsFrom": [
+            "search_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.doctor_website_search": {
+      "name": "doctor_website_search",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "npi": {
+          "name": "npi",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "search_query": {
+          "name": "search_query",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "firecrawl_request": {
+          "name": "firecrawl_request",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "firecrawl_response": {
+          "name": "firecrawl_response",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "selected_url": {
+          "name": "selected_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "doctor_website_search_npi_idx": {
+          "name": "doctor_website_search_npi_idx",
+          "columns": [
+            {
+              "expression": "npi",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "doctor_website_search_npi_npi_provider_fetch_npi_fk": {
+          "name": "doctor_website_search_npi_npi_provider_fetch_npi_fk",
+          "tableFrom": "doctor_website_search",
+          "tableTo": "npi_provider_fetch",
+          "columnsFrom": [
+            "npi"
+          ],
+          "columnsTo": [
+            "npi"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.npi_provider_fetch": {
+      "name": "npi_provider_fetch",
+      "schema": "",
+      "columns": {
+        "npi": {
+          "name": "npi",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "registry_response": {
+          "name": "registry_response",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "fetched_at": {
+          "name": "fetched_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}
