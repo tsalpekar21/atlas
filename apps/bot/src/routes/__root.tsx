@@ -3,6 +3,8 @@ import {
   Scripts,
   createRootRouteWithContext,
 } from "@tanstack/react-router";
+
+import { AppShellLayout } from "../components/AppShellLayout.tsx";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { TanStackDevtools } from "@tanstack/react-devtools";
 
@@ -19,6 +21,7 @@ interface RouterContext {
 }
 
 export const Route = createRootRouteWithContext<RouterContext>()({
+  component: AppShellLayout,
   head: () => ({
     meta: [
       {

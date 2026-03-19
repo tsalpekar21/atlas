@@ -19,7 +19,6 @@ import {
 } from "ai";
 import React, { useCallback } from "react";
 import { z } from "zod";
-import { AppSidebar } from "@/components/AppSidebar.tsx";
 import { ChatMessageBubble } from "@/components/triage/ChatMessageBubble";
 import { NextStepsCard } from "@/components/triage/NextStepsCard";
 import { ProviderTriageNote } from "@/components/triage/ProviderTriageNote";
@@ -42,7 +41,7 @@ function formatTime(date?: Date): string {
 	return (date ?? new Date()).toLocaleTimeString([], {
 		hour: "numeric",
 		minute: "2-digit",
-	});
+	})
 }
 
 function PatientTriagePage() {
@@ -54,16 +53,12 @@ function PatientTriagePage() {
 	}, [queryClient]);
 
 	return (
-		<div className="flex h-screen w-full">
-			<AppSidebar threadId={threadId} />
-
-			<ChatArea
-				key={threadId}
-				threadId={threadId}
-				onThreadUpdate={handleThreadUpdate}
-			/>
-		</div>
-	);
+		<ChatArea
+			key={threadId}
+			threadId={threadId}
+			onThreadUpdate={handleThreadUpdate}
+		/>
+	)
 }
 
 function ChatArea({
@@ -79,10 +74,10 @@ function ChatArea({
 			const messages = await getThreadMessages({ data: { threadId } });
 			return messages as TriageMessage[];
 		},
-	});
+	})
 
 	return (
-		<div className="flex grow shrink-0 basis-0 flex-col items-start bg-neutral-50 h-screen">
+		<div className="flex h-full min-h-0 w-full min-w-0 flex-1 shrink-0 basis-0 flex-col items-start bg-neutral-50">
 			{/* Header */}
 			<div className="flex w-full flex-col items-start border-b border-solid border-neutral-border bg-default-background px-6 py-4">
 				<div className="flex w-full items-center justify-between">
@@ -130,7 +125,7 @@ function ChatArea({
 				</span>
 			</div>
 		</div>
-	);
+	)
 }
 
 function ChatContent({
@@ -161,7 +156,7 @@ function ChatContent({
 			}),
 			sendAutomaticallyWhen: lastAssistantMessageIsCompleteWithToolCalls,
 			onFinish: onThreadUpdate,
-		});
+		})
 
 	const isLoading = status === "streaming" || status === "submitted";
 
@@ -175,21 +170,21 @@ function ChatContent({
 		if (!text.trim() || isLoading) return;
 		sendMessage({ text: text.trim() });
 		setInputValue("");
-	};
+	}
 
 	const handleFileUpload = (files: FileList) => {
 		sendMessage({
 			text: "Here's a photo of the affected area.",
 			files,
-		});
-	};
+		})
+	}
 
 	const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
 		if (e.key === "Enter" && !e.shiftKey) {
 			e.preventDefault();
 			handleSendText(inputValue);
 		}
-	};
+	}
 
 	return (
 		<>
@@ -211,7 +206,7 @@ function ChatContent({
 										tool: "present_question",
 										toolCallId,
 										output: { selection: text },
-									});
+									})
 								}}
 								isLoading={isLoading}
 								showTypingIndicator={isLoading && i === messages.length - 1}
@@ -259,7 +254,7 @@ function ChatContent({
 				</Button>
 			</div>
 		</>
-	);
+	)
 }
 
 const EXAMPLE_PROMPTS = [
@@ -311,7 +306,7 @@ function EmptyState({
 				</div>
 			</div>
 		</div>
-	);
+	)
 }
 
 function TypingDots() {
@@ -326,7 +321,7 @@ function TypingDots() {
 				Thinking...
 			</span>
 		</div>
-	);
+	)
 }
 
 function MessageRenderer({
@@ -358,7 +353,7 @@ function MessageRenderer({
 							{part.text}
 						</span>
 					</div>
-				);
+				)
 			}
 
 			if (part.type === "tool-present_question") {
@@ -383,7 +378,7 @@ function MessageRenderer({
 							</ChatMessageBubble>
 						)}
 					</React.Fragment>
-				);
+				)
 			}
 
 			if (part.type === "tool-generate_triage_summary") {
@@ -405,7 +400,7 @@ function MessageRenderer({
 						<ProviderTriageNote data={part.input} />
 						<NextStepsCard data={part.input} />
 					</React.Fragment>
-				);
+				)
 			}
 
 			return null;
@@ -424,7 +419,7 @@ function MessageRenderer({
 			{renderedParts}
 			{showTypingIndicator && <TypingDots />}
 		</ChatMessageBubble>
-	);
+	)
 }
 
 function UserMessage({
@@ -436,7 +431,7 @@ function UserMessage({
 }) {
 	const fileParts = message.parts.flatMap((p) =>
 		p.type === "file" ? [p] : [],
-	);
+	)
 	const textContent = message.parts
 		.flatMap((p) => (p.type === "text" ? [p.text] : []))
 		.join(" ");
@@ -468,14 +463,14 @@ function UserMessage({
 					PT
 				</Avatar>
 			</div>
-		);
+		)
 	}
 
 	return (
 		<ChatMessageBubble role="user" timestamp={timestamp}>
 			{textContent}
 		</ChatMessageBubble>
-	);
+	)
 }
 
 export default PatientTriagePage;

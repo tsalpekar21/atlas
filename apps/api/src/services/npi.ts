@@ -1,4 +1,7 @@
 import type {
+	DoctorSiteCrawlDetail,
+	DoctorSiteCrawlListRow,
+	DoctorSiteCrawlsResponse,
 	NpiEnrichResponse,
 	NpiProviderEnrichment,
 	NpiProviderRow,
@@ -13,7 +16,7 @@ import {
 	storedCrawlStatusFinalSchema,
 	storedFirecrawlSearchResponseSchema,
 } from "@atlas/schemas/npi";
-import { desc, inArray } from "drizzle-orm";
+import { desc, eq, inArray, sql } from "drizzle-orm";
 import { db } from "../db/index.ts";
 import { doctorSiteCrawl, doctorWebsiteSearch } from "../db/schema.ts";
 import {
@@ -327,4 +330,74 @@ export async function enrichNpiFromUrl(body: {
 		description: body.description,
 	});
 	return { results: [result] };
+}
+
+const MAX_CRAWLS_LIST = 500;
+
+export async function listDoctorSiteCrawls(opts: {
+	limit?: number;
+}): Promise<DoctorSiteCrawlsResponse> {
+	const limit = Math.min(
+		Math.max(1, opts.limit ?? MAX_CRAWLS_LIST),
+		MAX_CRAWLS_LIST,
+	);
+
+	const rows = await db
+		.select({
+			id: doctorSiteCrawl.id,
+			npi: doctorSiteCrawl.npi,
+			searchId: doctorSiteCrawl.searchId,
+			seedUrl: doctorSiteCrawl.seedUrl,
+			firecrawlJobId: doctorSiteCrawl.firecrawlJobId,
+			crawlStatusFinal: doctorSiteCrawl.crawlStatusFinal,
+			createdAt: doctorSiteCrawl.createdAt,
+			pageCount: sql<number>`coalesce(jsonb_array_length(${doctorSiteCrawl.pages}), 0)::int`,
+		})
+		.from(doctorSiteCrawl)
+		.orderBy(desc(doctorSiteCrawl.createdAt))
+		.limit(limit);
+
+	const crawls: DoctorSiteCrawlListRow[] = rows.map((r) => ({
+		id: r.id,
+		npi: r.npi,
+		searchId: r.searchId,
+		seedUrl: r.seedUrl,
+		firecrawlJobId: r.firecrawlJobId,
+		crawlStatusFinal: r.crawlStatusFinal as Record<string, unknown>,
+		pageCount: Number(r.pageCount),
+		createdAt:
+			r.createdAt instanceof Date
+				? r.createdAt.toISOString()
+				: String(r.createdAt),
+	}));
+
+	return { crawls };
+}
+
+export async function getDoctorSiteCrawlById(
+	id: string,
+): Promise<DoctorSiteCrawlDetail | null> {
+	const [row] = await db
+		.select()
+		.from(doctorSiteCrawl)
+		.where(eq(doctorSiteCrawl.id, id))
+		.limit(1);
+
+	if (!row) return null;
+
+	const pages = Array.isArray(row.pages) ? row.pages : [];
+
+	return {
+		id: row.id,
+		npi: row.npi,
+		searchId: row.searchId,
+		seedUrl: row.seedUrl,
+		firecrawlJobId: row.firecrawlJobId,
+		crawlStatusFinal: row.crawlStatusFinal as DoctorSiteCrawlDetail["crawlStatusFinal"],
+		pages,
+		createdAt:
+			row.createdAt instanceof Date
+				? row.createdAt.toISOString()
+				: String(row.createdAt),
+	};
 }

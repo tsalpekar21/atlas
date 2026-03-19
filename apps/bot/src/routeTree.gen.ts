@@ -11,7 +11,10 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as PatientTriageDemoRouteImport } from './routes/patient-triage-demo'
 import { Route as NpiPhysicianLookupRouteImport } from './routes/npi-physician-lookup'
+import { Route as CrawledWebsitesRouteRouteImport } from './routes/crawled-websites/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as CrawledWebsitesIndexRouteImport } from './routes/crawled-websites/index'
+import { Route as CrawledWebsitesCrawlIdRouteImport } from './routes/crawled-websites/$crawlId'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 
 const PatientTriageDemoRoute = PatientTriageDemoRouteImport.update({
@@ -24,10 +27,25 @@ const NpiPhysicianLookupRoute = NpiPhysicianLookupRouteImport.update({
   path: '/npi-physician-lookup',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CrawledWebsitesRouteRoute = CrawledWebsitesRouteRouteImport.update({
+  id: '/crawled-websites',
+  path: '/crawled-websites',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const CrawledWebsitesIndexRoute = CrawledWebsitesIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => CrawledWebsitesRouteRoute,
+} as any)
+const CrawledWebsitesCrawlIdRoute = CrawledWebsitesCrawlIdRouteImport.update({
+  id: '/$crawlId',
+  path: '/$crawlId',
+  getParentRoute: () => CrawledWebsitesRouteRoute,
 } as any)
 const ApiChatRoute = ApiChatRouteImport.update({
   id: '/api/chat',
@@ -37,42 +55,63 @@ const ApiChatRoute = ApiChatRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/crawled-websites': typeof CrawledWebsitesRouteRouteWithChildren
   '/npi-physician-lookup': typeof NpiPhysicianLookupRoute
   '/patient-triage-demo': typeof PatientTriageDemoRoute
   '/api/chat': typeof ApiChatRoute
+  '/crawled-websites/$crawlId': typeof CrawledWebsitesCrawlIdRoute
+  '/crawled-websites/': typeof CrawledWebsitesIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/npi-physician-lookup': typeof NpiPhysicianLookupRoute
   '/patient-triage-demo': typeof PatientTriageDemoRoute
   '/api/chat': typeof ApiChatRoute
+  '/crawled-websites/$crawlId': typeof CrawledWebsitesCrawlIdRoute
+  '/crawled-websites': typeof CrawledWebsitesIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/crawled-websites': typeof CrawledWebsitesRouteRouteWithChildren
   '/npi-physician-lookup': typeof NpiPhysicianLookupRoute
   '/patient-triage-demo': typeof PatientTriageDemoRoute
   '/api/chat': typeof ApiChatRoute
+  '/crawled-websites/$crawlId': typeof CrawledWebsitesCrawlIdRoute
+  '/crawled-websites/': typeof CrawledWebsitesIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/crawled-websites'
     | '/npi-physician-lookup'
     | '/patient-triage-demo'
     | '/api/chat'
+    | '/crawled-websites/$crawlId'
+    | '/crawled-websites/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/npi-physician-lookup' | '/patient-triage-demo' | '/api/chat'
-  id:
-    | '__root__'
+  to:
     | '/'
     | '/npi-physician-lookup'
     | '/patient-triage-demo'
     | '/api/chat'
+    | '/crawled-websites/$crawlId'
+    | '/crawled-websites'
+  id:
+    | '__root__'
+    | '/'
+    | '/crawled-websites'
+    | '/npi-physician-lookup'
+    | '/patient-triage-demo'
+    | '/api/chat'
+    | '/crawled-websites/$crawlId'
+    | '/crawled-websites/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  CrawledWebsitesRouteRoute: typeof CrawledWebsitesRouteRouteWithChildren
   NpiPhysicianLookupRoute: typeof NpiPhysicianLookupRoute
   PatientTriageDemoRoute: typeof PatientTriageDemoRoute
   ApiChatRoute: typeof ApiChatRoute
@@ -94,12 +133,33 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof NpiPhysicianLookupRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/crawled-websites': {
+      id: '/crawled-websites'
+      path: '/crawled-websites'
+      fullPath: '/crawled-websites'
+      preLoaderRoute: typeof CrawledWebsitesRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/crawled-websites/': {
+      id: '/crawled-websites/'
+      path: '/'
+      fullPath: '/crawled-websites/'
+      preLoaderRoute: typeof CrawledWebsitesIndexRouteImport
+      parentRoute: typeof CrawledWebsitesRouteRoute
+    }
+    '/crawled-websites/$crawlId': {
+      id: '/crawled-websites/$crawlId'
+      path: '/$crawlId'
+      fullPath: '/crawled-websites/$crawlId'
+      preLoaderRoute: typeof CrawledWebsitesCrawlIdRouteImport
+      parentRoute: typeof CrawledWebsitesRouteRoute
     }
     '/api/chat': {
       id: '/api/chat'
@@ -111,8 +171,22 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface CrawledWebsitesRouteRouteChildren {
+  CrawledWebsitesCrawlIdRoute: typeof CrawledWebsitesCrawlIdRoute
+  CrawledWebsitesIndexRoute: typeof CrawledWebsitesIndexRoute
+}
+
+const CrawledWebsitesRouteRouteChildren: CrawledWebsitesRouteRouteChildren = {
+  CrawledWebsitesCrawlIdRoute: CrawledWebsitesCrawlIdRoute,
+  CrawledWebsitesIndexRoute: CrawledWebsitesIndexRoute,
+}
+
+const CrawledWebsitesRouteRouteWithChildren =
+  CrawledWebsitesRouteRoute._addFileChildren(CrawledWebsitesRouteRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  CrawledWebsitesRouteRoute: CrawledWebsitesRouteRouteWithChildren,
   NpiPhysicianLookupRoute: NpiPhysicianLookupRoute,
   PatientTriageDemoRoute: PatientTriageDemoRoute,
   ApiChatRoute: ApiChatRoute,

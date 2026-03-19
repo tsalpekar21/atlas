@@ -197,3 +197,60 @@ export const npiEnrichResponseSchema = z.object({
 });
 
 export type NpiEnrichResponse = z.infer<typeof npiEnrichResponseSchema>;
+
+/** Slim row for GET /npi/crawls (no page bodies). */
+export const doctorSiteCrawlListRowSchema = z.object({
+	id: z.string(),
+	npi: z.string(),
+	searchId: z.string(),
+	seedUrl: z.string(),
+	firecrawlJobId: z.string().nullable(),
+	crawlStatusFinal: storedCrawlStatusFinalSchema,
+	pageCount: z.number().int().nonnegative(),
+	createdAt: z.union([z.string(), z.coerce.date()]).transform((v) =>
+		v instanceof Date ? v.toISOString() : v,
+	),
+});
+
+export type DoctorSiteCrawlListRow = z.infer<typeof doctorSiteCrawlListRowSchema>;
+
+export const npiCrawlsQuerySchema = z.object({
+	limit: z.coerce.number().int().min(1).max(500).optional(),
+});
+
+export type NpiCrawlsQuery = z.infer<typeof npiCrawlsQuerySchema>;
+
+export const doctorSiteCrawlsResponseSchema = z.object({
+	crawls: z.array(doctorSiteCrawlListRowSchema),
+});
+
+export type DoctorSiteCrawlsResponse = z.infer<
+	typeof doctorSiteCrawlsResponseSchema
+>;
+
+/** One scraped page stored on `doctor_site_crawl.pages`. */
+export const doctorSiteCrawlPageSchema = z
+	.object({
+		sourceURL: z.string().optional(),
+		markdown: z.string().optional(),
+		metadata: z.record(z.string(), z.unknown()).optional(),
+	})
+	.passthrough();
+
+export type DoctorSiteCrawlPage = z.infer<typeof doctorSiteCrawlPageSchema>;
+
+/** Full crawl row including page bodies (GET /npi/crawls/:id). */
+export const doctorSiteCrawlDetailSchema = z.object({
+	id: z.string(),
+	npi: z.string(),
+	searchId: z.string(),
+	seedUrl: z.string(),
+	firecrawlJobId: z.string().nullable(),
+	crawlStatusFinal: storedCrawlStatusFinalSchema,
+	pages: z.array(doctorSiteCrawlPageSchema),
+	createdAt: z.union([z.string(), z.coerce.date()]).transform((v) =>
+		v instanceof Date ? v.toISOString() : v,
+	),
+});
+
+export type DoctorSiteCrawlDetail = z.infer<typeof doctorSiteCrawlDetailSchema>;

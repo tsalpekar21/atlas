@@ -1,11 +1,13 @@
 import { logger } from "@atlas/logger";
-import { npiProvidersQuerySchema } from "@atlas/schemas/npi";
+import { npiCrawlsQuerySchema, npiProvidersQuerySchema } from "@atlas/schemas/npi";
 import { zValidator } from "@hono/zod-validator";
 import type { HonoBindings, HonoVariables } from "@mastra/hono";
 import { Hono } from "hono";
 import { z } from "zod";
 import {
 	enrichNpiFromUrl,
+	getDoctorSiteCrawlById,
+	listDoctorSiteCrawls,
 	runNpiWebSearch,
 	searchNpiProviders,
 } from "../services/npi.ts";
@@ -14,6 +16,23 @@ export const npiRoutes = new Hono<{
 	Bindings: HonoBindings;
 	Variables: HonoVariables;
 }>()
+	.get("/npi/crawls", zValidator("query", npiCrawlsQuerySchema), async (c) => {
+		const query = c.req.valid("query");
+		const data = await listDoctorSiteCrawls({ limit: query.limit });
+		return c.json(data);
+	})
+	.get(
+		"/npi/crawls/:crawlId",
+		zValidator("param", z.object({ crawlId: z.uuid() })),
+		async (c) => {
+			const { crawlId } = c.req.valid("param");
+			const row = await getDoctorSiteCrawlById(crawlId);
+			if (!row) {
+				return c.json({ error: "Crawl not found" }, 404);
+			}
+			return c.json(row);
+		},
+	)
 	.get(
 		"/npi/providers",
 		zValidator("query", npiProvidersQuerySchema),
