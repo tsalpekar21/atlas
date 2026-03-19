@@ -55,6 +55,7 @@ export function AppSidebar({ children, threadId }: AppSidebarProps) {
     },
   });
   const isTriage = matchRoute({ to: "/patient-triage-demo" });
+  const isNpiLookup = matchRoute({ to: "/npi-physician-lookup" });
 
   return (
     <SidebarWithSections
@@ -77,6 +78,14 @@ export function AppSidebar({ children, threadId }: AppSidebarProps) {
             selected={!!isTriage}
           >
             Patient Triage
+          </SidebarWithSections.NavItem>
+        </Link>
+        <Link to="/npi-physician-lookup" className="w-full">
+          <SidebarWithSections.NavItem
+            icon={<FeatherUsers />}
+            selected={!!isNpiLookup}
+          >
+            NPI Lookup
           </SidebarWithSections.NavItem>
         </Link>
       </SidebarWithSections.NavSection>

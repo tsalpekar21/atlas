@@ -10,12 +10,18 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as PatientTriageDemoRouteImport } from './routes/patient-triage-demo'
+import { Route as NpiPhysicianLookupRouteImport } from './routes/npi-physician-lookup'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 
 const PatientTriageDemoRoute = PatientTriageDemoRouteImport.update({
   id: '/patient-triage-demo',
   path: '/patient-triage-demo',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NpiPhysicianLookupRoute = NpiPhysicianLookupRouteImport.update({
+  id: '/npi-physician-lookup',
+  path: '/npi-physician-lookup',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -31,30 +37,43 @@ const ApiChatRoute = ApiChatRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/npi-physician-lookup': typeof NpiPhysicianLookupRoute
   '/patient-triage-demo': typeof PatientTriageDemoRoute
   '/api/chat': typeof ApiChatRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/npi-physician-lookup': typeof NpiPhysicianLookupRoute
   '/patient-triage-demo': typeof PatientTriageDemoRoute
   '/api/chat': typeof ApiChatRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/npi-physician-lookup': typeof NpiPhysicianLookupRoute
   '/patient-triage-demo': typeof PatientTriageDemoRoute
   '/api/chat': typeof ApiChatRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/patient-triage-demo' | '/api/chat'
+  fullPaths:
+    | '/'
+    | '/npi-physician-lookup'
+    | '/patient-triage-demo'
+    | '/api/chat'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/patient-triage-demo' | '/api/chat'
-  id: '__root__' | '/' | '/patient-triage-demo' | '/api/chat'
+  to: '/' | '/npi-physician-lookup' | '/patient-triage-demo' | '/api/chat'
+  id:
+    | '__root__'
+    | '/'
+    | '/npi-physician-lookup'
+    | '/patient-triage-demo'
+    | '/api/chat'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  NpiPhysicianLookupRoute: typeof NpiPhysicianLookupRoute
   PatientTriageDemoRoute: typeof PatientTriageDemoRoute
   ApiChatRoute: typeof ApiChatRoute
 }
@@ -66,6 +85,13 @@ declare module '@tanstack/react-router' {
       path: '/patient-triage-demo'
       fullPath: '/patient-triage-demo'
       preLoaderRoute: typeof PatientTriageDemoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/npi-physician-lookup': {
+      id: '/npi-physician-lookup'
+      path: '/npi-physician-lookup'
+      fullPath: '/npi-physician-lookup'
+      preLoaderRoute: typeof NpiPhysicianLookupRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -87,6 +113,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  NpiPhysicianLookupRoute: NpiPhysicianLookupRoute,
   PatientTriageDemoRoute: PatientTriageDemoRoute,
   ApiChatRoute: ApiChatRoute,
 }
