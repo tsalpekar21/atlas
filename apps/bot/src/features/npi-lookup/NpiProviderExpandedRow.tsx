@@ -95,7 +95,7 @@ export function NpiProviderExpandedRow({ row }: Props) {
 
   return (
     <div className="flex w-full flex-col items-start gap-6 px-14 pt-2 pb-8">
-      <div className="flex w-full max-w-[960px] flex-col items-start gap-6">
+      <div className="flex w-full flex-col items-start gap-6">
         <NpiRegistryDetails registry={registry} />
 
         <div className="flex w-full flex-col items-start gap-3">

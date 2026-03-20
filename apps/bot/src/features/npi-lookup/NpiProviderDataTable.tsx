@@ -114,7 +114,7 @@ export function NpiProviderDataTable({
                       <tr className="border-b border-solid border-neutral-border bg-brand-50">
                         <td
                           colSpan={row.getVisibleCells().length}
-                          className="p-0"
+                          className="py-4"
                         >
                           <NpiProviderExpandedRow row={row.original} />
                         </td>

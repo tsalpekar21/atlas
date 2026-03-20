@@ -12,6 +12,8 @@ import TanStackQueryProvider from "../integrations/tanstack-query/root-provider"
 
 import TanStackQueryDevtools from "../integrations/tanstack-query/devtools";
 
+import interLatinExtWoff2 from "@fontsource-variable/inter/files/inter-latin-ext-wght-normal.woff2?url";
+import interLatinWoff2 from "@fontsource-variable/inter/files/inter-latin-wght-normal.woff2?url";
 import appCss from "../styles.css?url";
 
 import type { QueryClient } from "@tanstack/react-query";
@@ -37,6 +39,20 @@ export const Route = createRootRouteWithContext<RouterContext>()({
     ],
     links: [
       {
+        rel: "preload",
+        href: interLatinWoff2,
+        as: "font",
+        type: "font/woff2",
+        crossOrigin: "anonymous",
+      },
+      {
+        rel: "preload",
+        href: interLatinExtWoff2,
+        as: "font",
+        type: "font/woff2",
+        crossOrigin: "anonymous",
+      },
+      {
         rel: "stylesheet",
         href: appCss,
       },
@@ -50,16 +66,6 @@ function RootDocument({ children }: { children: React.ReactNode }) {
     <html lang="en">
       <head>
         <HeadContent />
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link
-          rel="preconnect"
-          href="https://fonts.gstatic.com"
-          crossOrigin="anonymous"
-        />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap"
-          rel="stylesheet"
-        />
       </head>
       <body>
         <TanStackQueryProvider>
