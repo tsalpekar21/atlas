@@ -108,7 +108,7 @@ export function CrawledWebsiteDetailPage() {
 		queryFn: (): Promise<DoctorSiteCrawlDetail> =>
 			fetchDoctorSiteCrawlById({
 				data: { crawlId },
-			}) as Promise<DoctorSiteCrawlDetail>,
+			}),
 	});
 
 	const pages = query.data?.pages ?? [];

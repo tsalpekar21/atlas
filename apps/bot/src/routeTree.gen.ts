@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as RagChunksRouteImport } from './routes/rag-chunks'
 import { Route as PatientTriageDemoRouteImport } from './routes/patient-triage-demo'
 import { Route as NpiPhysicianLookupRouteImport } from './routes/npi-physician-lookup'
 import { Route as CrawledWebsitesRouteRouteImport } from './routes/crawled-websites/route'
@@ -17,6 +18,11 @@ import { Route as CrawledWebsitesIndexRouteImport } from './routes/crawled-websi
 import { Route as CrawledWebsitesCrawlIdRouteImport } from './routes/crawled-websites/$crawlId'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 
+const RagChunksRoute = RagChunksRouteImport.update({
+  id: '/rag-chunks',
+  path: '/rag-chunks',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PatientTriageDemoRoute = PatientTriageDemoRouteImport.update({
   id: '/patient-triage-demo',
   path: '/patient-triage-demo',
@@ -58,6 +64,7 @@ export interface FileRoutesByFullPath {
   '/crawled-websites': typeof CrawledWebsitesRouteRouteWithChildren
   '/npi-physician-lookup': typeof NpiPhysicianLookupRoute
   '/patient-triage-demo': typeof PatientTriageDemoRoute
+  '/rag-chunks': typeof RagChunksRoute
   '/api/chat': typeof ApiChatRoute
   '/crawled-websites/$crawlId': typeof CrawledWebsitesCrawlIdRoute
   '/crawled-websites/': typeof CrawledWebsitesIndexRoute
@@ -66,6 +73,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/npi-physician-lookup': typeof NpiPhysicianLookupRoute
   '/patient-triage-demo': typeof PatientTriageDemoRoute
+  '/rag-chunks': typeof RagChunksRoute
   '/api/chat': typeof ApiChatRoute
   '/crawled-websites/$crawlId': typeof CrawledWebsitesCrawlIdRoute
   '/crawled-websites': typeof CrawledWebsitesIndexRoute
@@ -76,6 +84,7 @@ export interface FileRoutesById {
   '/crawled-websites': typeof CrawledWebsitesRouteRouteWithChildren
   '/npi-physician-lookup': typeof NpiPhysicianLookupRoute
   '/patient-triage-demo': typeof PatientTriageDemoRoute
+  '/rag-chunks': typeof RagChunksRoute
   '/api/chat': typeof ApiChatRoute
   '/crawled-websites/$crawlId': typeof CrawledWebsitesCrawlIdRoute
   '/crawled-websites/': typeof CrawledWebsitesIndexRoute
@@ -87,6 +96,7 @@ export interface FileRouteTypes {
     | '/crawled-websites'
     | '/npi-physician-lookup'
     | '/patient-triage-demo'
+    | '/rag-chunks'
     | '/api/chat'
     | '/crawled-websites/$crawlId'
     | '/crawled-websites/'
@@ -95,6 +105,7 @@ export interface FileRouteTypes {
     | '/'
     | '/npi-physician-lookup'
     | '/patient-triage-demo'
+    | '/rag-chunks'
     | '/api/chat'
     | '/crawled-websites/$crawlId'
     | '/crawled-websites'
@@ -104,6 +115,7 @@ export interface FileRouteTypes {
     | '/crawled-websites'
     | '/npi-physician-lookup'
     | '/patient-triage-demo'
+    | '/rag-chunks'
     | '/api/chat'
     | '/crawled-websites/$crawlId'
     | '/crawled-websites/'
@@ -114,11 +126,19 @@ export interface RootRouteChildren {
   CrawledWebsitesRouteRoute: typeof CrawledWebsitesRouteRouteWithChildren
   NpiPhysicianLookupRoute: typeof NpiPhysicianLookupRoute
   PatientTriageDemoRoute: typeof PatientTriageDemoRoute
+  RagChunksRoute: typeof RagChunksRoute
   ApiChatRoute: typeof ApiChatRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/rag-chunks': {
+      id: '/rag-chunks'
+      path: '/rag-chunks'
+      fullPath: '/rag-chunks'
+      preLoaderRoute: typeof RagChunksRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/patient-triage-demo': {
       id: '/patient-triage-demo'
       path: '/patient-triage-demo'
@@ -189,6 +209,7 @@ const rootRouteChildren: RootRouteChildren = {
   CrawledWebsitesRouteRoute: CrawledWebsitesRouteRouteWithChildren,
   NpiPhysicianLookupRoute: NpiPhysicianLookupRoute,
   PatientTriageDemoRoute: PatientTriageDemoRoute,
+  RagChunksRoute: RagChunksRoute,
   ApiChatRoute: ApiChatRoute,
 }
 export const routeTree = rootRouteImport

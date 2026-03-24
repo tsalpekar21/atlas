@@ -1,3 +1,4 @@
+import { logger } from "@atlas/logger";
 import type { NppesRegistryApiSuccess } from "@atlas/schemas/npi";
 import { npiWebSearchHitSchema } from "@atlas/schemas/npi";
 import { eq } from "drizzle-orm";
@@ -15,6 +16,7 @@ import {
 	jobToStoredPages,
 	searchDoctorWebsite,
 } from "./firecrawl.ts";
+import { indexDoctorSiteCrawlForRag } from "./crawl-rag-index.ts";
 import {
 	buildWebsiteSearchQuery,
 	fetchNpiByNumber,
@@ -147,6 +149,13 @@ async function runCrawlForSelectedUrl(
 				pages: jobToStoredPages(finalJob),
 			})
 			.where(eq(doctorSiteCrawl.id, crawlRowId));
+
+		void indexDoctorSiteCrawlForRag(crawlRowId).catch((e) => {
+			logger.warn(
+				{ crawlId: crawlRowId, err: e instanceof Error ? e.message : String(e) },
+				"crawl_rag_index_failed",
+			);
+		});
 
 		steps.push("crawl_stored");
 		return {

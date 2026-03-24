@@ -1,4 +1,8 @@
-import type { DoctorSiteCrawlListRow } from "@atlas/schemas/npi";
+import type {
+	CrawlRagIndexResponse,
+	DoctorSiteCrawlListRow,
+} from "@atlas/schemas/npi";
+import { Button } from "@atlas/subframe/components/Button";
 import { FeatherChevronRight } from "@subframe/core";
 import { Link } from "@tanstack/react-router";
 import type { ColumnDef } from "@tanstack/react-table";
@@ -12,7 +16,25 @@ function formatWhen(iso: string): string {
 	}
 }
 
-export function buildCrawlTableColumns(): ColumnDef<DoctorSiteCrawlListRow>[] {
+export type CrawlTableColumnsOptions = {
+	onChunk: (crawlId: string) => void;
+	chunkingId: string | null;
+	chunkResults: Partial<Record<string, CrawlRagIndexResponse>>;
+	chunkErrorCrawlId: string | null;
+	chunkErrorMessage: string | null;
+};
+
+export function buildCrawlTableColumns(
+	options: CrawlTableColumnsOptions,
+): ColumnDef<DoctorSiteCrawlListRow>[] {
+	const {
+		onChunk,
+		chunkingId,
+		chunkResults,
+		chunkErrorCrawlId,
+		chunkErrorMessage,
+	} = options;
+
 	return [
 		{
 			accessorKey: "npi",
@@ -66,6 +88,45 @@ export function buildCrawlTableColumns(): ColumnDef<DoctorSiteCrawlListRow>[] {
 					{String(getValue())}
 				</span>
 			),
+		},
+		{
+			id: "chunk",
+			header: "Chunk",
+			size: 148,
+			cell: ({ row }) => {
+				const id = row.original.id;
+				const pageCount = row.original.pageCount;
+				const busy = chunkingId === id;
+				const result = chunkResults[id];
+				const showErr =
+					chunkErrorCrawlId === id && chunkErrorMessage != null;
+				return (
+					<div className="flex max-w-[200px] flex-col items-start gap-1">
+						<Button
+							size="small"
+							variant="neutral-secondary"
+							loading={busy}
+							disabled={busy || pageCount === 0}
+							onClick={() => onChunk(id)}
+						>
+							Chunk
+						</Button>
+						{result ? (
+							<span className="text-caption font-caption text-subtext-color">
+								{result.chunksIndexed} indexed
+								{result.pagesSkipped > 0
+									? ` · ${result.pagesSkipped} pages skipped`
+									: ""}
+							</span>
+						) : null}
+						{showErr ? (
+							<span className="text-caption font-caption text-error-600">
+								{chunkErrorMessage}
+							</span>
+						) : null}
+					</div>
+				);
+			},
 		},
 		{
 			accessorKey: "firecrawlJobId",

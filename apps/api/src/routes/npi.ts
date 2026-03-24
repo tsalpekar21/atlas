@@ -1,9 +1,17 @@
 import { logger } from "@atlas/logger";
-import { npiCrawlsQuerySchema, npiProvidersQuerySchema } from "@atlas/schemas/npi";
+import {
+	crawlRagQueryRequestSchema,
+	npiCrawlsQuerySchema,
+	npiProvidersQuerySchema,
+} from "@atlas/schemas/npi";
 import { zValidator } from "@hono/zod-validator";
 import type { HonoBindings, HonoVariables } from "@mastra/hono";
 import { Hono } from "hono";
 import { z } from "zod";
+import {
+	indexDoctorSiteCrawlForRag,
+	queryDoctorSiteCrawlRag,
+} from "../services/crawl-rag-index.ts";
 import {
 	enrichNpiFromUrl,
 	getDoctorSiteCrawlById,
@@ -31,6 +39,25 @@ export const npiRoutes = new Hono<{
 				return c.json({ error: "Crawl not found" }, 404);
 			}
 			return c.json(row);
+		},
+	)
+	.post(
+		"/npi/crawls/:crawlId/chunk",
+		zValidator("param", z.object({ crawlId: z.uuid() })),
+		async (c) => {
+			const { crawlId } = c.req.valid("param");
+			const row = await getDoctorSiteCrawlById(crawlId);
+			if (!row) {
+				return c.json({ error: "Crawl not found" }, 404);
+			}
+			try {
+				const result = await indexDoctorSiteCrawlForRag(crawlId);
+				return c.json(result);
+			} catch (e) {
+				const message = e instanceof Error ? e.message : String(e);
+				logger.error({ crawlId, message }, "crawl_rag_index_route_failed");
+				return c.json({ error: message }, 500);
+			}
 		},
 	)
 	.get(
@@ -83,4 +110,20 @@ export const npiRoutes = new Hono<{
 			const data = await enrichNpiFromUrl(body);
 			return c.json(data);
 		},
-	);
+	)
+	.post("/npi/rag/query", zValidator("json", crawlRagQueryRequestSchema), async (c) => {
+		const body = c.req.valid("json");
+		try {
+			const result = await queryDoctorSiteCrawlRag({
+				query: body.query,
+				topK: body.topK ?? 5,
+				crawlId: body.crawlId,
+				npi: body.npi,
+			});
+			return c.json(result);
+		} catch (e) {
+			const message = e instanceof Error ? e.message : String(e);
+			logger.error({ message }, "crawl_rag_query_failed");
+			return c.json({ error: message }, 500);
+		}
+	});

@@ -4,6 +4,7 @@ import { IconButton } from "@atlas/subframe/components/IconButton";
 import { SidebarWithSections } from "@atlas/subframe/components/SidebarWithSections";
 import {
 	FeatherActivity,
+	FeatherDatabase,
 	FeatherGlobe,
 	FeatherMessageSquare,
 	FeatherPlus,
@@ -65,6 +66,7 @@ export function AppSidebar({ children }: AppSidebarProps) {
 	const isTriage = pathname === "/patient-triage-demo";
 	const isNpiLookup = pathname === "/npi-physician-lookup";
 	const isCrawledWebsites = pathname.startsWith("/crawled-websites");
+	const isRagChunks = pathname === "/rag-chunks";
 
 	return (
 		<SidebarWithSections
@@ -103,6 +105,14 @@ export function AppSidebar({ children }: AppSidebarProps) {
 						selected={!!isCrawledWebsites}
 					>
 						Crawled websites
+					</SidebarWithSections.NavItem>
+				</Link>
+				<Link to="/rag-chunks" className="w-full">
+					<SidebarWithSections.NavItem
+						icon={<FeatherDatabase />}
+						selected={!!isRagChunks}
+					>
+						RAG chunks
 					</SidebarWithSections.NavItem>
 				</Link>
 			</SidebarWithSections.NavSection>

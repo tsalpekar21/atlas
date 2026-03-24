@@ -254,3 +254,42 @@ export const doctorSiteCrawlDetailSchema = z.object({
 });
 
 export type DoctorSiteCrawlDetail = z.infer<typeof doctorSiteCrawlDetailSchema>;
+
+/** POST /npi/crawls/:crawlId/chunk — Mastra RAG index for crawl pages. */
+export const crawlRagIndexResponseSchema = z.object({
+	crawlId: z.string(),
+	chunksIndexed: z.number().int().nonnegative(),
+	pagesSkipped: z.number().int().nonnegative(),
+});
+
+export type CrawlRagIndexResponse = z.infer<typeof crawlRagIndexResponseSchema>;
+
+export const crawlRagQueryRequestSchema = z.object({
+	query: z.string().min(1),
+	topK: z.number().int().min(1).max(50).optional().default(5),
+	crawlId: z.string().uuid().optional(),
+	npi: z.string().trim().min(1).optional(),
+});
+
+export type CrawlRagQueryRequest = z.infer<typeof crawlRagQueryRequestSchema>;
+
+export const crawlRagQueryHitSchema = z.object({
+	id: z.string(),
+	score: z.number(),
+	text: z.string(),
+	sourceUrl: z.string(),
+	crawlId: z.string(),
+	npi: z.string(),
+	pageIndex: z.number().int().nonnegative().optional(),
+	chunkIndex: z.number().int().nonnegative().optional(),
+});
+
+export type CrawlRagQueryHit = z.infer<typeof crawlRagQueryHitSchema>;
+
+export const crawlRagQueryResponseSchema = z.object({
+	query: z.string(),
+	tookMs: z.number(),
+	hits: z.array(crawlRagQueryHitSchema),
+});
+
+export type CrawlRagQueryResponse = z.infer<typeof crawlRagQueryResponseSchema>;

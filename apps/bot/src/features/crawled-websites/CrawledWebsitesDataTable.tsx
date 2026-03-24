@@ -1,8 +1,12 @@
 "use client";
 
-import type { DoctorSiteCrawlListRow } from "@atlas/schemas/npi";
+import type {
+	CrawlRagIndexResponse,
+	DoctorSiteCrawlListRow,
+} from "@atlas/schemas/npi";
 import { TextField } from "@atlas/subframe/components/TextField";
 import { FeatherSearch } from "@subframe/core";
+import { useMutation } from "@tanstack/react-query";
 import {
 	type FilterFn,
 	flexRender,
@@ -11,6 +15,7 @@ import {
 	useReactTable,
 } from "@tanstack/react-table";
 import { useMemo, useState } from "react";
+import { triggerCrawlRagChunk } from "@/server/npi-functions.ts";
 import { crawlStatusLabel } from "./crawlStatusLabel.ts";
 import { buildCrawlTableColumns } from "./crawlTableColumns.tsx";
 
@@ -44,8 +49,57 @@ type Props = {
 };
 
 export function CrawledWebsitesDataTable({ rows, isLoading }: Props) {
-	const columns = useMemo(() => buildCrawlTableColumns(), []);
 	const [globalFilter, setGlobalFilter] = useState("");
+	const [chunkResults, setChunkResults] = useState<
+		Partial<Record<string, CrawlRagIndexResponse>>
+	>({});
+	const [chunkErrorCrawlId, setChunkErrorCrawlId] = useState<string | null>(
+		null,
+	);
+	const [chunkErrorMessage, setChunkErrorMessage] = useState<string | null>(
+		null,
+	);
+
+	const chunkMutation = useMutation({
+		mutationFn: (crawlId: string) =>
+			triggerCrawlRagChunk({ data: { crawlId } }),
+		onMutate: (crawlId) => {
+			setChunkErrorCrawlId(null);
+			setChunkErrorMessage(null);
+			return { crawlId };
+		},
+		onSuccess: (data) => {
+			setChunkResults((p) => ({ ...p, [data.crawlId]: data }));
+		},
+		onError: (err, crawlId) => {
+			setChunkErrorCrawlId(crawlId);
+			setChunkErrorMessage(
+				err instanceof Error ? err.message : String(err),
+			);
+		},
+	});
+
+	const chunkingId = chunkMutation.isPending
+		? chunkMutation.variables
+		: null;
+
+	const columns = useMemo(
+		() =>
+			buildCrawlTableColumns({
+				onChunk: (crawlId) => chunkMutation.mutate(crawlId),
+				chunkingId,
+				chunkResults,
+				chunkErrorCrawlId,
+				chunkErrorMessage,
+			}),
+		[
+			chunkMutation.mutate,
+			chunkingId,
+			chunkResults,
+			chunkErrorCrawlId,
+			chunkErrorMessage,
+		],
+	);
 
 	const table = useReactTable({
 		data: rows,
@@ -75,7 +129,7 @@ export function CrawledWebsitesDataTable({ rows, isLoading }: Props) {
 			</TextField>
 			<div className="flex w-full flex-col items-start overflow-hidden rounded-lg border border-solid border-neutral-border bg-default-background shadow-sm">
 				<div className="flex w-full items-start overflow-x-auto">
-					<div className="flex min-w-[960px] grow shrink-0 basis-0 flex-col items-start">
+					<div className="flex min-w-[1100px] grow shrink-0 basis-0 flex-col items-start">
 						<table className="w-full border-collapse">
 							<thead>
 								{table.getHeaderGroups().map((hg) => (
