@@ -14,5 +14,13 @@ services:
     volumes:
       - postgres_pgvector_data:/var/lib/postgresql
       - ./docker/postgres/init:/docker-entrypoint-initdb.d
+    networks:
+      - atlas_default
 volumes:
   postgres_pgvector_data:
+
+networks:
+  atlas_default:
+    name: atlas_default
+    driver: bridge
+    external: true

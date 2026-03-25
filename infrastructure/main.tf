@@ -23,6 +23,28 @@ resource "google_project_service" "vertexai" {
   disable_on_destroy = false
 }
 
+resource "google_project_service" "secretmanager" {
+  project            = var.project_id
+  service            = "secretmanager.googleapis.com"
+  disable_on_destroy = false
+}
+
+# Same value as Cloud Run DATABASE_URL; exposed to Cloud Build for api db:migrate (see cloudbuild-api.yaml).
+resource "google_secret_manager_secret" "api_database_url" {
+  secret_id = "atlas-api-database-url"
+
+  replication {
+    auto {}
+  }
+
+  depends_on = [google_project_service.secretmanager]
+}
+
+resource "google_secret_manager_secret_version" "api_database_url" {
+  secret      = google_secret_manager_secret.api_database_url.id
+  secret_data = var.database_url
+}
+
 # Artifact Registry repository for Docker images
 resource "google_artifact_registry_repository" "atlas" {
   location      = var.region
@@ -48,8 +70,8 @@ locals {
 # --- Bot service (TanStack Start frontend + BFF) ---
 
 resource "google_cloud_run_v2_service" "atlas_bot" {
-  name     = var.cloud_run_service_name
-  location = var.region
+  name                = var.cloud_run_service_name
+  location            = var.region
   ingress             = "INGRESS_TRAFFIC_ALL"
   deletion_protection = false
 
@@ -93,8 +115,8 @@ resource "google_cloud_run_v2_service" "atlas_bot" {
 # --- API service (Hono + Mastra) ---
 
 resource "google_cloud_run_v2_service" "atlas_api" {
-  name     = var.api_cloud_run_service_name
-  location = var.region
+  name                = var.api_cloud_run_service_name
+  location            = var.region
   ingress             = "INGRESS_TRAFFIC_ALL"
   deletion_protection = false
 

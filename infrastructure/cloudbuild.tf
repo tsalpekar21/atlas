@@ -50,6 +50,13 @@ resource "google_project_iam_member" "build_sa_gcs_user" {
   role    = "roles/storage.objectAdmin"
   member  = "serviceAccount:${local.build_sa}"
 }
+
+resource "google_secret_manager_secret_iam_member" "build_sa_api_database_url" {
+  secret_id = google_secret_manager_secret.api_database_url.secret_id
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${local.build_sa}"
+}
+
 resource "google_cloudbuild_trigger" "atlas_bot" {
   name            = "atlas-bot-deploy"
   location        = var.region
@@ -76,9 +83,9 @@ resource "google_cloudbuild_trigger" "atlas_bot" {
   filename = "cloudbuild.yaml"
 
   substitutions = {
-    _REGION   = var.region
-    _SERVICE  = var.cloud_run_service_name
-    _REPO     = google_artifact_registry_repository.atlas.repository_id
+    _REGION  = var.region
+    _SERVICE = var.cloud_run_service_name
+    _REPO    = google_artifact_registry_repository.atlas.repository_id
   }
 
   depends_on = [
@@ -112,12 +119,14 @@ resource "google_cloudbuild_trigger" "atlas_api" {
   filename = "cloudbuild-api.yaml"
 
   substitutions = {
-    _REGION   = var.region
-    _SERVICE  = var.api_cloud_run_service_name
-    _REPO     = google_artifact_registry_repository.atlas.repository_id
+    _REGION  = var.region
+    _SERVICE = var.api_cloud_run_service_name
+    _REPO    = google_artifact_registry_repository.atlas.repository_id
   }
 
   depends_on = [
     google_project_service.cloudbuild,
+    google_secret_manager_secret_version.api_database_url,
+    google_secret_manager_secret_iam_member.build_sa_api_database_url,
   ]
 }
