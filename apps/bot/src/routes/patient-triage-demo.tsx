@@ -34,6 +34,9 @@ const searchSchema = z.object({
 
 export const Route = createFileRoute("/patient-triage-demo")({
 	validateSearch: searchSchema,
+	head: () => ({
+		meta: [{ title: "Patient triage · Atlas" }],
+	}),
 	component: PatientTriagePage,
 });
 

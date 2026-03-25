@@ -4,5 +4,8 @@ import { CrawledWebsitesPage } from "@/features/crawled-websites/CrawledWebsites
 import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/crawled-websites/")({
+	head: () => ({
+		meta: [{ title: "Crawled websites · Atlas" }],
+	}),
 	component: CrawledWebsitesPage,
 });
