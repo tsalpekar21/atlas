@@ -7,7 +7,6 @@ import {
   FeatherClipboardList,
   FeatherClock,
   FeatherMonitor,
-  FeatherPlus,
   FeatherRefreshCw,
   FeatherSmartphone,
   FeatherUser,
@@ -15,6 +14,7 @@ import {
 import { useCallback, useMemo, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import type { Variants } from "framer-motion";
+import { ensureSessionForTriage } from "@/lib/ensure-session-for-triage";
 import { buildPatientTriageHref } from "@/lib/patient-triage-url";
 
 const EXAMPLE_PROMPTS: Array<string> = [
@@ -30,6 +30,8 @@ function newThreadId(): string {
 export function LandingPage() {
   const reduceMotion = useReducedMotion();
   const [draft, setDraft] = useState("");
+  const [isStartingTriage, setIsStartingTriage] = useState(false);
+  const [triageStartError, setTriageStartError] = useState<string | null>(null);
   const [examplePrompts, setExamplePrompts] = useState(() => [
     ...EXAMPLE_PROMPTS,
   ]);
@@ -62,11 +64,22 @@ export function LandingPage() {
     [reduceMotion],
   );
 
-  const goToTriage = useCallback((initialMessage?: string) => {
+  const goToTriage = useCallback(async (initialMessage?: string) => {
+    if (isStartingTriage) {
+      return;
+    }
+    setIsStartingTriage(true);
+    setTriageStartError(null);
+    const session = await ensureSessionForTriage();
+    if (!session.ok) {
+      setTriageStartError(session.message);
+      setIsStartingTriage(false);
+      return;
+    }
     const threadId = newThreadId();
     const href = buildPatientTriageHref({ threadId, initialMessage });
     window.location.assign(href);
-  }, []);
+  }, [isStartingTriage]);
 
   const shuffleExamples = useCallback(() => {
     setExamplePrompts((prev) => {
@@ -84,7 +97,7 @@ export function LandingPage() {
   const onSubmit = useCallback(() => {
     const t = draft.trim();
     if (!t) return;
-    goToTriage(t);
+    void goToTriage(t);
   }, [draft, goToTriage]);
 
   return (
@@ -110,16 +123,12 @@ export function LandingPage() {
         <motion.div
           className="relative w-full rounded-rounded-extra-large bg-default-background px-6 pt-6 pb-20 shadow-md"
           variants={fadeUp}
-          whileHover={
-            reduceMotion
-              ? undefined
-              : { scale: 1.01, transition: { duration: 0.2 } }
-          }
         >
           <textarea
-            className="min-h-[128px] w-full resize-none text-body font-body text-default-font outline-none placeholder:text-neutral-400"
+            className="min-h-[128px] w-full resize-none text-body font-body text-default-font outline-none placeholder:text-neutral-400 disabled:opacity-60"
             placeholder="Describe how you are feeling and we will guide you..."
             value={draft}
+            disabled={isStartingTriage}
             onChange={(e) => setDraft(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) {
@@ -128,15 +137,30 @@ export function LandingPage() {
               }
             }}
           />
+          {triageStartError ? (
+            <p className="mt-2 text-caption font-caption text-error-600">
+              {triageStartError}
+            </p>
+          ) : null}
           <div className="absolute right-6 bottom-6 left-6 flex items-center justify-end pt-4">
             <motion.div
-              whileHover={reduceMotion ? undefined : { scale: 1.05 }}
-              whileTap={reduceMotion ? undefined : { scale: 0.95 }}
+              whileHover={
+                reduceMotion || isStartingTriage
+                  ? undefined
+                  : { scale: 1.05 }
+              }
+              whileTap={
+                reduceMotion || isStartingTriage
+                  ? undefined
+                  : { scale: 0.95 }
+              }
             >
               <IconButton
                 variant="brand-primary"
                 size="large"
                 icon={<FeatherArrowRight />}
+                disabled={isStartingTriage}
+                loading={isStartingTriage}
                 onClick={onSubmit}
               />
             </motion.div>
@@ -194,7 +218,8 @@ export function LandingPage() {
               >
                 <Button
                   variant="neutral-secondary"
-                  onClick={() => goToTriage(text)}
+                  disabled={isStartingTriage}
+                  onClick={() => void goToTriage(text)}
                 >
                   {text}
                 </Button>

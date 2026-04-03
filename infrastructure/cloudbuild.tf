@@ -83,13 +83,16 @@ resource "google_cloudbuild_trigger" "atlas_web" {
   filename = "cloudbuild.yaml"
 
   substitutions = {
-    _REGION  = var.region
-    _SERVICE = var.cloud_run_service_name
-    _REPO    = google_artifact_registry_repository.atlas.repository_id
+    _REGION                     = var.region
+    _SERVICE                    = var.cloud_run_service_name
+    _REPO                       = google_artifact_registry_repository.atlas.repository_id
+    _VITE_API_URL               = google_cloud_run_v2_service.atlas_api.uri
+    _VITE_PATIENT_TRIAGE_ORIGIN = var.vite_patient_triage_origin
   }
 
   depends_on = [
     google_project_service.cloudbuild,
+    google_cloud_run_v2_service.atlas_api,
   ]
 }
 

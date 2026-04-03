@@ -38,6 +38,24 @@ Terraform config for **Cloud Run** (service `atlas-web`), **Artifact Registry**,
 | `github_repo` | GitHub repository name (e.g. `atlas`) |
 | `github_connection_name` | Name of the Cloud Build 2nd gen GitHub connection (set after connecting in Console) |
 | `github_branch` | Branch to trigger builds on (default: `main`) |
+| `better_auth_secret` | Better Auth secret (≥ 32 random characters); set as `BETTER_AUTH_SECRET` on the API service |
+| `trusted_origins` | Comma-separated browser origins for CORS and Better Auth; must include the public web app URL (see `bot_cloud_run_url` output) |
+| `vite_patient_triage_origin` | Optional. Sets `VITE_PATIENT_TRIAGE_ORIGIN` for the web image build and Cloud Run (empty = relative links) |
+
+### Environment variables wired by Terraform
+
+| Name | Service | Source |
+|------|---------|--------|
+| `BETTER_AUTH_SECRET` | `atlas-api` | `better_auth_secret` variable |
+| `BETTER_AUTH_URL` | `atlas-api` | API Cloud Run `uri` (public base URL for Better Auth) |
+| `TRUSTED_ORIGINS` | `atlas-api` | `trusted_origins` variable (cannot be derived from the web service URL in Terraform without a dependency cycle) |
+| `VITE_API_URL` | `atlas-web` (runtime) + Docker build via Cloud Build | API Cloud Run `uri` |
+| `VITE_PATIENT_TRIAGE_ORIGIN` | `atlas-web` | `vite_patient_triage_origin` when non-empty |
+| `SERVER_URL` | `atlas-web` | API Cloud Run `uri` (server-side calls to the API) |
+
+The web Cloud Build trigger passes `_VITE_API_URL` and `_VITE_PATIENT_TRIAGE_ORIGIN` into `docker build` so the Vite client bundle embeds the correct API origin.
+
+**`trusted_origins`:** On a brand-new project you may not know the web URL until after the first `terraform apply`. Use a two-step flow: apply once, run `terraform output bot_cloud_run_url`, set `trusted_origins` in `terraform.tfvars` to that URL (plus any extra origins), then `terraform apply` again.
 
 Copy `terraform.tfvars.example` to `terraform.tfvars` and fill in values (do not commit `terraform.tfvars` if it contains secrets).
 
@@ -66,9 +84,9 @@ Either:
 
 ## Outputs
 
-- `cloud_run_url` – URL of the deployed service  
-- `artifact_registry_image` – Full image path for `atlas-web`  
-- `cloud_build_trigger_id` / `cloud_build_trigger_name` – Trigger reference  
+- `bot_cloud_run_url` / `api_cloud_run_url` – Public URLs of the web and API Cloud Run services  
+- `artifact_registry_image_bot` / `artifact_registry_image_api` – Full image paths  
+- `bot_cloud_build_trigger_id` / `api_cloud_build_trigger_id` – Trigger references  
 
 ## New GCP account in 90 days
 

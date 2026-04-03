@@ -34,6 +34,7 @@
     "@tanstack/react-table": "^8.21.3",
     "@tanstack/router-plugin": "^1.132.0",
     "ai": "^6.0.116",
+    "better-auth": "^1.5.6",
     "framer-motion": "^12.38.0",
     "hono": "^4.12.7",
     "lucide-react": "^0.545.0",
@@ -47,12 +48,12 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
-    "babel-plugin-react-compiler": "^1.0.0",
     "@tanstack/eslint-config": "^0.3.0",
     "@types/node": "^25.5.0",
     "@types/react": "^19.2.10",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.1.1",
+    "babel-plugin-react-compiler": "^1.0.0",
     "eslint": "^9.39.2",
     "typescript": "^5.9.3",
     "vite": "^7.2.4"

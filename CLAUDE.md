@@ -40,7 +40,7 @@ File-based routing via TanStack Router. Routes live in `apps/web/src/routes/`. T
 The root route (`__root.tsx`) wraps all pages with React Query provider, Header, and devtools.
 
 ### Data Layer
-- **TanStack React Query** for server state. Provider setup in `apps/web/src/integrations/tanstack-query/`. The bot calls the API app (apps/api) using `SERVER_URL` and `API_TOKEN`; the API app uses its own Postgres via `DATABASE_URL`.
+- **TanStack React Query** for server state. Provider setup in `apps/web/src/integrations/tanstack-query/`. The web app calls the API (`apps/api`) using `VITE_API_URL` with **Better Auth** session cookies (`credentials: "include"`); the API uses Postgres via `DATABASE_URL`.
 - Server functions handled via Nitro (configured in `vite.config.ts`).
 
 ### UI Components
@@ -64,4 +64,4 @@ Tailwind CSS v4 with Subframe theme tokens. Global styles in `apps/web/src/style
 - **TypeScript**: Strict mode, target ES2022, path alias `@/*` → `./src/*` (web app), `#/*` → `./src/*` (package imports)
 - **Vite**: React plugin with React Compiler (Babel), Tailwind plugin, tsconfig-paths, TanStack Start + Nitro
 - **Biome**: Linter + formatter (replaces ESLint + Prettier)
-- **Env**: See `apps/web/.env.example` for `SERVER_URL` and `API_TOKEN` (API server).
+- **Env**: See `apps/web` for `VITE_API_URL` (API base URL) and `apps/api/.env.example` for `BETTER_AUTH_*`, `DATABASE_URL`, and `TRUSTED_ORIGINS`.

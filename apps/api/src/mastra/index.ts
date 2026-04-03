@@ -1,5 +1,6 @@
+import { MastraAuthBetterAuth } from "@mastra/auth-better-auth";
 import { Mastra } from "@mastra/core/mastra";
-import { SimpleAuth } from "@mastra/core/server";
+import type { Auth } from "better-auth";
 import { PinoLogger } from "@mastra/loggers";
 import {
   CloudExporter,
@@ -8,13 +9,16 @@ import {
   SensitiveDataFilter,
 } from "@mastra/observability";
 import { PostgresStore } from "@mastra/pg";
+import { auth } from "../auth.ts";
+import { getTrustedOrigins } from "../lib/trusted-origins.ts";
 import { triageAgent } from "./agents/triage-agent.ts";
 
-const tokens: Record<string, { id: string; name: string }> = {};
-const apiToken = process.env.API_TOKEN;
-if (apiToken) {
-  tokens[apiToken] = { id: "bot-app", name: "Atlas Bot" };
-}
+const mastraAuth = new MastraAuthBetterAuth({
+  // Mastra's `Auth` type predates plugin/additionalField inference; runtime instance is correct.
+  auth: auth as unknown as Auth,
+});
+
+const trustedOrigins = getTrustedOrigins();
 
 export const mastra = new Mastra({
   agents: { triageAgent },
@@ -24,9 +28,20 @@ export const mastra = new Mastra({
     schemaName: "mastra",
   }),
   server: {
-    ...(Object.keys(tokens).length > 0 && {
-      auth: new SimpleAuth({ tokens }),
-    }),
+    auth: mastraAuth,
+    cors: {
+      origin: (origin) => {
+        if (!origin) {
+          return trustedOrigins[0];
+        }
+        return trustedOrigins.includes(origin) ? origin : undefined;
+      },
+      allowMethods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+      allowHeaders: ["Content-Type", "Authorization", "Cookie"],
+      exposeHeaders: ["Content-Length", "Set-Cookie"],
+      credentials: true,
+      maxAge: 600,
+    },
   },
   logger: new PinoLogger({
     name: "Mastra",

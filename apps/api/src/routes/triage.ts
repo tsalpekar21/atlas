@@ -3,6 +3,7 @@ import type { HonoBindings, HonoVariables } from "@mastra/hono";
 import { Hono } from "hono";
 import { z } from "zod";
 import { buildChatUiResponse } from "../services/chat.ts";
+import { requireSessionMiddleware } from "../middleware/require-session.ts";
 import {
 	deleteThreadById,
 	getThreadMessagesForResource,
@@ -13,6 +14,7 @@ export const triageRoutes = new Hono<{
 	Bindings: HonoBindings;
 	Variables: HonoVariables;
 }>()
+	.use("*", requireSessionMiddleware)
 	.get(
 		"/threads",
 		zValidator("query", z.object({ resourceId: z.string().optional() })),

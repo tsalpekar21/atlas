@@ -1,6 +1,7 @@
 # Cloud Build: build atlas-web image and deploy to Cloud Run
 # Triggered by push to the configured branch (e.g. main).
-# Substitutions _REGION, _SERVICE, _REPO are set by the Terraform-managed trigger.
+# Substitutions _REGION, _SERVICE, _REPO, _VITE_API_URL, _VITE_PATIENT_TRIAGE_ORIGIN
+# are set by the Terraform-managed trigger (_VITE_API_URL = API Cloud Run URL).
 # Uses repo-root context with the web Dockerfile:
 #   docker build -f apps/web/Dockerfile .
 
@@ -8,6 +9,8 @@ substitutions:
   _REGION: us-central1
   _SERVICE: atlas-web
   _REPO: atlas
+  _VITE_API_URL: http://localhost:4111
+  _VITE_PATIENT_TRIAGE_ORIGIN: ""
 
 options:
   logging: CLOUD_LOGGING_ONLY
@@ -20,6 +23,10 @@ steps:
       - "build"
       - "-f"
       - "apps/web/Dockerfile"
+      - "--build-arg"
+      - "VITE_API_URL=${_VITE_API_URL}"
+      - "--build-arg"
+      - "VITE_PATIENT_TRIAGE_ORIGIN=${_VITE_PATIENT_TRIAGE_ORIGIN}"
       - "-t"
       - "${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/${_SERVICE}:${SHORT_SHA}"
       - "-t"

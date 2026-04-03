@@ -11,6 +11,10 @@ WORKDIR /app
 
 # Copy full monorepo and build web via Turborepo
 COPY . .
+ARG VITE_API_URL=http://localhost:4111
+ENV VITE_API_URL=$VITE_API_URL
+ARG VITE_PATIENT_TRIAGE_ORIGIN=
+ENV VITE_PATIENT_TRIAGE_ORIGIN=$VITE_PATIENT_TRIAGE_ORIGIN
 RUN pnpm install --frozen-lockfile \
   && pnpm turbo run build --filter=web
 

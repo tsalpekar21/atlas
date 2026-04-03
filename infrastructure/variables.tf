@@ -74,8 +74,21 @@ variable "api_cloud_run_service_name" {
   default     = "atlas-api"
 }
 
-variable "api_token" {
-  description = "Shared API token for web-to-API server authentication"
+# --- Better Auth + web build (API / Cloud Run) ---
+
+variable "better_auth_secret" {
+  description = "Better Auth secret (>= 32 random characters). Same as BETTER_AUTH_SECRET on the API."
   type        = string
   sensitive   = true
+}
+
+variable "trusted_origins" {
+  description = "Comma-separated browser origins for the web app (CORS + Better Auth trustedOrigins). Must include the public web URL, e.g. the value of terraform output bot_cloud_run_url (or your custom domain)."
+  type        = string
+}
+
+variable "vite_patient_triage_origin" {
+  description = "Optional. Sets VITE_PATIENT_TRIAGE_ORIGIN at web build/runtime for absolute triage links. Leave empty to use same-origin relative paths."
+  type        = string
+  default     = ""
 }

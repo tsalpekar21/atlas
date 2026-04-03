@@ -15,6 +15,20 @@
       "when": 1775241001581,
       "tag": "0001_steep_stingray",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1775250952423,
+      "tag": "0002_better_auth",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1775252146583,
+      "tag": "0003_auth_uuid_ids",
+      "breakpoints": true
     }
   ]
 }

@@ -67,6 +67,6 @@ If `pg_restore` fails with a version-related error, your legacy server may be ne
 
 - **`POST /npi/rag/query`** — JSON `{ "query": string, "topK"?: 1–50, "crawlId"?: uuid, "npi"?: string }`. Embeds the query with `RETRIEVAL_QUERY`, runs similarity search on `doctor_site_crawl_rag`, returns `{ query, tookMs, hits: [{ id, score, text, sourceUrl, crawlId, npi, pageIndex?, chunkIndex? }] }`.
 
-Requires `Authorization: Bearer <API_TOKEN>` when `API_TOKEN` is set.
+Triage routes (`/threads`, `/chat`) require a **Better Auth** session cookie (sign in via `/api/auth/*` from the web app with `credentials: "include"`).
 
 Set `FIRECRAWL_API_URL` (default `http://localhost:3002`) and `FIRECRAWL_API_KEY` if your Firecrawl instance requires a key.

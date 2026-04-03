@@ -100,8 +100,15 @@ resource "google_cloud_run_v2_service" "atlas_web" {
         value = google_cloud_run_v2_service.atlas_api.uri
       }
       env {
-        name  = "API_TOKEN"
-        value = var.api_token
+        name  = "VITE_API_URL"
+        value = google_cloud_run_v2_service.atlas_api.uri
+      }
+      dynamic "env" {
+        for_each = var.vite_patient_triage_origin != "" ? [1] : []
+        content {
+          name  = "VITE_PATIENT_TRIAGE_ORIGIN"
+          value = var.vite_patient_triage_origin
+        }
       }
     }
   }
@@ -149,8 +156,16 @@ resource "google_cloud_run_v2_service" "atlas_api" {
         value = var.google_generative_ai_api_key
       }
       env {
-        name  = "API_TOKEN"
-        value = var.api_token
+        name  = "BETTER_AUTH_SECRET"
+        value = var.better_auth_secret
+      }
+      env {
+        name  = "BETTER_AUTH_URL"
+        value = google_cloud_run_v2_service.atlas_api.uri
+      }
+      env {
+        name  = "TRUSTED_ORIGINS"
+        value = var.trusted_origins
       }
     }
   }
