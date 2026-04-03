@@ -1,6 +1,6 @@
-/** Base URL for the bot app (no trailing slash), e.g. http://localhost:3001 */
-const TRIAGE_ORIGIN =
-  import.meta.env.VITE_PATIENT_TRIAGE_ORIGIN?.replace(/\/$/, "") ?? "";
+/** Public web app origin (no trailing slash), e.g. http://localhost:3000 */
+const FRONTEND_ORIGIN =
+  import.meta.env.VITE_FRONTEND_URL?.replace(/\/$/, "") ?? "";
 
 /**
  * Absolute or same-origin URL to the bot patient triage route.
@@ -14,5 +14,5 @@ export function buildPatientTriageHref(opts: {
     qs.set("initialMessage", opts.initialMessage.trim());
   }
   const path = `/?${qs.toString()}`;
-  return TRIAGE_ORIGIN ? `${TRIAGE_ORIGIN}${path}` : path;
+  return FRONTEND_ORIGIN ? `${FRONTEND_ORIGIN}${path}` : path;
 }

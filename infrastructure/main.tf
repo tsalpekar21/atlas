@@ -52,6 +52,14 @@ resource "google_artifact_registry_repository" "atlas" {
   description   = "Docker images for Atlas web"
   format        = "DOCKER"
 
+  cleanup_policies {
+    id     = "Last 5"
+    action = "KEEP"
+    most_recent_versions {
+      keep_count = 5
+    }
+  }
+
   depends_on = [google_project_service.artifactregistry]
 }
 
@@ -103,12 +111,9 @@ resource "google_cloud_run_v2_service" "atlas_web" {
         name  = "VITE_API_URL"
         value = google_cloud_run_v2_service.atlas_api.uri
       }
-      dynamic "env" {
-        for_each = var.vite_patient_triage_origin != "" ? [1] : []
-        content {
-          name  = "VITE_PATIENT_TRIAGE_ORIGIN"
-          value = var.vite_patient_triage_origin
-        }
+      env {
+        name  = "VITE_FRONTEND_URL"
+        value = var.vite_frontend_url
       }
     }
   }
@@ -161,7 +166,7 @@ resource "google_cloud_run_v2_service" "atlas_api" {
       }
       env {
         name  = "BETTER_AUTH_URL"
-        value = google_cloud_run_v2_service.atlas_api.uri
+        value = var.api_url
       }
       env {
         name  = "TRUSTED_ORIGINS"

@@ -87,8 +87,13 @@ variable "trusted_origins" {
   type        = string
 }
 
-variable "vite_patient_triage_origin" {
-  description = "Optional. Sets VITE_PATIENT_TRIAGE_ORIGIN at web build/runtime for absolute triage links. Leave empty to use same-origin relative paths."
+variable "vite_frontend_url" {
+  description = "Optional. Sets VITE_FRONTEND_URL at web build/runtime (public web origin for absolute client links). Leave empty to use same-origin relative paths."
   type        = string
   default     = ""
+}
+
+variable "api_url" {
+  description = "Public URL of the API service"
+  type        = string
 }

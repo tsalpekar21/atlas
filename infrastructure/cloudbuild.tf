@@ -87,7 +87,7 @@ resource "google_cloudbuild_trigger" "atlas_web" {
     _SERVICE                    = var.cloud_run_service_name
     _REPO                       = google_artifact_registry_repository.atlas.repository_id
     _VITE_API_URL               = google_cloud_run_v2_service.atlas_api.uri
-    _VITE_PATIENT_TRIAGE_ORIGIN = var.vite_patient_triage_origin
+    _VITE_FRONTEND_URL = var.vite_frontend_url
   }
 
   depends_on = [

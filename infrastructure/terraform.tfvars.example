@@ -30,5 +30,5 @@ better_auth_secret = "replace-with-at-least-32-random-characters"
 # Must include your deployed web URL: run `terraform output bot_cloud_run_url` after the first apply, paste here, then apply again if the URL was unknown initially.
 trusted_origins = "https://YOUR-WEB-SERVICE-URL.a.run.app"
 
-# Optional: absolute origin for patient triage demo links in the web app (VITE_PATIENT_TRIAGE_ORIGIN).
-# vite_patient_triage_origin = "https://YOUR-WEB-SERVICE-URL.a.run.app"
+# Optional: public web URL for absolute client links (VITE_FRONTEND_URL).
+# vite_frontend_url = "https://YOUR-WEB-SERVICE-URL.a.run.app"
