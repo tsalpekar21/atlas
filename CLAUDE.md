@@ -28,8 +28,8 @@ pnpm check            # Full Biome check (lint + format)
 
 From the root, use filters:
 ```bash
-pnpm --filter bot dev
-pnpm --filter bot build
+pnpm --filter web dev
+pnpm --filter web build
 ```
 
 ## Architecture
@@ -61,7 +61,7 @@ Tailwind CSS v4 with Subframe theme tokens. Global styles in `apps/web/src/style
 
 ## Key Configuration
 
-- **TypeScript**: Strict mode, target ES2022, path alias `@/*` → `./src/*` (bot app), `#/*` → `./src/*` (package imports)
+- **TypeScript**: Strict mode, target ES2022, path alias `@/*` → `./src/*` (web app), `#/*` → `./src/*` (package imports)
 - **Vite**: React plugin with React Compiler (Babel), Tailwind plugin, tsconfig-paths, TanStack Start + Nitro
 - **Biome**: Linter + formatter (replaces ESLint + Prettier)
 - **Env**: See `apps/web/.env.example` for `SERVER_URL` and `API_TOKEN` (API server).
