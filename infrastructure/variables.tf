@@ -22,7 +22,7 @@ variable "github_repo" {
 variable "cloud_run_service_name" {
   description = "Name of the Cloud Run service"
   type        = string
-  default     = "atlas-bot"
+  default     = "atlas-web"
 }
 
 variable "artifact_registry_repo" {
@@ -75,7 +75,7 @@ variable "api_cloud_run_service_name" {
 }
 
 variable "api_token" {
-  description = "Shared API token for bot-to-API server authentication"
+  description = "Shared API token for web-to-API server authentication"
   type        = string
   sensitive   = true
 }

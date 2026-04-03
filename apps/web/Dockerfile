@@ -19,7 +19,7 @@ FROM node:22-bookworm-slim AS runner
 
 WORKDIR /app
 
-COPY --from=builder /app/apps/bot/.output ./
+COPY --from=builder /app/apps/web/.output ./
 
 ENV NODE_ENV=production
 ENV PORT=8080

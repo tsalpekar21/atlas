@@ -13,24 +13,21 @@ interface CellProps extends React.TdHTMLAttributes<HTMLTableDataCellElement> {
   className?: string;
 }
 
-const Cell = React.forwardRef<HTMLDivElement, CellProps>(function Cell(
-  { children, className, ...otherProps }: CellProps,
-  ref
-) {
-  return (
-    <td {...otherProps}>
-      <div
-        className={SubframeUtils.twClassNames(
-          "flex h-12 w-full items-center gap-1 px-3",
-          className
-        )}
+const Cell = React.forwardRef<HTMLTableDataCellElement, CellProps>(
+  function Cell({ children, className, ...otherProps }: CellProps, ref) {
+    return (
+      <td
+        className={SubframeUtils.twClassNames("h-12", className)}
         ref={ref}
+        {...otherProps}
       >
-        {children}
-      </div>
-    </td>
-  );
-});
+        <div className="flex h-full w-full items-center gap-1 px-3">
+          {children}
+        </div>
+      </td>
+    );
+  }
+);
 
 interface HeaderCellProps
   extends React.ThHTMLAttributes<HTMLTableHeaderCellElement> {
@@ -39,35 +36,34 @@ interface HeaderCellProps
   className?: string;
 }
 
-const HeaderCell = React.forwardRef<HTMLDivElement, HeaderCellProps>(
-  function HeaderCell(
-    { children, icon = null, className, ...otherProps }: HeaderCellProps,
-    ref
-  ) {
-    return (
-      <th {...otherProps}>
-        <div
-          className={SubframeUtils.twClassNames(
-            "flex h-8 w-full items-center gap-1 px-3 text-left",
-            className
-          )}
-          ref={ref}
-        >
-          {children ? (
-            <span className="whitespace-nowrap text-caption-bold font-caption-bold text-subtext-color">
-              {children}
-            </span>
-          ) : null}
-          {icon ? (
-            <SubframeCore.IconWrapper className="text-caption font-caption text-subtext-color">
-              {icon}
-            </SubframeCore.IconWrapper>
-          ) : null}
-        </div>
-      </th>
-    );
-  }
-);
+const HeaderCell = React.forwardRef<
+  HTMLTableHeaderCellElement,
+  HeaderCellProps
+>(function HeaderCell(
+  { children, icon = null, className, ...otherProps }: HeaderCellProps,
+  ref
+) {
+  return (
+    <th
+      className={SubframeUtils.twClassNames("h-8", className)}
+      ref={ref}
+      {...otherProps}
+    >
+      <div className="flex h-full w-full items-center gap-1 px-3 text-left">
+        {children ? (
+          <span className="whitespace-nowrap text-caption-bold font-caption-bold text-subtext-color">
+            {children}
+          </span>
+        ) : null}
+        {icon ? (
+          <SubframeCore.IconWrapper className="text-caption font-caption text-subtext-color">
+            {icon}
+          </SubframeCore.IconWrapper>
+        ) : null}
+      </div>
+    </th>
+  );
+});
 
 interface HeaderRowProps extends React.HTMLAttributes<HTMLTableRowElement> {
   children?: React.ReactNode;

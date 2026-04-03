@@ -26,7 +26,7 @@ const Input = React.forwardRef<HTMLTextAreaElement, InputProps>(function Input(
   return (
     <textarea
       className={SubframeUtils.twClassNames(
-        "min-h-[96px] w-full border-none bg-transparent px-2 py-1.5 text-body font-body text-default-font outline-none placeholder:text-neutral-400",
+        "min-h-[96px] w-full rounded-md border-none bg-transparent px-2 py-1.5 text-body font-body text-default-font outline-none placeholder:text-neutral-400",
         className
       )}
       placeholder={placeholder as string}
@@ -76,7 +76,7 @@ const TextAreaRoot = React.forwardRef<HTMLLabelElement, TextAreaRootProps>(
         {children ? (
           <div
             className={SubframeUtils.twClassNames(
-              "flex w-full grow shrink-0 basis-0 flex-col items-start rounded-md border border-solid border-neutral-border bg-default-background pl-1 group-focus-within/4ec05ee8:border group-focus-within/4ec05ee8:border-solid group-focus-within/4ec05ee8:border-brand-primary",
+              "flex w-full grow shrink-0 basis-0 flex-col items-start rounded-rounded-extra-large border border-solid border-neutral-border bg-default-background pl-1 transition-colors duration-200 group-focus-within/4ec05ee8:border group-focus-within/4ec05ee8:border-solid group-focus-within/4ec05ee8:border-brand-primary group-focus-within/4ec05ee8:shadow-[0px_0px_0px_4px_#0284c71a]",
               {
                 "border border-solid border-neutral-100 bg-neutral-100 group-hover/4ec05ee8:border group-hover/4ec05ee8:border-solid group-hover/4ec05ee8:border-neutral-border group-focus-within/4ec05ee8:bg-default-background":
                   variant === "filled",

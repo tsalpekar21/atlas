@@ -2,17 +2,17 @@
 
 output "bot_cloud_run_url" {
   description = "URL of the deployed bot Cloud Run service"
-  value       = google_cloud_run_v2_service.atlas_bot.uri
+  value       = google_cloud_run_v2_service.atlas_web.uri
 }
 
 output "bot_cloud_run_service_name" {
   description = "Bot Cloud Run service name"
-  value       = google_cloud_run_v2_service.atlas_bot.name
+  value       = google_cloud_run_v2_service.atlas_web.name
 }
 
 output "bot_cloud_build_trigger_id" {
   description = "ID of the bot Cloud Build trigger"
-  value       = google_cloudbuild_trigger.atlas_bot.trigger_id
+  value       = google_cloudbuild_trigger.atlas_web.trigger_id
 }
 
 # --- API service outputs ---

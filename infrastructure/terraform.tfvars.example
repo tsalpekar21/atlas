@@ -8,7 +8,7 @@ github_connection_name  = "github-atlas"   # Name from Cloud Build Console after
 github_branch           = "main"
 
 # Optional overrides
-# cloud_run_service_name   = "atlas-bot"
+# cloud_run_service_name   = "atlas-web"
 # artifact_registry_repo   = "atlas"
 
 # Set to true on first apply (deploys a public hello-world image so Cloud Run succeeds).

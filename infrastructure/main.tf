@@ -49,7 +49,7 @@ resource "google_secret_manager_secret_version" "api_database_url" {
 resource "google_artifact_registry_repository" "atlas" {
   location      = var.region
   repository_id = var.artifact_registry_repo
-  description   = "Docker images for Atlas bot"
+  description   = "Docker images for Atlas web"
   format        = "DOCKER"
 
   depends_on = [google_project_service.artifactregistry]
@@ -69,7 +69,7 @@ locals {
 
 # --- Bot service (TanStack Start frontend + BFF) ---
 
-resource "google_cloud_run_v2_service" "atlas_bot" {
+resource "google_cloud_run_v2_service" "atlas_web" {
   name                = var.cloud_run_service_name
   location            = var.region
   ingress             = "INGRESS_TRAFFIC_ALL"

@@ -57,10 +57,10 @@ resource "google_secret_manager_secret_iam_member" "build_sa_api_database_url" {
   member    = "serviceAccount:${local.build_sa}"
 }
 
-resource "google_cloudbuild_trigger" "atlas_bot" {
-  name            = "atlas-bot-deploy"
+resource "google_cloudbuild_trigger" "atlas_web" {
+  name            = "atlas-web-deploy"
   location        = var.region
-  description     = "Build and deploy atlas-bot from GitHub to Cloud Run"
+  description     = "Build and deploy atlas-web from GitHub to Cloud Run"
   service_account = "projects/${var.project_id}/serviceAccounts/${local.build_sa}"
 
   repository_event_config {
@@ -72,7 +72,7 @@ resource "google_cloudbuild_trigger" "atlas_bot" {
 
   # Only trigger when bot app or shared packages change
   included_files = [
-    "apps/bot/**",
+    "apps/web/**",
     "packages/**",
     "package.json",
     "pnpm-lock.yaml",

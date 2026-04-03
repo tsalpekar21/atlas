@@ -1,6 +1,6 @@
 # Atlas GCP Infrastructure (Terraform)
 
-Terraform config for **Cloud Run** (service `atlas-bot`), **Artifact Registry**, and a **Cloud Build** trigger that builds from GitHub and deploys to Cloud Run.
+Terraform config for **Cloud Run** (service `atlas-web`), **Artifact Registry**, and a **Cloud Build** trigger that builds from GitHub and deploys to Cloud Run.
 
 ## Prerequisites
 
@@ -52,9 +52,9 @@ terraform apply -var-file=terraform.tfvars
 
 After apply:
 
-- **Cloud Run** service `atlas-bot` exists (initial image may be placeholder).
+- **Cloud Run** service `atlas-web` exists (initial image may be placeholder).
 - **Artifact Registry** repo is created for Docker images.
-- **Cloud Build** trigger runs `cloudbuild.yaml` on push to the configured branch. The bot image is built from `apps/bot/Dockerfile` with build context at the repo root (root `.dockerignore` applies). To build locally: `docker build -f apps/bot/Dockerfile -t atlas-bot .`
+- **Cloud Build** trigger runs `cloudbuild.yaml` on push to the configured branch. The bot image is built from `apps/web/Dockerfile` with build context at the repo root (root `.dockerignore` applies). To build locally: `docker build -f apps/web/Dockerfile -t atlas-web .`
 - **API pipeline** (`cloudbuild-api.yaml`): after the image is pushed, a step runs `npm run db:migrate` inside that image. `DATABASE_URL` is read from Secret Manager secret `atlas-api-database-url` (populated from Terraform `database_url`, same string as Cloud Run). The Cloud Build default service account needs network reachability to Postgres: public IP / allowed clients usually work; **private-IP-only** databases require a [private Cloud Build worker pool](https://cloud.google.com/build/docs/private-pools/private-pools-overview) (or another migration path) so builders can reach the DB.
 
 ## First deploy
@@ -67,7 +67,7 @@ Either:
 ## Outputs
 
 - `cloud_run_url` – URL of the deployed service  
-- `artifact_registry_image` – Full image path for `atlas-bot`  
+- `artifact_registry_image` – Full image path for `atlas-web`  
 - `cloud_build_trigger_id` / `cloud_build_trigger_name` – Trigger reference  
 
 ## New GCP account in 90 days
