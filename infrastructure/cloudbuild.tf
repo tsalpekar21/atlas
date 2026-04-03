@@ -83,10 +83,10 @@ resource "google_cloudbuild_trigger" "atlas_web" {
   filename = "cloudbuild.yaml"
 
   substitutions = {
-    _REGION                     = var.region
-    _SERVICE                    = var.cloud_run_service_name
-    _REPO                       = google_artifact_registry_repository.atlas.repository_id
-    _VITE_API_URL               = google_cloud_run_v2_service.atlas_api.uri
+    _REGION            = var.region
+    _SERVICE           = var.cloud_run_service_name
+    _REPO              = google_artifact_registry_repository.atlas.repository_id
+    _VITE_API_URL      = var.api_url
     _VITE_FRONTEND_URL = var.vite_frontend_url
   }
 

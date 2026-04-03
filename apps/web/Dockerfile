@@ -11,7 +11,7 @@ WORKDIR /app
 
 # Copy full monorepo and build web via Turborepo
 COPY . .
-ARG VITE_API_URL=http://localhost:4111
+ARG VITE_API_URL=
 ENV VITE_API_URL=$VITE_API_URL
 ARG VITE_FRONTEND_URL=
 ENV VITE_FRONTEND_URL=$VITE_FRONTEND_URL
