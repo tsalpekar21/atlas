@@ -9,49 +9,19 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as RagChunksRouteImport } from './routes/rag-chunks'
 import { Route as PatientTriageDemoRouteImport } from './routes/patient-triage-demo'
-import { Route as NpiPhysicianLookupRouteImport } from './routes/npi-physician-lookup'
-import { Route as CrawledWebsitesRouteRouteImport } from './routes/crawled-websites/route'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as CrawledWebsitesIndexRouteImport } from './routes/crawled-websites/index'
-import { Route as CrawledWebsitesCrawlIdRouteImport } from './routes/crawled-websites/$crawlId'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 
-const RagChunksRoute = RagChunksRouteImport.update({
-  id: '/rag-chunks',
-  path: '/rag-chunks',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const PatientTriageDemoRoute = PatientTriageDemoRouteImport.update({
   id: '/patient-triage-demo',
   path: '/patient-triage-demo',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const NpiPhysicianLookupRoute = NpiPhysicianLookupRouteImport.update({
-  id: '/npi-physician-lookup',
-  path: '/npi-physician-lookup',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CrawledWebsitesRouteRoute = CrawledWebsitesRouteRouteImport.update({
-  id: '/crawled-websites',
-  path: '/crawled-websites',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
-} as any)
-const CrawledWebsitesIndexRoute = CrawledWebsitesIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => CrawledWebsitesRouteRoute,
-} as any)
-const CrawledWebsitesCrawlIdRoute = CrawledWebsitesCrawlIdRouteImport.update({
-  id: '/$crawlId',
-  path: '/$crawlId',
-  getParentRoute: () => CrawledWebsitesRouteRoute,
 } as any)
 const ApiChatRoute = ApiChatRouteImport.update({
   id: '/api/chat',
@@ -61,103 +31,41 @@ const ApiChatRoute = ApiChatRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/crawled-websites': typeof CrawledWebsitesRouteRouteWithChildren
-  '/npi-physician-lookup': typeof NpiPhysicianLookupRoute
   '/patient-triage-demo': typeof PatientTriageDemoRoute
-  '/rag-chunks': typeof RagChunksRoute
   '/api/chat': typeof ApiChatRoute
-  '/crawled-websites/$crawlId': typeof CrawledWebsitesCrawlIdRoute
-  '/crawled-websites/': typeof CrawledWebsitesIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/npi-physician-lookup': typeof NpiPhysicianLookupRoute
   '/patient-triage-demo': typeof PatientTriageDemoRoute
-  '/rag-chunks': typeof RagChunksRoute
   '/api/chat': typeof ApiChatRoute
-  '/crawled-websites/$crawlId': typeof CrawledWebsitesCrawlIdRoute
-  '/crawled-websites': typeof CrawledWebsitesIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/crawled-websites': typeof CrawledWebsitesRouteRouteWithChildren
-  '/npi-physician-lookup': typeof NpiPhysicianLookupRoute
   '/patient-triage-demo': typeof PatientTriageDemoRoute
-  '/rag-chunks': typeof RagChunksRoute
   '/api/chat': typeof ApiChatRoute
-  '/crawled-websites/$crawlId': typeof CrawledWebsitesCrawlIdRoute
-  '/crawled-websites/': typeof CrawledWebsitesIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths:
-    | '/'
-    | '/crawled-websites'
-    | '/npi-physician-lookup'
-    | '/patient-triage-demo'
-    | '/rag-chunks'
-    | '/api/chat'
-    | '/crawled-websites/$crawlId'
-    | '/crawled-websites/'
+  fullPaths: '/' | '/patient-triage-demo' | '/api/chat'
   fileRoutesByTo: FileRoutesByTo
-  to:
-    | '/'
-    | '/npi-physician-lookup'
-    | '/patient-triage-demo'
-    | '/rag-chunks'
-    | '/api/chat'
-    | '/crawled-websites/$crawlId'
-    | '/crawled-websites'
-  id:
-    | '__root__'
-    | '/'
-    | '/crawled-websites'
-    | '/npi-physician-lookup'
-    | '/patient-triage-demo'
-    | '/rag-chunks'
-    | '/api/chat'
-    | '/crawled-websites/$crawlId'
-    | '/crawled-websites/'
+  to: '/' | '/patient-triage-demo' | '/api/chat'
+  id: '__root__' | '/' | '/patient-triage-demo' | '/api/chat'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  CrawledWebsitesRouteRoute: typeof CrawledWebsitesRouteRouteWithChildren
-  NpiPhysicianLookupRoute: typeof NpiPhysicianLookupRoute
   PatientTriageDemoRoute: typeof PatientTriageDemoRoute
-  RagChunksRoute: typeof RagChunksRoute
   ApiChatRoute: typeof ApiChatRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/rag-chunks': {
-      id: '/rag-chunks'
-      path: '/rag-chunks'
-      fullPath: '/rag-chunks'
-      preLoaderRoute: typeof RagChunksRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/patient-triage-demo': {
       id: '/patient-triage-demo'
       path: '/patient-triage-demo'
       fullPath: '/patient-triage-demo'
       preLoaderRoute: typeof PatientTriageDemoRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/npi-physician-lookup': {
-      id: '/npi-physician-lookup'
-      path: '/npi-physician-lookup'
-      fullPath: '/npi-physician-lookup'
-      preLoaderRoute: typeof NpiPhysicianLookupRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/crawled-websites': {
-      id: '/crawled-websites'
-      path: '/crawled-websites'
-      fullPath: '/crawled-websites'
-      preLoaderRoute: typeof CrawledWebsitesRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -166,20 +74,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
-    }
-    '/crawled-websites/': {
-      id: '/crawled-websites/'
-      path: '/'
-      fullPath: '/crawled-websites/'
-      preLoaderRoute: typeof CrawledWebsitesIndexRouteImport
-      parentRoute: typeof CrawledWebsitesRouteRoute
-    }
-    '/crawled-websites/$crawlId': {
-      id: '/crawled-websites/$crawlId'
-      path: '/$crawlId'
-      fullPath: '/crawled-websites/$crawlId'
-      preLoaderRoute: typeof CrawledWebsitesCrawlIdRouteImport
-      parentRoute: typeof CrawledWebsitesRouteRoute
     }
     '/api/chat': {
       id: '/api/chat'
@@ -191,25 +85,9 @@ declare module '@tanstack/react-router' {
   }
 }
 
-interface CrawledWebsitesRouteRouteChildren {
-  CrawledWebsitesCrawlIdRoute: typeof CrawledWebsitesCrawlIdRoute
-  CrawledWebsitesIndexRoute: typeof CrawledWebsitesIndexRoute
-}
-
-const CrawledWebsitesRouteRouteChildren: CrawledWebsitesRouteRouteChildren = {
-  CrawledWebsitesCrawlIdRoute: CrawledWebsitesCrawlIdRoute,
-  CrawledWebsitesIndexRoute: CrawledWebsitesIndexRoute,
-}
-
-const CrawledWebsitesRouteRouteWithChildren =
-  CrawledWebsitesRouteRoute._addFileChildren(CrawledWebsitesRouteRouteChildren)
-
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  CrawledWebsitesRouteRoute: CrawledWebsitesRouteRouteWithChildren,
-  NpiPhysicianLookupRoute: NpiPhysicianLookupRoute,
   PatientTriageDemoRoute: PatientTriageDemoRoute,
-  RagChunksRoute: RagChunksRoute,
   ApiChatRoute: ApiChatRoute,
 }
 export const routeTree = rootRouteImport

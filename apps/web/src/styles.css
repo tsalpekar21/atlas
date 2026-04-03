@@ -1,0 +1,40 @@
+@import "@fontsource-variable/inter/wght.css";
+@import "tailwindcss";
+@import "../../../packages/subframe/ui/theme.css";
+@source "../../../packages/subframe/**";
+
+@theme {
+  --font-caption: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-caption-bold: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-body: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-body-bold: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-heading-3: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-heading-2: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-heading-1: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+}
+
+body {
+  @apply m-0;
+  font-family:
+    "Inter Variable",
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    "Roboto",
+    "Oxygen",
+    "Ubuntu",
+    "Cantarell",
+    "Fira Sans",
+    "Droid Sans",
+    "Helvetica Neue",
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family:
+    source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace;
+}

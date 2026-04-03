@@ -4,12 +4,9 @@ import { IconButton } from "@atlas/subframe/components/IconButton";
 import { SidebarWithSections } from "@atlas/subframe/components/SidebarWithSections";
 import {
 	FeatherActivity,
-	FeatherDatabase,
-	FeatherGlobe,
 	FeatherMessageSquare,
 	FeatherPlus,
 	FeatherTrash2,
-	FeatherUsers,
 } from "@subframe/core";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import {
@@ -77,9 +74,6 @@ export function AppSidebar({
 	// /patient-triage-demo?threadId=… would not match /patient-triage-demo.
 	const { pathname } = location;
 	const isTriage = pathname === "/patient-triage-demo";
-	const isNpiLookup = pathname === "/npi-physician-lookup";
-	const isCrawledWebsites = pathname.startsWith("/crawled-websites");
-	const isRagChunks = pathname === "/rag-chunks";
 
 	return (
 		<SidebarWithSections
@@ -97,44 +91,6 @@ export function AppSidebar({
 				</Link>
 			}
 		>
-			<SidebarWithSections.NavSection label="Scraper">
-				<Link
-					to="/npi-physician-lookup"
-					className="w-full"
-					onClick={() => onNavigate?.()}
-				>
-					<SidebarWithSections.NavItem
-						icon={<FeatherUsers />}
-						selected={!!isNpiLookup}
-					>
-						NPI Lookup
-					</SidebarWithSections.NavItem>
-				</Link>
-				<Link
-					to="/crawled-websites"
-					className="w-full"
-					onClick={() => onNavigate?.()}
-				>
-					<SidebarWithSections.NavItem
-						icon={<FeatherGlobe />}
-						selected={!!isCrawledWebsites}
-					>
-						Crawled websites
-					</SidebarWithSections.NavItem>
-				</Link>
-				<Link
-					to="/rag-chunks"
-					className="w-full"
-					onClick={() => onNavigate?.()}
-				>
-					<SidebarWithSections.NavItem
-						icon={<FeatherDatabase />}
-						selected={!!isRagChunks}
-					>
-						RAG chunks
-					</SidebarWithSections.NavItem>
-				</Link>
-			</SidebarWithSections.NavSection>
 			<SidebarWithSections.NavSection label="Triage">
 				<Link
 					to="/patient-triage-demo"

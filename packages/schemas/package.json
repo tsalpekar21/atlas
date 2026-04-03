@@ -6,7 +6,6 @@
   "exports": {
     ".": "./dist/index.js",
     "./api": "./dist/api.js",
-    "./npi": "./dist/npi.js",
     "./triage": "./dist/triage.js"
   },
   "scripts": {

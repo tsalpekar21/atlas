@@ -8,7 +8,6 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { mastra } from "./mastra/index.ts";
 import { bearerAuthMiddleware } from "./middleware/bearer-auth.ts";
-import { npiRoutes } from "./routes/npi.ts";
 import { triageRoutes } from "./routes/triage.ts";
 
 const app = new Hono<{ Bindings: HonoBindings; Variables: HonoVariables }>();
@@ -31,7 +30,7 @@ app.use("*", async (c, next) => {
 
 app.use("*", bearerAuthMiddleware);
 
-const appWithRoutes = app.route("/", triageRoutes).route("/", npiRoutes);
+const appWithRoutes = app.route("/", triageRoutes);
 
 export type AppType = typeof appWithRoutes;
 export default appWithRoutes;
