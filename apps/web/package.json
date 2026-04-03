@@ -47,6 +47,7 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
+    "babel-plugin-react-compiler": "^1.0.0",
     "@tanstack/eslint-config": "^0.3.0",
     "@types/node": "^25.5.0",
     "@types/react": "^19.2.10",
