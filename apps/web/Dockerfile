@@ -11,9 +11,9 @@ WORKDIR /app
 
 # Copy full monorepo and build web via Turborepo
 COPY . .
-ARG VITE_API_URL=
+ARG VITE_API_URL
 ENV VITE_API_URL=$VITE_API_URL
-ARG VITE_FRONTEND_URL=
+ARG VITE_FRONTEND_URL
 ENV VITE_FRONTEND_URL=$VITE_FRONTEND_URL
 RUN pnpm install --frozen-lockfile \
   && pnpm turbo run build --filter=web
