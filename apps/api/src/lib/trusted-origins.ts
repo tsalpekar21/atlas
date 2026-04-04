@@ -8,7 +8,7 @@ export function getTrustedOrigins(): Array<string> {
   const raw = env.TRUSTED_ORIGINS ?? env.CORS_ORIGIN ?? "";
   const list = raw
     .split(",")
-    .map((s) => s.trim())
+    .map((s: string) => s.trim())
     .filter(Boolean);
   if (list.length > 0) {
     return list;
