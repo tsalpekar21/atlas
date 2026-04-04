@@ -1,6 +1,7 @@
+import { env } from "@/env";
+
 /** Public web app origin (no trailing slash), e.g. http://localhost:3000 */
-const FRONTEND_ORIGIN =
-  import.meta.env.VITE_FRONTEND_URL?.replace(/\/$/, "") ?? "";
+const FRONTEND_ORIGIN = env.VITE_FRONTEND_URL?.replace(/\/$/, "") ?? "";
 
 /**
  * Absolute or same-origin URL to the bot patient triage route.

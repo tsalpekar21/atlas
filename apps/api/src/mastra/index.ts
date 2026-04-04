@@ -10,6 +10,7 @@ import {
 } from "@mastra/observability";
 import { PostgresStore } from "@mastra/pg";
 import { auth } from "../auth.ts";
+import { env } from "../env.ts";
 import { getTrustedOrigins } from "../lib/trusted-origins.ts";
 import { triageAgent } from "./agents/triage-agent.ts";
 
@@ -24,7 +25,7 @@ export const mastra = new Mastra({
   agents: { triageAgent },
   storage: new PostgresStore({
     id: "mastra-storage",
-    connectionString: process.env.DATABASE_URL!,
+    connectionString: env.DATABASE_URL,
     schemaName: "mastra",
   }),
   server: {
