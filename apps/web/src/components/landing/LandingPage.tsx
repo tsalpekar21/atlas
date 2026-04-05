@@ -2,6 +2,7 @@
 
 import { Button } from "@atlas/subframe/components/Button";
 import { IconButton } from "@atlas/subframe/components/IconButton";
+import { TextArea } from "@atlas/subframe/components/TextArea";
 import {
   FeatherArrowRight,
   FeatherClipboardList,
@@ -120,51 +121,54 @@ export function LandingPage() {
           </span>
         </motion.div>
 
-        <motion.div
-          className="relative w-full rounded-rounded-extra-large bg-default-background px-6 pt-6 pb-20 shadow-md"
-          variants={fadeUp}
-        >
-          <textarea
-            className="min-h-[128px] w-full resize-none text-body font-body text-default-font outline-none placeholder:text-neutral-400 disabled:opacity-60"
-            placeholder="Describe how you are feeling and we will guide you..."
-            value={draft}
-            disabled={isStartingTriage}
-            onChange={(e) => setDraft(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && !e.shiftKey) {
-                e.preventDefault();
-                onSubmit();
-              }
-            }}
-          />
+        <motion.div className="flex w-full flex-col" variants={fadeUp}>
+          <div className="relative grid min-h-[128px] w-full grid-cols-1 grid-rows-1 overflow-hidden rounded-rounded-extra-large bg-default-background shadow-md">
+            <TextArea className="contents [&>div]:contents">
+              <TextArea.Input
+                aria-label="Describe how you are feeling"
+                className="col-start-1 row-start-1 box-border min-h-[128px] w-full resize-none rounded-none p-6 pb-20 disabled:opacity-60"
+                placeholder="Describe how you are feeling and we will guide you..."
+                value={draft}
+                disabled={isStartingTriage}
+                onChange={(e) => setDraft(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    onSubmit();
+                  }
+                }}
+              />
+            </TextArea>
+            <div className="pointer-events-none col-start-1 row-start-1 z-10 self-end justify-self-end m-6">
+              <motion.div
+                className="pointer-events-auto"
+                whileHover={
+                  reduceMotion || isStartingTriage
+                    ? undefined
+                    : { scale: 1.05 }
+                }
+                whileTap={
+                  reduceMotion || isStartingTriage
+                    ? undefined
+                    : { scale: 0.95 }
+                }
+              >
+                <IconButton
+                  variant="brand-primary"
+                  size="large"
+                  icon={<FeatherArrowRight />}
+                  disabled={isStartingTriage}
+                  loading={isStartingTriage}
+                  onClick={onSubmit}
+                />
+              </motion.div>
+            </div>
+          </div>
           {triageStartError ? (
             <p className="mt-2 text-caption font-caption text-error-600">
               {triageStartError}
             </p>
           ) : null}
-          <div className="absolute right-6 bottom-6 left-6 flex items-center justify-end pt-4">
-            <motion.div
-              whileHover={
-                reduceMotion || isStartingTriage
-                  ? undefined
-                  : { scale: 1.05 }
-              }
-              whileTap={
-                reduceMotion || isStartingTriage
-                  ? undefined
-                  : { scale: 0.95 }
-              }
-            >
-              <IconButton
-                variant="brand-primary"
-                size="large"
-                icon={<FeatherArrowRight />}
-                disabled={isStartingTriage}
-                loading={isStartingTriage}
-                onClick={onSubmit}
-              />
-            </motion.div>
-          </div>
         </motion.div>
 
         <motion.div
