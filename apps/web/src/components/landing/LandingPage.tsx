@@ -12,9 +12,9 @@ import {
 	FeatherSmartphone,
 	FeatherUser,
 } from "@subframe/core";
-import { useCallback, useMemo, useState } from "react";
-import { motion, useReducedMotion } from "framer-motion";
 import type { Variants } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
+import { useCallback, useMemo, useState } from "react";
 import { ensureSessionForTriage } from "@/lib/ensure-session-for-triage";
 import { buildPatientTriageHref } from "@/lib/patient-triage-url";
 

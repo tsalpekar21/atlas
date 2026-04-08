@@ -12,44 +12,44 @@ const baseURL = env.BETTER_AUTH_URL;
 const trustedOrigins = getTrustedOrigins();
 
 export const auth = betterAuth({
-  secret,
-  baseURL,
-  basePath: "/api/auth",
-  trustedOrigins,
-  database: drizzleAdapter(db, {
-    provider: "pg",
-    schema,
-  }),
-  emailAndPassword: {
-    enabled: true,
-  },
-  user: {
-    additionalFields: {
-      birthdate: {
-        type: "date",
-        required: false,
-        input: true,
-      },
-      phoneNumber: {
-        type: "string",
-        required: false,
-        input: true,
-      },
-    },
-  },
-  advanced: {
-    database: {
-      generateId: "uuid",
-    },
-    crossSubDomainCookies: {
-      enabled: true,
-    },
-    defaultCookieAttributes: {
-      sameSite: "none",
-      secure: true,
-      partitioned: true,
-      httpOnly: true,
-    },
-  },
-  plugins: [anonymous()],
+	secret,
+	baseURL,
+	basePath: "/api/auth",
+	trustedOrigins,
+	database: drizzleAdapter(db, {
+		provider: "pg",
+		schema,
+	}),
+	emailAndPassword: {
+		enabled: true,
+	},
+	user: {
+		additionalFields: {
+			birthdate: {
+				type: "date",
+				required: false,
+				input: true,
+			},
+			phoneNumber: {
+				type: "string",
+				required: false,
+				input: true,
+			},
+		},
+	},
+	advanced: {
+		database: {
+			generateId: "uuid",
+		},
+		crossSubDomainCookies: {
+			enabled: true,
+		},
+		defaultCookieAttributes: {
+			sameSite: "none",
+			secure: true,
+			partitioned: true,
+			httpOnly: true,
+		},
+	},
+	plugins: [anonymous()],
 });

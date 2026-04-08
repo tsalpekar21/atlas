@@ -34,3 +34,4 @@ todos.json
 # Database (SQLite leftovers)
 dev.db
 mastra.db*
+.claude/worktrees

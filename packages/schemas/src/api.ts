@@ -47,3 +47,15 @@ export const deleteThreadResponseSchema = z.object({
 });
 
 export type DeleteThreadResponse = z.infer<typeof deleteThreadResponseSchema>;
+
+// --- Chat request schema ---
+
+export const chatRequestSchema = z.object({
+	threadId: z.string(),
+	messages: z.array(z.record(z.string(), z.unknown())),
+	id: z.string().optional(),
+	trigger: z.string().optional(),
+	messageId: z.string().optional(),
+});
+
+export type ChatRequest = z.infer<typeof chatRequestSchema>;

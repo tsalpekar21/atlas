@@ -1,6 +1,6 @@
+import type { AppType } from "@atlas/api/app";
 import { hc } from "hono/client";
 import { env } from "@/env";
-import type { AppType } from "@atlas/api/app";
 
 /**
  * Typed Hono RPC client for the API app (`apps/api` → `AppType`).

@@ -7,11 +7,11 @@ import * as z from "zod";
  * Import only from `drizzle.config.ts` — avoids loading full API secrets.
  */
 export const env = createEnv({
-  server: {
-    DATABASE_URL: z.string().url(),
-  },
-  runtimeEnvStrict: {
-    DATABASE_URL: process.env.DATABASE_URL,
-  },
-  emptyStringAsUndefined: true,
+	server: {
+		DATABASE_URL: z.string().url(),
+	},
+	runtimeEnvStrict: {
+		DATABASE_URL: process.env.DATABASE_URL,
+	},
+	emptyStringAsUndefined: true,
 });

@@ -39,7 +39,10 @@ export const Route = createFileRoute("/chat/$threadId")({
 	},
 	loader: async ({ params, context: routeContext }) => {
 		if (routeContext.context.triageSessionError) {
-			return { threadMessages: [], threadMessagesError: null } satisfies ThreadLoaderData;
+			return {
+				threadMessages: [],
+				threadMessagesError: null,
+			} satisfies ThreadLoaderData;
 		}
 		try {
 			const client = createTriageApiClient();
@@ -51,7 +54,10 @@ export const Route = createFileRoute("/chat/$threadId")({
 			}
 			const data = (await res.json()) as GetThreadMessagesResponse;
 			const { messages: threadMessages } = data;
-			return { threadMessages, threadMessagesError: null } satisfies ThreadLoaderData;
+			return {
+				threadMessages,
+				threadMessagesError: null,
+			} satisfies ThreadLoaderData;
 		} catch (e) {
 			return {
 				threadMessages: [],

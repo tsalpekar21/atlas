@@ -7,7 +7,7 @@ import { TextArea } from "@atlas/subframe/components/TextArea";
 import { FeatherArrowRight, FeatherStethoscope } from "@subframe/core";
 import { Link, useNavigate } from "@tanstack/react-router";
 import type { UIMessage } from "ai";
-import { DefaultChatTransport, isTextUIPart } from "ai";
+import { DefaultChatTransport } from "ai";
 import { AnimatePresence, motion } from "framer-motion";
 import {
 	useCallback,
@@ -20,6 +20,7 @@ import {
 
 import { ChatMessageLoadingIndicator } from "@/components/chat/ChatLoadingIndicator";
 import { ChatMarkdown } from "@/components/chat/ChatMarkdown";
+import { toMessageText } from "@/components/chat/chat-utils";
 import { env } from "@/env";
 
 type ChatPageProps = {
@@ -29,16 +30,6 @@ type ChatPageProps = {
 	threadMessages: UIMessage[];
 	threadMessagesError: string | null;
 };
-
-function toMessageText(message: UIMessage): string {
-	if (Array.isArray(message.parts)) {
-		return message.parts
-			.filter((p) => isTextUIPart(p))
-			.map((p) => p.text)
-			.join("");
-	}
-	return "";
-}
 
 export function ChatPage({
 	threadId,

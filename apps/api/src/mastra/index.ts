@@ -1,6 +1,5 @@
 import { MastraAuthBetterAuth } from "@mastra/auth-better-auth";
 import { Mastra } from "@mastra/core/mastra";
-import type { Auth } from "better-auth";
 import { PinoLogger } from "@mastra/loggers";
 import {
 	CloudExporter,
@@ -9,6 +8,7 @@ import {
 	SensitiveDataFilter,
 } from "@mastra/observability";
 import { PostgresStore } from "@mastra/pg";
+import type { Auth } from "better-auth";
 import { auth } from "../auth.ts";
 import { env } from "../env.ts";
 import { getTrustedOrigins } from "../lib/trusted-origins.ts";

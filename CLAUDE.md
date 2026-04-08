@@ -11,7 +11,7 @@ Atlas is a full-stack monorepo for a health platform. The frontend is a **TanSta
 - `apps/web` — TanStack Start frontend (Vite, React 19, Nitro)
 - `apps/api` — Hono API server with Mastra AI agents, Better Auth, Drizzle ORM + Postgres
 - `packages/subframe` — Shared UI component library synced from Subframe design tool
-- `packages/schemas` — Shared Zod schemas (exported as `@atlas/schemas`, `@atlas/schemas/api`, `@atlas/schemas/triage`)
+- `packages/schemas` — Shared Zod schemas (exported as `@atlas/schemas`, `@atlas/schemas/api`)
 - `packages/logger` — Shared Pino logger (`@atlas/logger`)
 
 Package manager: **pnpm** (v10+) with workspaces. Task orchestration via **Turbo**.
