@@ -121,7 +121,7 @@ const TableRoot = React.forwardRef<HTMLTableElement, TableRootProps>(
   ) {
     return (
       <table
-        className={SubframeUtils.twClassNames("w-full", className)}
+        className={SubframeUtils.twClassNames("h-fit w-full", className)}
         ref={ref}
         {...otherProps}
       >

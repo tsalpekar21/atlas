@@ -7,13 +7,15 @@
     "build": "turbo run build",
     "lint": "turbo run lint",
     "check": "turbo run check",
-    "test": "turbo run test"
+    "test": "turbo run test",
+    "studio": "pnpm --filter api studio"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "packageManager": "pnpm@10.15.1",
   "devDependencies": {
+    "@biomejs/biome": "^2.4.10",
     "turbo": "^2.8.10"
   }
 }

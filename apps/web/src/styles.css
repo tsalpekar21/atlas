@@ -11,6 +11,13 @@
   --font-heading-3: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
   --font-heading-2: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
   --font-heading-1: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+
+  --animate-shimmer: shimmer 1.5s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0%, 100% { background-position: 200% center; }
+  50% { background-position: 0% center; }
 }
 
 body {

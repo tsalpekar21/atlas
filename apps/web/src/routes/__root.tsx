@@ -1,4 +1,8 @@
-import { HeadContent, Scripts, createRootRouteWithContext } from "@tanstack/react-router";
+import {
+	HeadContent,
+	Scripts,
+	createRootRouteWithContext,
+} from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { TanStackDevtools } from "@tanstack/react-devtools";
 
@@ -12,83 +16,85 @@ import TanStackQueryProvider from "../integrations/tanstack-query/root-provider"
 import type { QueryClient } from "@tanstack/react-query";
 
 interface RouterContext {
-  queryClient: QueryClient;
+	queryClient: QueryClient;
 }
 
 export const Route = createRootRouteWithContext<RouterContext>()({
-  head: () => ({
-    meta: [
-      {
-        charSet: "utf-8",
-      },
-      {
-        name: "viewport",
-        content: "width=device-width, initial-scale=1",
-      },
-      {
-        title: "Atlas Health",
-      },
-    ],
-    links: [
-      {
-        rel: "preload",
-        href: interLatinWoff2,
-        as: "font",
-        type: "font/woff2",
-        crossOrigin: "anonymous",
-      },
-      {
-        rel: "preload",
-        href: interLatinExtWoff2,
-        as: "font",
-        type: "font/woff2",
-        crossOrigin: "anonymous",
-      },
-      {
-        rel: "stylesheet",
-        href: appCss,
-      },
-    ],
-  }),
-  shellComponent: RootDocument,
-  notFoundComponent: function NotFound() {
-    return (
-      <div style={{ padding: "3rem", textAlign: "center" }}>
-        <h1 style={{ fontSize: "2rem", fontWeight: "bold", marginBottom: "1rem" }}>
-          404 – Page Not Found
-        </h1>
-        <p style={{ color: "#666" }}>
-          Sorry, the page you’re looking for doesn’t exist.
-        </p>
-      </div>
-    );
-  },
+	head: () => ({
+		meta: [
+			{
+				charSet: "utf-8",
+			},
+			{
+				name: "viewport",
+				content: "width=device-width, initial-scale=1",
+			},
+			{
+				title: "Atlas Health",
+			},
+		],
+		links: [
+			{
+				rel: "preload",
+				href: interLatinWoff2,
+				as: "font",
+				type: "font/woff2",
+				crossOrigin: "anonymous",
+			},
+			{
+				rel: "preload",
+				href: interLatinExtWoff2,
+				as: "font",
+				type: "font/woff2",
+				crossOrigin: "anonymous",
+			},
+			{
+				rel: "stylesheet",
+				href: appCss,
+			},
+		],
+	}),
+	shellComponent: RootDocument,
+	notFoundComponent: function NotFound() {
+		return (
+			<div style={{ padding: "3rem", textAlign: "center" }}>
+				<h1
+					style={{ fontSize: "2rem", fontWeight: "bold", marginBottom: "1rem" }}
+				>
+					404 – Page Not Found
+				</h1>
+				<p style={{ color: "#666" }}>
+					Sorry, the page you’re looking for doesn’t exist.
+				</p>
+			</div>
+		);
+	},
 });
 
 function RootDocument({ children }: { children: React.ReactNode }) {
-  return (
-    <html lang="en">
-      <head>
-        <HeadContent />
-      </head>
-      <body className="antialiased">
-        <TanStackQueryProvider>
-          {children}
-          <TanStackDevtools
-            config={{
-              position: "bottom-right",
-            }}
-            plugins={[
-              {
-                name: "Tanstack Router",
-                render: <TanStackRouterDevtoolsPanel />,
-              },
-              TanStackQueryDevtools,
-            ]}
-          />
-        </TanStackQueryProvider>
-        <Scripts />
-      </body>
-    </html>
-  );
+	return (
+		<html lang="en">
+			<head>
+				<HeadContent />
+			</head>
+			<body className="antialiased">
+				<TanStackQueryProvider>
+					{children}
+					<TanStackDevtools
+						config={{
+							position: "bottom-right",
+						}}
+						plugins={[
+							{
+								name: "Tanstack Router",
+								render: <TanStackRouterDevtoolsPanel />,
+							},
+							TanStackQueryDevtools,
+						]}
+					/>
+				</TanStackQueryProvider>
+				<Scripts />
+			</body>
+		</html>
+	);
 }

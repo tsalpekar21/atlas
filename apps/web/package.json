@@ -7,8 +7,9 @@
     "dev": "vite dev --port 3000",
     "build": "vite build",
     "preview": "vite preview",
-    "lint": "eslint",
-    "format": "prettier --write \"**/*.{ts,tsx}\"",
+    "lint": "biome lint",
+    "format": "biome format --write",
+    "check": "biome check --write",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
@@ -49,13 +50,12 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
-    "@tanstack/eslint-config": "^0.3.0",
+    "@biomejs/biome": "^2.2.4",
     "@types/node": "^25.5.0",
     "@types/react": "^19.2.10",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.1.1",
     "babel-plugin-react-compiler": "^1.0.0",
-    "eslint": "^9.39.2",
     "typescript": "^5.9.3",
     "vite": "^7.2.4"
   }

@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "Atlas Web",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["--filter web", "run", "dev"],
+      "port": 3000
+    },
+    {
+      "name": "Atlas API",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["--filter api", "run", "dev"],
+      "port": 4111
+    }
+  ]
+}

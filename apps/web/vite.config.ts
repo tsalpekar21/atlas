@@ -10,38 +10,38 @@ import { nitro } from "nitro/vite";
 import { webClientEnv } from "./src/env-schema.ts";
 
 export default defineConfig(({ mode }) => {
-  const loaded = loadEnv(mode, process.cwd(), "");
-  createEnv({
-    clientPrefix: "VITE_",
-    client: webClientEnv,
-    runtimeEnvStrict: {
-      VITE_API_URL: loaded.VITE_API_URL,
-      VITE_FRONTEND_URL: loaded.VITE_FRONTEND_URL,
-    },
-    emptyStringAsUndefined: true,
-  });
+	const loaded = loadEnv(mode, process.cwd(), "");
+	createEnv({
+		clientPrefix: "VITE_",
+		client: webClientEnv,
+		runtimeEnvStrict: {
+			VITE_API_URL: loaded.VITE_API_URL,
+			VITE_FRONTEND_URL: loaded.VITE_FRONTEND_URL,
+		},
+		emptyStringAsUndefined: true,
+	});
 
-  return {
-    build: {
-      rollupOptions: {
-        external: ["fsevents"],
-      },
-    },
-    plugins: [
-      devtools(),
-      nitro({
-        rollupConfig: {
-          external: [/^@sentry\//],
-        },
-      }),
-      tsconfigPaths({ projects: ["./tsconfig.json"] }),
-      tailwindcss(),
-      tanstackStart(),
-      viteReact({
-        babel: {
-          plugins: ["babel-plugin-react-compiler"],
-        },
-      }),
-    ],
-  };
+	return {
+		build: {
+			rollupOptions: {
+				external: ["fsevents"],
+			},
+		},
+		plugins: [
+			devtools(),
+			nitro({
+				rollupConfig: {
+					external: [/^@sentry\//],
+				},
+			}),
+			tsconfigPaths({ projects: ["./tsconfig.json"] }),
+			tailwindcss(),
+			tanstackStart(),
+			viteReact({
+				babel: {
+					plugins: ["babel-plugin-react-compiler"],
+				},
+			}),
+		],
+	};
 });

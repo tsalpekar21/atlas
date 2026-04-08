@@ -10,12 +10,22 @@ import { createUIMessageStreamResponse, type UIMessageChunk } from "ai";
 export async function buildChatUiResponse(
 	mastra: Mastra,
 	body: unknown,
+	userId: string,
 ): Promise<Response> {
+	const { threadId, ...rest } = body as Record<string, unknown>;
+
 	const stream = await handleChatStream({
 		mastra,
 		agentId: "triageAgent",
-		params: body,
-	} as Parameters<typeof handleChatStream>[0]);
+		params: {
+			...rest,
+			memory: {
+				thread: threadId as string,
+				resource: userId,
+			},
+		} as Parameters<typeof handleChatStream>[0]["params"],
+	});
+
 	return createUIMessageStreamResponse({
 		stream: stream as ReadableStream<UIMessageChunk>,
 	});

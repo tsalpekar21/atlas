@@ -5,9 +5,9 @@ import { env } from "@/env";
 const baseURL = `${env.VITE_API_URL}/api/auth`;
 
 export const authClient = createAuthClient({
-  baseURL,
-  fetchOptions: {
-    credentials: "include",
-  },
-  plugins: [anonymousClient()],
+	baseURL,
+	fetchOptions: {
+		credentials: "include",
+	},
+	plugins: [anonymousClient()],
 });

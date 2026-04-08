@@ -1,45 +1,30 @@
-import { zValidator } from "@hono/zod-validator";
-import type { HonoBindings, HonoVariables } from "@mastra/hono";
+import { getThreadMessagesResponseSchema } from "@atlas/schemas/api";
 import { Hono } from "hono";
-import { z } from "zod";
 import { buildChatUiResponse } from "../services/chat.ts";
 import { requireSessionMiddleware } from "../middleware/require-session.ts";
+import type { AppEnv } from "../types.ts";
 import {
 	deleteThreadById,
 	getThreadMessagesForResource,
 	listThreadsForResource,
 } from "../services/triage.ts";
 
-export const triageRoutes = new Hono<{
-	Bindings: HonoBindings;
-	Variables: HonoVariables;
-}>()
+export const triageRoutes = new Hono<AppEnv>()
 	.use("*", requireSessionMiddleware)
-	.get(
-		"/threads",
-		zValidator("query", z.object({ resourceId: z.string().optional() })),
-		async (c) => {
-			const mastra = c.get("mastra");
-			const { resourceId = "default-patient" } = c.req.valid("query");
-			const data = await listThreadsForResource(mastra, resourceId);
-			return c.json(data);
-		},
-	)
-	.get(
-		"/threads/:threadId/messages",
-		zValidator("query", z.object({ resourceId: z.string().optional() })),
-		async (c) => {
-			const mastra = c.get("mastra");
-			const threadId = c.req.param("threadId");
-			const { resourceId = "default-patient" } = c.req.valid("query");
-			const data = await getThreadMessagesForResource(
-				mastra,
-				threadId,
-				resourceId,
-			);
-			return c.json(data);
-		},
-	)
+	.get("/threads", async (c) => {
+		const mastra = c.get("mastra");
+		const userId = c.get("userId");
+		const data = await listThreadsForResource(mastra, userId);
+		return c.json(data);
+	})
+	.get("/threads/:threadId/messages", async (c) => {
+		const mastra = c.get("mastra");
+		const threadId = c.req.param("threadId");
+		const userId = c.get("userId");
+		const data = await getThreadMessagesForResource(mastra, threadId, userId);
+		const body = getThreadMessagesResponseSchema.parse(data);
+		return c.json(body);
+	})
 	.delete("/threads/:threadId", async (c) => {
 		const mastra = c.get("mastra");
 		const threadId = c.req.param("threadId");
@@ -51,6 +36,11 @@ export const triageRoutes = new Hono<{
 	})
 	.post("/chat", async (c) => {
 		const mastra = c.get("mastra");
+		const userId = c.get("userId");
 		const body = await c.req.json();
-		return buildChatUiResponse(mastra, body);
+		try {
+			return await buildChatUiResponse(mastra, body, userId);
+		} catch {
+			return c.json({ error: "Failed to start chat stream" }, 500);
+		}
 	});

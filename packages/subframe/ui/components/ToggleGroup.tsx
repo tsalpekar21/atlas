@@ -28,7 +28,11 @@ const Item = React.forwardRef<HTMLDivElement, ItemProps>(function Item(
   ref
 ) {
   return (
-    <SubframeCore.ToggleGroup.Item asChild={true} {...otherProps}>
+    <SubframeCore.ToggleGroup.Item
+      asChild={true}
+      disabled={disabled}
+      {...otherProps}
+    >
       <div
         className={SubframeUtils.twClassNames(
           "group/56dea6ed flex h-7 w-full cursor-pointer items-center justify-center gap-2 rounded-md px-2 py-1 active:bg-neutral-100 aria-[checked=true]:bg-default-background aria-[checked=true]:shadow-sm active:aria-[checked=true]:bg-default-background",

@@ -1,5 +1,5 @@
+import type { UIMessage } from "ai";
 import { z } from "zod";
-import type { TriageMessage } from "./triage";
 
 /** JSON body for API error responses (4xx/5xx). */
 export const apiErrorBodySchema = z.object({
@@ -35,7 +35,7 @@ export type ListThreadsResponse = z.infer<typeof listThreadsResponseSchema>;
 // Messages are AI SDK UIMessage objects with a complex union type.
 // We validate the wrapper and treat individual messages as opaque objects.
 export const getThreadMessagesResponseSchema = z.object({
-	messages: z.array(z.custom<TriageMessage>()),
+	messages: z.array(z.custom<UIMessage>()),
 });
 
 export type GetThreadMessagesResponse = z.infer<
