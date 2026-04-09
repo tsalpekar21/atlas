@@ -2,9 +2,7 @@
 
 import { useChat } from "@ai-sdk/react";
 import { Button } from "@atlas/subframe/components/Button";
-import { IconButton } from "@atlas/subframe/components/IconButton";
-import { TextArea } from "@atlas/subframe/components/TextArea";
-import { FeatherArrowRight, FeatherStethoscope } from "@subframe/core";
+import { FeatherStethoscope } from "@subframe/core";
 import { Link, useNavigate } from "@tanstack/react-router";
 import type { UIMessage } from "ai";
 import { DefaultChatTransport } from "ai";
@@ -20,9 +18,10 @@ import {
 
 import { ChatMessageLoadingIndicator } from "@/components/chat/ChatLoadingIndicator";
 import { ChatMarkdown } from "@/components/chat/ChatMarkdown";
+import { toMessageText } from "@/components/chat/chat-utils";
 import { DebugMessageActions } from "@/components/chat/DebugMessageActions";
 import { ResearchIndicator } from "@/components/chat/ResearchIndicator";
-import { toMessageText } from "@/components/chat/chat-utils";
+import { PromptInput } from "@/components/prompt/PromptInput";
 import { env } from "@/env";
 import { useDebugSnapshots } from "@/hooks/use-debug-snapshots";
 import { useResearchStatus } from "@/hooks/use-research-status";
@@ -237,38 +236,17 @@ export function ChatPage({
 
 			<div className="border-t border-solid border-neutral-border px-6 py-4 mobile:px-4">
 				<div className="mx-auto flex w-full max-w-[768px] flex-col gap-3">
-					<div className="relative w-full">
-						<TextArea className="w-full" label="" helpText="">
-							<TextArea.Input
-								aria-label="Type your message"
-								className="box-border min-h-[108px] w-full resize-none px-3 py-3 pb-16 disabled:opacity-60"
-								placeholder="Symptoms, a condition you're managing, or a health goal…"
-								value={draft}
-								disabled={isBusy || !!sessionError || !historyReady}
-								onChange={(e) => setDraft(e.target.value)}
-								onKeyDown={(e) => {
-									if (e.key === "Enter" && !e.shiftKey) {
-										e.preventDefault();
-										onSubmit();
-									}
-								}}
-							/>
-						</TextArea>
-						<div className="pointer-events-none absolute bottom-6 right-6 z-10">
-							<div className="pointer-events-auto">
-								<IconButton
-									variant="brand-primary"
-									size="large"
-									icon={<FeatherArrowRight />}
-									disabled={
-										!draft.trim() || isBusy || !!sessionError || !historyReady
-									}
-									loading={isBusy}
-									onClick={onSubmit}
-								/>
-							</div>
-						</div>
-					</div>
+					<PromptInput
+						value={draft}
+						onChange={setDraft}
+						onSubmit={onSubmit}
+						placeholder="Symptoms, a condition you're managing, or a health goal…"
+						ariaLabel="Type your message"
+						disabled={isBusy || !!sessionError || !historyReady}
+						submitDisabled={!draft.trim()}
+						isLoading={isBusy}
+						minHeight={108}
+					/>
 
 					<div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
 						<div className="flex flex-wrap items-center gap-3">
