@@ -39,7 +39,10 @@ export function publishResearchStatus(
 	threadId: string,
 	event: Omit<ResearchStatusEvent, "at">,
 ): void {
-	const payload: ResearchStatusEvent = { ...event, at: new Date().toISOString() };
+	const payload: ResearchStatusEvent = {
+		...event,
+		at: new Date().toISOString(),
+	};
 	emitter.emit(channelName(threadId), payload);
 }
 

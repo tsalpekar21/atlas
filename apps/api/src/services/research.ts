@@ -41,7 +41,9 @@ export function parseChartSections(md: string): Map<string, string> {
  * Used for the chief-complaints and hypotheses sections which are each a
  * repeatable block of the same shape in the chart template.
  */
-function parseSubsections(body: string): Array<{ label: string; body: string }> {
+function parseSubsections(
+	body: string,
+): Array<{ label: string; body: string }> {
 	const out: Array<{ label: string; body: string }> = [];
 	const lines = body.split("\n");
 	let currentLabel: string | null = null;
@@ -261,7 +263,13 @@ function parseOpenQuestions(interviewStateBody: string): string[] {
 	if (openIdx < 0) return [];
 	const inline = lines[openIdx].split(":").slice(1).join(":").trim();
 	const items: string[] = [];
-	if (inline) items.push(...inline.split(/[,;]/).map((s) => s.trim()).filter(Boolean));
+	if (inline)
+		items.push(
+			...inline
+				.split(/[,;]/)
+				.map((s) => s.trim())
+				.filter(Boolean),
+		);
 	for (let i = openIdx + 1; i < lines.length; i++) {
 		const m = lines[i].match(/^\s*-\s*(.+)$/);
 		if (m && m[1].trim()) items.push(m[1].trim());

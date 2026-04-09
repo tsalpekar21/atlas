@@ -49,7 +49,10 @@ const articleSchema = z.object({
  * (rather than asking the LLM to construct PubMed operators) means the
  * workers can pass plain clinical English and still get the right slice.
  */
-function applyFilter(query: string, filter: z.infer<typeof filterEnum>): string {
+function applyFilter(
+	query: string,
+	filter: z.infer<typeof filterEnum>,
+): string {
 	switch (filter) {
 		case "guidelines":
 			return `(${query}) AND ("Practice Guideline"[ptyp] OR "Guideline"[ptyp])`;
@@ -94,7 +97,8 @@ function withApiKey(params: URLSearchParams): URLSearchParams {
 function flatten(node: unknown): string {
 	if (node == null) return "";
 	if (typeof node === "string") return node;
-	if (typeof node === "number" || typeof node === "boolean") return String(node);
+	if (typeof node === "number" || typeof node === "boolean")
+		return String(node);
 	if (Array.isArray(node)) return node.map(flatten).join(" ").trim();
 	if (typeof node === "object") {
 		const obj = node as Record<string, unknown>;
@@ -153,7 +157,9 @@ type ParsedArticle = z.infer<typeof articleSchema>;
 function parsePubmedArticle(node: unknown): ParsedArticle | null {
 	if (!node || typeof node !== "object") return null;
 	const article = node as Record<string, unknown>;
-	const medline = article.MedlineCitation as Record<string, unknown> | undefined;
+	const medline = article.MedlineCitation as
+		| Record<string, unknown>
+		| undefined;
 	if (!medline) return null;
 
 	const pmid = flatten(medline.PMID);
@@ -208,13 +214,18 @@ function parsePubmedArticle(node: unknown): ParsedArticle | null {
 	// Journal + year.
 	const journalNode = inner.Journal as Record<string, unknown> | undefined;
 	const journal = flatten(journalNode?.Title) || undefined;
-	const issue = journalNode?.JournalIssue as Record<string, unknown> | undefined;
+	const issue = journalNode?.JournalIssue as
+		| Record<string, unknown>
+		| undefined;
 	const pubDate = issue?.PubDate as Record<string, unknown> | undefined;
-	const yearRaw = flatten(pubDate?.Year) || flatten(pubDate?.MedlineDate).slice(0, 4);
+	const yearRaw =
+		flatten(pubDate?.Year) || flatten(pubDate?.MedlineDate).slice(0, 4);
 	const year = /^\d{4}$/.test(yearRaw) ? Number(yearRaw) : undefined;
 
 	// Publication types. Each PublicationType tag has a text body and a UI attr.
-	const ptList = inner.PublicationTypeList as Record<string, unknown> | undefined;
+	const ptList = inner.PublicationTypeList as
+		| Record<string, unknown>
+		| undefined;
 	const publicationTypes = ptList
 		? toArray(ptList.PublicationType)
 				.map((p) => flatten(p))
@@ -256,12 +267,9 @@ async function efetch(pmids: string[]): Promise<ParsedArticle[]> {
 		// otherwise collapses single-element lists to a scalar, which makes
 		// downstream iteration error-prone.
 		isArray: (name) =>
-			[
-				"PubmedArticle",
-				"Author",
-				"AbstractText",
-				"PublicationType",
-			].includes(name),
+			["PubmedArticle", "Author", "AbstractText", "PublicationType"].includes(
+				name,
+			),
 	});
 	const parsed = parser.parse(xml) as {
 		PubmedArticleSet?: { PubmedArticle?: unknown[] };

@@ -4,8 +4,8 @@ import { streamSSE } from "hono/streaming";
 import { z } from "zod";
 import { env } from "../env.ts";
 import {
-	subscribeResearchStatus,
 	type ResearchStatusEvent,
+	subscribeResearchStatus,
 } from "../inngest/realtime-bus.ts";
 import { requireSessionMiddleware } from "../middleware/require-session.ts";
 import { getDebugSnapshotsForThread } from "../services/debug.ts";

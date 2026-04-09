@@ -1,48 +1,48 @@
 {
-  "version": "7",
-  "dialect": "postgresql",
-  "entries": [
-    {
-      "idx": 0,
-      "version": "7",
-      "when": 1773851279903,
-      "tag": "0000_eager_susan_delgado",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1775241001581,
-      "tag": "0001_steep_stingray",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1775250952423,
-      "tag": "0002_better_auth",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1775252146583,
-      "tag": "0003_auth_uuid_ids",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "7",
-      "when": 1775750292814,
-      "tag": "0004_certain_puma",
-      "breakpoints": true
-    },
-    {
-      "idx": 5,
-      "version": "7",
-      "when": 1775767346326,
-      "tag": "0005_great_mandrill",
-      "breakpoints": true
-    }
-  ]
+	"version": "7",
+	"dialect": "postgresql",
+	"entries": [
+		{
+			"idx": 0,
+			"version": "7",
+			"when": 1773851279903,
+			"tag": "0000_eager_susan_delgado",
+			"breakpoints": true
+		},
+		{
+			"idx": 1,
+			"version": "7",
+			"when": 1775241001581,
+			"tag": "0001_steep_stingray",
+			"breakpoints": true
+		},
+		{
+			"idx": 2,
+			"version": "7",
+			"when": 1775250952423,
+			"tag": "0002_better_auth",
+			"breakpoints": true
+		},
+		{
+			"idx": 3,
+			"version": "7",
+			"when": 1775252146583,
+			"tag": "0003_auth_uuid_ids",
+			"breakpoints": true
+		},
+		{
+			"idx": 4,
+			"version": "7",
+			"when": 1775750292814,
+			"tag": "0004_certain_puma",
+			"breakpoints": true
+		},
+		{
+			"idx": 5,
+			"version": "7",
+			"when": 1775767346326,
+			"tag": "0005_great_mandrill",
+			"breakpoints": true
+		}
+	]
 }

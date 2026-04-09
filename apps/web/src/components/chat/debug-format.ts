@@ -67,7 +67,8 @@ export function formatResearchRoundMarkdown(
 		return "# Research round\n\n_No completed research round existed when this message was generated._";
 	}
 
-	const guidelineText = round.workerOutputs?.guideline?.trim() || "_(no output)_";
+	const guidelineText =
+		round.workerOutputs?.guideline?.trim() || "_(no output)_";
 	const literatureText =
 		round.workerOutputs?.literature?.trim() || "_(no output)_";
 

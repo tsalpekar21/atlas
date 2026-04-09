@@ -65,8 +65,7 @@ export const mastra = new Mastra({
 				// pass `functions: [...]` — the workflow registration is enough.
 				path: "/api/inngest",
 				method: "ALL",
-				createHandler: async ({ mastra }) =>
-					inngestServe({ mastra, inngest }),
+				createHandler: async ({ mastra }) => inngestServe({ mastra, inngest }),
 			},
 		],
 	},
