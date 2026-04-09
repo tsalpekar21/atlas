@@ -1,12 +1,12 @@
-import { initialize, logger } from "@atlas/logger";
+// MUST be the first import. Initializes `@atlas/logger` before any other
+// module is loaded — workflows and agents create child loggers at module
+// scope and the proxy throws if `initialize()` has not run yet.
+import "./bootstrap.ts";
+
+import { logger } from "@atlas/logger";
 import { serve } from "@hono/node-server";
 import app from "./app.ts";
 import { env } from "./env.ts";
-
-initialize({
-	applicationEnvironment:
-		env.NODE_ENV === "production" ? "production" : "development",
-});
 
 const port = env.PORT;
 serve({ fetch: app.fetch, port }, (info) => {

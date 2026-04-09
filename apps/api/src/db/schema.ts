@@ -3,6 +3,7 @@ import {
 	boolean,
 	date,
 	index,
+	jsonb,
 	pgTable,
 	text,
 	timestamp,
@@ -102,3 +103,73 @@ export const accountRelations = relations(account, ({ one }) => ({
 		references: [user.id],
 	}),
 }));
+
+/**
+ * Background research rounds produced by `backgroundResearchWorkflow`.
+ *
+ * One row per evaluation the planner actually decided to run. Rows with
+ * `status = 'skipped'` mean the chart was unchanged since the last round
+ * (gate-by-hash). `synthesis` and the breakout jsonb columns are populated
+ * only once the run reaches `complete`.
+ */
+export const researchFindings = pgTable(
+	"research_findings",
+	{
+		id: uuid("id").primaryKey().defaultRandom(),
+		threadId: text("thread_id").notNull(),
+		userId: text("user_id").notNull(),
+		createdAt: timestamp("created_at").defaultNow().notNull(),
+		updatedAt: timestamp("updated_at")
+			.defaultNow()
+			.$onUpdate(() => /* @__PURE__ */ new Date())
+			.notNull(),
+		/** Hash of the interview-relevant chart sections at plan time. */
+		chartHash: text("chart_hash").notNull(),
+		/** 'running' | 'complete' | 'skipped' | 'failed' */
+		status: text("status").notNull(),
+		brief: jsonb("brief"),
+		synthesis: jsonb("synthesis"),
+		evidenceItems: jsonb("evidence_items"),
+		suggestedQuestions: jsonb("suggested_questions"),
+		escalationFlags: jsonb("escalation_flags"),
+		whatChanged: text("what_changed"),
+		errorMessage: text("error_message"),
+	},
+	(table) => [
+		index("research_findings_thread_created_idx").on(
+			table.threadId,
+			table.createdAt,
+		),
+	],
+);
+
+/**
+ * Per-message debug snapshots written by the chat stream flush callback.
+ *
+ * One row per assistant turn, keyed by the Mastra message id. Captures
+ * the working-memory state at the time the message was generated and a
+ * pointer to the latest completed research round that the agent was
+ * looking at during that turn (i.e. the round produced by the PREVIOUS
+ * turn's background workflow). Used exclusively by the dev-only
+ * `/debug/:threadId/snapshots` endpoint.
+ */
+export const messageDebugSnapshots = pgTable(
+	"message_debug_snapshots",
+	{
+		id: uuid("id").primaryKey().defaultRandom(),
+		messageId: text("message_id").notNull().unique(),
+		threadId: text("thread_id").notNull(),
+		createdAt: timestamp("created_at").defaultNow().notNull(),
+		workingMemory: text("working_memory"),
+		researchRoundId: uuid("research_round_id").references(
+			() => researchFindings.id,
+			{ onDelete: "set null" },
+		),
+	},
+	(table) => [
+		index("message_debug_thread_created_idx").on(
+			table.threadId,
+			table.createdAt,
+		),
+	],
+);

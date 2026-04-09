@@ -22,6 +22,12 @@ export const env = createEnv({
 		TRUSTED_ORIGINS: z.string().optional(),
 		CORS_ORIGIN: z.string().optional(),
 		GOOGLE_GENERATIVE_AI_API_KEY: z.string().min(1),
+		/**
+		 * Optional NCBI E-utilities API key for the PubMed search tool. When
+		 * set, PubMed rate limits bump from 3 req/s to 10 req/s — important
+		 * because research rounds fire parallel workers that both hit PubMed.
+		 */
+		NCBI_API_KEY: z.string().optional(),
 		PORT: portSchema,
 		NODE_ENV: z.string().optional(),
 	},
@@ -32,6 +38,7 @@ export const env = createEnv({
 		TRUSTED_ORIGINS: process.env.TRUSTED_ORIGINS,
 		CORS_ORIGIN: process.env.CORS_ORIGIN,
 		GOOGLE_GENERATIVE_AI_API_KEY: process.env.GOOGLE_GENERATIVE_AI_API_KEY,
+		NCBI_API_KEY: process.env.NCBI_API_KEY,
 		PORT: process.env.PORT,
 		NODE_ENV: process.env.NODE_ENV,
 	},

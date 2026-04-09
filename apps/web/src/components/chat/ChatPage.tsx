@@ -20,8 +20,12 @@ import {
 
 import { ChatMessageLoadingIndicator } from "@/components/chat/ChatLoadingIndicator";
 import { ChatMarkdown } from "@/components/chat/ChatMarkdown";
+import { DebugMessageActions } from "@/components/chat/DebugMessageActions";
+import { ResearchIndicator } from "@/components/chat/ResearchIndicator";
 import { toMessageText } from "@/components/chat/chat-utils";
 import { env } from "@/env";
+import { useDebugSnapshots } from "@/hooks/use-debug-snapshots";
+import { useResearchStatus } from "@/hooks/use-research-status";
 
 export function ChatHeader() {
 	return (
@@ -93,6 +97,10 @@ export function ChatPage({
 		experimental_throttle: 50,
 	});
 
+	const { status: researchStatus, active: researchActive } = useResearchStatus(
+		sessionError ? null : threadId,
+	);
+
 	/** Route loader finished; block input only when session bootstrap failed. */
 	const historyReady = sessionError === null;
 
@@ -115,6 +123,10 @@ export function ChatPage({
 	}, [initialMessage, navigate, sendMessage, sessionError, threadMessages]);
 
 	const isBusy = status === "submitted" || status === "streaming";
+	const { byMessageId: debugSnapshots } = useDebugSnapshots(
+		sessionError ? null : threadId,
+		isBusy,
+	);
 	const lastMessage = messages[messages.length - 1];
 	const awaitingContent =
 		isBusy &&
@@ -192,7 +204,7 @@ export function ChatPage({
 										animate={{ opacity: 1, y: 0 }}
 										exit={{ opacity: 0, y: -4 }}
 										transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-										className={`flex w-full min-w-0 ${isUser ? "justify-end" : "justify-start"}`}
+										className={`flex w-full min-w-0 flex-col ${isUser ? "items-end" : "items-start"}`}
 									>
 										<div
 											className={`max-w-[85%] min-w-0 rounded-lg px-4 py-3 ${
@@ -203,6 +215,12 @@ export function ChatPage({
 										>
 											<ChatMarkdown text={text} className="[&_*]:max-w-full" />
 										</div>
+										{!isUser ? (
+											<DebugMessageActions
+												message={message}
+												snapshot={debugSnapshots.get(message.id)}
+											/>
+										) : null}
 									</motion.div>
 								);
 							})}
@@ -224,7 +242,7 @@ export function ChatPage({
 							<TextArea.Input
 								aria-label="Type your message"
 								className="box-border min-h-[108px] w-full resize-none px-3 py-3 pb-16 disabled:opacity-60"
-								placeholder="Tell me what you're feeling..."
+								placeholder="Symptoms, a condition you're managing, or a health goal…"
 								value={draft}
 								disabled={isBusy || !!sessionError || !historyReady}
 								onChange={(e) => setDraft(e.target.value)}
@@ -253,10 +271,16 @@ export function ChatPage({
 					</div>
 
 					<div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-						<span className="text-caption font-caption text-subtext-color">
-							For informational support only, not a medical diagnosis.
-						</span>
-						<div className="flex flex-wrap justify-end gap-2">
+						<div className="flex flex-wrap items-center gap-3">
+							<span className="text-caption font-caption text-subtext-color">
+								For informational support only, not a medical diagnosis.
+							</span>
+							<ResearchIndicator
+								status={researchStatus}
+								active={researchActive}
+							/>
+						</div>
+						<div className="flex flex-wrap items-center justify-end gap-2">
 							<Button
 								variant="neutral-secondary"
 								size="small"

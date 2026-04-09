@@ -1,12 +1,12 @@
 import type { ListThreadsResponse } from "@atlas/schemas/api";
 import type { Mastra } from "@mastra/core/mastra";
-import { TRIAGE_AGENT_ID } from "./constants.ts";
+import { HEALTH_ASSISTANT_AGENT_ID } from "./constants.ts";
 
 export async function listThreadsForResource(
 	mastra: Mastra,
 	resourceId: string,
 ): Promise<ListThreadsResponse> {
-	const agent = mastra.getAgent(TRIAGE_AGENT_ID);
+	const agent = mastra.getAgent(HEALTH_ASSISTANT_AGENT_ID);
 	const memory = await agent.getMemory();
 	if (!memory) {
 		return { threads: [], total: 0, hasMore: false };

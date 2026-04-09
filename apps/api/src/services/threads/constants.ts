@@ -1,1 +1,1 @@
-export const TRIAGE_AGENT_ID = "triageAgent" as const;
+export const HEALTH_ASSISTANT_AGENT_ID = "healthAssistant" as const;
