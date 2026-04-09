@@ -2,9 +2,7 @@
 
 import { useChat } from "@ai-sdk/react";
 import { Button } from "@atlas/subframe/components/Button";
-import { IconButton } from "@atlas/subframe/components/IconButton";
-import { TextArea } from "@atlas/subframe/components/TextArea";
-import { FeatherArrowRight, FeatherStethoscope } from "@subframe/core";
+import { FeatherStethoscope } from "@subframe/core";
 import { Link, useNavigate } from "@tanstack/react-router";
 import type { UIMessage } from "ai";
 import { DefaultChatTransport } from "ai";
@@ -21,7 +19,29 @@ import {
 import { ChatMessageLoadingIndicator } from "@/components/chat/ChatLoadingIndicator";
 import { ChatMarkdown } from "@/components/chat/ChatMarkdown";
 import { toMessageText } from "@/components/chat/chat-utils";
+import { DebugMessageActions } from "@/components/chat/DebugMessageActions";
+import { ResearchIndicator } from "@/components/chat/ResearchIndicator";
+import { PromptInput } from "@/components/prompt/PromptInput";
 import { env } from "@/env";
+import { useDebugSnapshots } from "@/hooks/use-debug-snapshots";
+import { useResearchStatus } from "@/hooks/use-research-status";
+
+export function ChatHeader() {
+	return (
+		<div className="flex items-center gap-3 border-b border-solid border-neutral-border px-6 py-4 mobile:px-4">
+			<Link to="/">
+				<div className="flex h-10 w-10 flex-none items-center justify-center rounded-lg bg-brand-600">
+					<FeatherStethoscope className="text-heading-3 font-heading-3 text-white" />
+				</div>
+			</Link>
+			<div className="flex flex-col items-start">
+				<span className="text-heading-3 font-heading-3 text-default-font">
+					Atlas Health
+				</span>
+			</div>
+		</div>
+	);
+}
 
 type ChatPageProps = {
 	threadId: string;
@@ -76,6 +96,10 @@ export function ChatPage({
 		experimental_throttle: 50,
 	});
 
+	const { status: researchStatus, active: researchActive } = useResearchStatus(
+		sessionError ? null : threadId,
+	);
+
 	/** Route loader finished; block input only when session bootstrap failed. */
 	const historyReady = sessionError === null;
 
@@ -98,6 +122,10 @@ export function ChatPage({
 	}, [initialMessage, navigate, sendMessage, sessionError, threadMessages]);
 
 	const isBusy = status === "submitted" || status === "streaming";
+	const { byMessageId: debugSnapshots } = useDebugSnapshots(
+		sessionError ? null : threadId,
+		isBusy,
+	);
 	const lastMessage = messages[messages.length - 1];
 	const awaitingContent =
 		isBusy &&
@@ -135,21 +163,7 @@ export function ChatPage({
 
 	return (
 		<div className="flex h-dvh max-h-dvh w-full flex-col overflow-hidden bg-default-background">
-			<div className="flex items-center gap-3 border-b border-solid border-neutral-border px-6 py-4 mobile:px-4">
-				<Link to="/">
-					<div className="flex h-10 w-10 flex-none items-center justify-center rounded-lg bg-brand-600">
-						<FeatherStethoscope className="text-heading-3 font-heading-3 text-white" />
-					</div>
-				</Link>
-				<div className="flex flex-col items-start">
-					<span className="text-heading-3 font-heading-3 text-default-font">
-						Clinical Reasoning Interviewer
-					</span>
-					<span className="text-caption font-caption text-subtext-color">
-						Share what is going on and I will ask one targeted next question.
-					</span>
-				</div>
-			</div>
+			<ChatHeader />
 
 			<div className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-y-contain [overflow-anchor:auto]">
 				<div className="mx-auto flex min-h-full w-full max-w-[768px] flex-col px-6 py-6 mobile:px-4 mobile:py-4">
@@ -189,7 +203,7 @@ export function ChatPage({
 										animate={{ opacity: 1, y: 0 }}
 										exit={{ opacity: 0, y: -4 }}
 										transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-										className={`flex w-full min-w-0 ${isUser ? "justify-end" : "justify-start"}`}
+										className={`flex w-full min-w-0 flex-col ${isUser ? "items-end" : "items-start"}`}
 									>
 										<div
 											className={`max-w-[85%] min-w-0 rounded-lg px-4 py-3 ${
@@ -200,6 +214,12 @@ export function ChatPage({
 										>
 											<ChatMarkdown text={text} className="[&_*]:max-w-full" />
 										</div>
+										{!isUser ? (
+											<DebugMessageActions
+												message={message}
+												snapshot={debugSnapshots.get(message.id)}
+											/>
+										) : null}
 									</motion.div>
 								);
 							})}
@@ -216,44 +236,29 @@ export function ChatPage({
 
 			<div className="border-t border-solid border-neutral-border px-6 py-4 mobile:px-4">
 				<div className="mx-auto flex w-full max-w-[768px] flex-col gap-3">
-					<div className="relative w-full">
-						<TextArea className="w-full" label="" helpText="">
-							<TextArea.Input
-								aria-label="Type your message"
-								className="box-border min-h-[108px] w-full resize-none px-3 py-3 pb-16 disabled:opacity-60"
-								placeholder="Tell me what you're feeling..."
-								value={draft}
-								disabled={isBusy || !!sessionError || !historyReady}
-								onChange={(e) => setDraft(e.target.value)}
-								onKeyDown={(e) => {
-									if (e.key === "Enter" && !e.shiftKey) {
-										e.preventDefault();
-										onSubmit();
-									}
-								}}
-							/>
-						</TextArea>
-						<div className="pointer-events-none absolute bottom-6 right-6 z-10">
-							<div className="pointer-events-auto">
-								<IconButton
-									variant="brand-primary"
-									size="large"
-									icon={<FeatherArrowRight />}
-									disabled={
-										!draft.trim() || isBusy || !!sessionError || !historyReady
-									}
-									loading={isBusy}
-									onClick={onSubmit}
-								/>
-							</div>
-						</div>
-					</div>
+					<PromptInput
+						value={draft}
+						onChange={setDraft}
+						onSubmit={onSubmit}
+						placeholder="Symptoms, a condition you're managing, or a health goal…"
+						ariaLabel="Type your message"
+						disabled={isBusy || !!sessionError || !historyReady}
+						submitDisabled={!draft.trim()}
+						isLoading={isBusy}
+						minHeight={108}
+					/>
 
 					<div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-						<span className="text-caption font-caption text-subtext-color">
-							For informational support only, not a medical diagnosis.
-						</span>
-						<div className="flex flex-wrap justify-end gap-2">
+						<div className="flex flex-wrap items-center gap-3">
+							<span className="text-caption font-caption text-subtext-color">
+								For informational support only, not a medical diagnosis.
+							</span>
+							<ResearchIndicator
+								status={researchStatus}
+								active={researchActive}
+							/>
+						</div>
+						<div className="flex flex-wrap items-center justify-end gap-2">
 							<Button
 								variant="neutral-secondary"
 								size="small"

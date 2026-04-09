@@ -1,10 +1,7 @@
 "use client";
 
 import { Button } from "@atlas/subframe/components/Button";
-import { IconButton } from "@atlas/subframe/components/IconButton";
-import { TextArea } from "@atlas/subframe/components/TextArea";
 import {
-	FeatherArrowRight,
 	FeatherClipboardList,
 	FeatherClock,
 	FeatherMonitor,
@@ -15,6 +12,7 @@ import {
 import type { Variants } from "framer-motion";
 import { motion, useReducedMotion } from "framer-motion";
 import { useCallback, useMemo, useState } from "react";
+import { PromptInput } from "@/components/prompt/PromptInput";
 import { ensureSessionForTriage } from "@/lib/ensure-session-for-triage";
 import { buildPatientTriageHref } from "@/lib/patient-triage-url";
 
@@ -123,44 +121,17 @@ export function LandingPage() {
 				</motion.div>
 
 				<motion.div className="flex w-full flex-col" variants={fadeUp}>
-					<div className="relative min-h-[128px] w-full">
-						<TextArea className="w-full" label="" helpText="">
-							<TextArea.Input
-								aria-label="Describe how you are feeling"
-								className="box-border min-h-[128px] w-full resize-none px-5 py-6 pb-20 disabled:opacity-60"
-								placeholder="Describe how you are feeling and we will guide you..."
-								value={draft}
-								disabled={isStartingTriage}
-								onChange={(e) => setDraft(e.target.value)}
-								onKeyDown={(e) => {
-									if (e.key === "Enter" && !e.shiftKey) {
-										e.preventDefault();
-										onSubmit();
-									}
-								}}
-							/>
-						</TextArea>
-						<div className="pointer-events-none absolute bottom-6 right-6 z-10">
-							<motion.div
-								className="pointer-events-auto"
-								whileHover={
-									reduceMotion || isStartingTriage ? undefined : { scale: 1.05 }
-								}
-								whileTap={
-									reduceMotion || isStartingTriage ? undefined : { scale: 0.95 }
-								}
-							>
-								<IconButton
-									variant="brand-primary"
-									size="large"
-									icon={<FeatherArrowRight />}
-									disabled={isStartingTriage}
-									loading={isStartingTriage}
-									onClick={onSubmit}
-								/>
-							</motion.div>
-						</div>
-					</div>
+					<PromptInput
+						value={draft}
+						onChange={setDraft}
+						onSubmit={onSubmit}
+						placeholder="Describe how you are feeling and we will guide you..."
+						ariaLabel="Describe how you are feeling"
+						disabled={isStartingTriage}
+						isLoading={isStartingTriage}
+						minHeight={128}
+						maxHeight={200}
+					/>
 					{triageStartError ? (
 						<p className="mt-2 text-caption font-caption text-error-600">
 							{triageStartError}

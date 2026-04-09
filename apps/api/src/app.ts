@@ -10,6 +10,7 @@ import { auth } from "./auth.ts";
 import { getTrustedOrigins } from "./lib/trusted-origins.ts";
 import { mastra } from "./mastra/index.ts";
 import { chatRoutes } from "./routes/chat.ts";
+import { researchRoutes } from "./routes/research.ts";
 import { threadRoutes } from "./routes/threads.ts";
 
 const trustedOrigins = getTrustedOrigins();
@@ -62,4 +63,16 @@ app.use("*", async (c, next) => {
 const appWithRoutes = app.route("/", threadRoutes).route("/", chatRoutes);
 
 export type AppType = typeof appWithRoutes;
+
+/**
+ * Research routes are mounted at runtime but intentionally NOT folded into
+ * `AppType`. They include an SSE stream endpoint (`/research/:threadId/stream`)
+ * whose bare `Response` return type breaks Hono's RPC inference — adding it
+ * collapses `AppType` into a shape that `hc<AppType>` cannot resolve, which
+ * in turn makes the typed client `unknown` on the web side. The web app
+ * talks to these endpoints via raw `fetch` + `EventSource`, so losing the
+ * RPC typing for them is fine.
+ */
+appWithRoutes.route("/", researchRoutes);
+
 export default appWithRoutes;

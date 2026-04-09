@@ -3,6 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import type { UIMessage } from "ai";
 import { z } from "zod";
 import { ChatPage } from "@/components/chat/ChatPage";
+import { ChatThreadPending } from "@/components/chat/ChatThreadPending";
 import { ensureSessionForTriage } from "@/lib/ensure-session-for-triage";
 import { createTriageApiClient } from "@/lib/triage-api-client";
 
@@ -21,11 +22,11 @@ export const Route = createFileRoute("/chat/$threadId")({
 	ssr: false,
 	head: () => ({
 		meta: [
-			{ title: "Atlas Health — Clinical reasoning chat" },
+			{ title: "Atlas Health — Your health companion" },
 			{
 				name: "description",
 				content:
-					"Hypothesis-driven clinical reasoning interviewer. One targeted question at a time.",
+					"Evidence-informed assistant for symptoms, treatment research, and health goals.",
 			},
 		],
 	}),
@@ -69,18 +70,6 @@ export const Route = createFileRoute("/chat/$threadId")({
 	pendingComponent: ChatThreadPending,
 	component: ChatThreadRoute,
 });
-
-function ChatThreadPending() {
-	return (
-		<div className="flex h-dvh max-h-dvh w-full flex-col overflow-hidden bg-default-background">
-			<div className="flex items-center gap-3 border-b border-solid border-neutral-border px-6 py-4 mobile:px-4">
-				<p className="text-caption font-caption text-subtext-color">
-					Loading conversation…
-				</p>
-			</div>
-		</div>
-	);
-}
 
 function ChatThreadRoute() {
 	const { threadId } = Route.useParams();
