@@ -23,6 +23,23 @@ import { ChatMarkdown } from "@/components/chat/ChatMarkdown";
 import { toMessageText } from "@/components/chat/chat-utils";
 import { env } from "@/env";
 
+export function ChatHeader() {
+	return (
+		<div className="flex items-center gap-3 border-b border-solid border-neutral-border px-6 py-4 mobile:px-4">
+			<Link to="/">
+				<div className="flex h-10 w-10 flex-none items-center justify-center rounded-lg bg-brand-600">
+					<FeatherStethoscope className="text-heading-3 font-heading-3 text-white" />
+				</div>
+			</Link>
+			<div className="flex flex-col items-start">
+				<span className="text-heading-3 font-heading-3 text-default-font">
+					Atlas Health
+				</span>
+			</div>
+		</div>
+	);
+}
+
 type ChatPageProps = {
 	threadId: string;
 	initialMessage?: string;
@@ -135,21 +152,7 @@ export function ChatPage({
 
 	return (
 		<div className="flex h-dvh max-h-dvh w-full flex-col overflow-hidden bg-default-background">
-			<div className="flex items-center gap-3 border-b border-solid border-neutral-border px-6 py-4 mobile:px-4">
-				<Link to="/">
-					<div className="flex h-10 w-10 flex-none items-center justify-center rounded-lg bg-brand-600">
-						<FeatherStethoscope className="text-heading-3 font-heading-3 text-white" />
-					</div>
-				</Link>
-				<div className="flex flex-col items-start">
-					<span className="text-heading-3 font-heading-3 text-default-font">
-						Clinical Reasoning Interviewer
-					</span>
-					<span className="text-caption font-caption text-subtext-color">
-						Share what is going on and I will ask one targeted next question.
-					</span>
-				</div>
-			</div>
+			<ChatHeader />
 
 			<div className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-y-contain [overflow-anchor:auto]">
 				<div className="mx-auto flex min-h-full w-full max-w-[768px] flex-col px-6 py-6 mobile:px-4 mobile:py-4">

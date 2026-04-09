@@ -103,6 +103,24 @@ export const PATIENT_CHART_TEMPLATE = `
 ## Red Flags Detected
 <!-- Each flag: description | urgency (emergency, urgent, soon) | action advised -->
 
+## Research Log
+<!-- Updated when the research orchestrator returns findings -->
+
+### Research Invocations
+<!-- Each invocation: round number | trigger reason | research goals | status -->
+
+### Last Research Outcome
+- Trigger reason:
+- What changed:
+- Confidence shifts:
+- Escalation flags:
+
+### Cumulative Evidence Items
+<!-- Each item: claim | source_quality (gold/guideline/peer-reviewed/web) | supports/contradicts | hypothesis label | confidence -->
+
+### Contradictions Noted
+<!-- Evidence conflicts that remain unresolved -->
+
 ## Interview State
 - Phase: rapport
 - Coverage:
