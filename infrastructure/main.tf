@@ -105,11 +105,11 @@ resource "google_cloud_run_v2_service" "atlas_web" {
 
       env {
         name  = "SERVER_URL"
-        value = google_cloud_run_v2_service.atlas_api.uri
+        value = var.api_url
       }
       env {
         name  = "VITE_API_URL"
-        value = google_cloud_run_v2_service.atlas_api.uri
+        value = var.api_url
       }
       env {
         name  = "VITE_FRONTEND_URL"

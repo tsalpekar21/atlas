@@ -92,7 +92,6 @@ resource "google_cloudbuild_trigger" "atlas_web" {
 
   depends_on = [
     google_project_service.cloudbuild,
-    google_cloud_run_v2_service.atlas_api,
   ]
 }
 
