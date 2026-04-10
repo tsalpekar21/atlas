@@ -29,6 +29,47 @@ resource "google_project_service" "secretmanager" {
   disable_on_destroy = false
 }
 
+# --- Inngest (self-hosted) auto-generated keys ---
+
+resource "random_password" "inngest_event_key" {
+  length  = 32
+  special = false
+}
+
+resource "random_id" "inngest_signing_key" {
+  byte_length = 32
+}
+
+resource "google_secret_manager_secret" "inngest_event_key" {
+  secret_id = "atlas-inngest-event-key"
+
+  replication {
+    auto {}
+  }
+
+  depends_on = [google_project_service.secretmanager]
+}
+
+resource "google_secret_manager_secret_version" "inngest_event_key" {
+  secret      = google_secret_manager_secret.inngest_event_key.id
+  secret_data = random_password.inngest_event_key.result
+}
+
+resource "google_secret_manager_secret" "inngest_signing_key" {
+  secret_id = "atlas-inngest-signing-key"
+
+  replication {
+    auto {}
+  }
+
+  depends_on = [google_project_service.secretmanager]
+}
+
+resource "google_secret_manager_secret_version" "inngest_signing_key" {
+  secret      = google_secret_manager_secret.inngest_signing_key.id
+  secret_data = "signkey-prod-${random_id.inngest_signing_key.hex}"
+}
+
 # Same value as Cloud Run DATABASE_URL; exposed to Cloud Build for api db:migrate (see cloudbuild-api.yaml).
 resource "google_secret_manager_secret" "api_database_url" {
   secret_id = "atlas-api-database-url"
@@ -115,6 +156,15 @@ resource "google_cloud_run_v2_service" "atlas_web" {
         name  = "VITE_FRONTEND_URL"
         value = var.vite_frontend_url
       }
+      env {
+        name = "INNGEST_EVENT_KEY"
+        value_source {
+          secret_key_ref {
+            secret  = google_secret_manager_secret.inngest_event_key.secret_id
+            version = "latest"
+          }
+        }
+      }
     }
   }
 
@@ -171,6 +221,28 @@ resource "google_cloud_run_v2_service" "atlas_api" {
       env {
         name  = "TRUSTED_ORIGINS"
         value = var.trusted_origins
+      }
+      env {
+        name  = "NCBI_API_KEY"
+        value = var.ncbi_api_key
+      }
+      env {
+        name = "INNGEST_EVENT_KEY"
+        value_source {
+          secret_key_ref {
+            secret  = google_secret_manager_secret.inngest_event_key.secret_id
+            version = "latest"
+          }
+        }
+      }
+      env {
+        name = "INNGEST_SIGNING_KEY"
+        value_source {
+          secret_key_ref {
+            secret  = google_secret_manager_secret.inngest_signing_key.secret_id
+            version = "latest"
+          }
+        }
       }
     }
   }

@@ -60,6 +60,12 @@ variable "google_generative_ai_api_key" {
   sensitive   = true
 }
 
+variable "ncbi_api_key" {
+  description = "NCBI API key for E-utilities access"
+  type        = string
+  sensitive   = true
+}
+
 # --- API service (Hono + Mastra) ---
 
 variable "database_url" {
