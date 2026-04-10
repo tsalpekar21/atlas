@@ -36,7 +36,7 @@ function SkeletonBubble({
 			className={`flex w-full min-w-0 ${align === "right" ? "justify-end" : "justify-start"}`}
 		>
 			<div
-				className={`max-w-[85%] min-w-0 rounded-lg px-4 py-3 ${
+				className={`w-[480px] max-w-[85%] rounded-lg px-4 py-3 ${
 					isUser ? "bg-brand-100" : "bg-neutral-100"
 				}`}
 			>
