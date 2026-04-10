@@ -1,5 +1,5 @@
 {
-	"$schema": "https://biomejs.dev/schemas/2.2.4/schema.json",
+	"$schema": "https://biomejs.dev/schemas/2.4.10/schema.json",
 	"vcs": {
 		"enabled": true,
 		"clientKind": "git",
@@ -11,7 +11,9 @@
 			"apps/web/src/**/*",
 			"apps/web/vite.config.ts",
 			"apps/api/src/**/*",
+			"apps/api/scripts/**/*",
 			"packages/subframe/**/*",
+			"packages/schemas/**/*",
 			"!**/routeTree.gen.ts",
 			"!**/styles.css",
 			"!**/node_modules/**"

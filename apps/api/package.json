@@ -11,7 +11,8 @@
     "studio": "pnpm mastra studio --port 3001",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
-    "db:studio": "drizzle-kit studio"
+    "db:studio": "drizzle-kit studio",
+    "scrape:rupa": "tsx scripts/scrape-rupa.ts"
   },
   "dependencies": {
     "@ai-sdk/google": "^3.0.43",
@@ -28,6 +29,7 @@
     "@mastra/memory": "^1.15.0",
     "@mastra/observability": "^1.9.0",
     "@mastra/pg": "^1.9.0",
+    "@mendable/firecrawl-js": "^4.18.1",
     "@t3-oss/env-core": "^0.13.11",
     "ai": "^6.0.116",
     "better-auth": "^1.5.6",

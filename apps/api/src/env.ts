@@ -28,6 +28,8 @@ export const env = createEnv({
 		 * because research rounds fire parallel workers that both hit PubMed.
 		 */
 		NCBI_API_KEY: z.string().optional(),
+		FIRECRAWL_API_KEY: z.string().min(1),
+		FIRECRAWL_WEBHOOK_SECRET: z.string().min(1),
 		PORT: portSchema,
 		NODE_ENV: z.string().optional(),
 	},
@@ -39,6 +41,8 @@ export const env = createEnv({
 		CORS_ORIGIN: process.env.CORS_ORIGIN,
 		GOOGLE_GENERATIVE_AI_API_KEY: process.env.GOOGLE_GENERATIVE_AI_API_KEY,
 		NCBI_API_KEY: process.env.NCBI_API_KEY,
+		FIRECRAWL_API_KEY: process.env.FIRECRAWL_API_KEY,
+		FIRECRAWL_WEBHOOK_SECRET: process.env.FIRECRAWL_WEBHOOK_SECRET,
 		PORT: process.env.PORT,
 		NODE_ENV: process.env.NODE_ENV,
 	},

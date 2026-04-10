@@ -103,3 +103,17 @@ variable "api_url" {
   description = "Public URL of the API service"
   type        = string
 }
+
+# --- Firecrawl ---
+
+variable "firecrawl_api_key" {
+  description = "Firecrawl cloud API key"
+  type        = string
+  sensitive   = true
+}
+
+variable "firecrawl_webhook_secret" {
+  description = "Firecrawl webhook signing secret (from dashboard Advanced tab)"
+  type        = string
+  sensitive   = true
+}

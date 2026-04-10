@@ -33,7 +33,7 @@ function jsonBlock(value: unknown): string {
 		value === null || value === undefined
 			? "(empty)"
 			: JSON.stringify(value, null, 2);
-	return "```json\n" + body + "\n```";
+	return `\`\`\`json\n${body}\n\`\`\``;
 }
 
 /**
@@ -100,7 +100,7 @@ export function formatResearchRoundMarkdown(
 
 /** Working memory is already markdown — just prepend a header. */
 export function formatWorkingMemoryMarkdown(memory: string | null): string {
-	if (!memory || !memory.trim()) {
+	if (!memory?.trim()) {
 		return "# Working memory\n\n_Empty — the assistant has not updated working memory for this message yet._";
 	}
 	return `# Working memory snapshot\n\n${memory}`;

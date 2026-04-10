@@ -45,6 +45,22 @@ resource "google_secret_manager_secret_version" "api_database_url" {
   secret_data = var.database_url
 }
 
+# Firecrawl webhook signing secret — used at runtime by the API to verify inbound webhooks.
+resource "google_secret_manager_secret" "firecrawl_webhook_secret" {
+  secret_id = "atlas-api-firecrawl-webhook-secret"
+
+  replication {
+    auto {}
+  }
+
+  depends_on = [google_project_service.secretmanager]
+}
+
+resource "google_secret_manager_secret_version" "firecrawl_webhook_secret" {
+  secret      = google_secret_manager_secret.firecrawl_webhook_secret.id
+  secret_data = var.firecrawl_webhook_secret
+}
+
 # Artifact Registry repository for Docker images
 resource "google_artifact_registry_repository" "atlas" {
   location      = var.region
@@ -176,11 +192,25 @@ resource "google_cloud_run_v2_service" "atlas_api" {
         name  = "NCBI_API_KEY"
         value = var.ncbi_api_key
       }
+      env {
+        name  = "FIRECRAWL_API_KEY"
+        value = var.firecrawl_api_key
+      }
+      env {
+        name = "FIRECRAWL_WEBHOOK_SECRET"
+        value_source {
+          secret_key_ref {
+            secret  = google_secret_manager_secret.firecrawl_webhook_secret.secret_id
+            version = "latest"
+          }
+        }
+      }
     }
   }
 
   depends_on = [
     google_project_service.run,
     google_artifact_registry_repository.atlas,
+    google_secret_manager_secret_version.firecrawl_webhook_secret,
   ]
 }

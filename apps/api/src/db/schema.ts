@@ -173,3 +173,26 @@ export const messageDebugSnapshots = pgTable(
 		),
 	],
 );
+
+/**
+ * Scraped web pages from Firecrawl. One row per unique URL.
+ * Used by the `scripts/scrape-rupa.ts` batch script.
+ */
+export const scrapedPages = pgTable(
+	"scraped_pages",
+	{
+		id: uuid("id").primaryKey().defaultRandom(),
+		url: text("url").notNull().unique(),
+		title: text("title"),
+		description: text("description"),
+		markdown: text("markdown"),
+		metadata: jsonb("metadata"),
+		scrapedAt: timestamp("scraped_at").defaultNow().notNull(),
+		createdAt: timestamp("created_at").defaultNow().notNull(),
+		updatedAt: timestamp("updated_at")
+			.defaultNow()
+			.$onUpdate(() => /* @__PURE__ */ new Date())
+			.notNull(),
+	},
+	(table) => [index("scraped_pages_url_idx").on(table.url)],
+);

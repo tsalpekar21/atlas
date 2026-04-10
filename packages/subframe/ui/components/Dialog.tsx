@@ -50,7 +50,7 @@ const DialogRoot = React.forwardRef<HTMLDivElement, DialogRootProps>(
       <SubframeCore.Dialog.Root asChild={true} {...otherProps}>
         <div
           className={SubframeUtils.twClassNames(
-            "flex h-full w-full flex-col items-center justify-center gap-2 bg-[#00000099] transition-opacity duration-300",
+            "flex h-full w-full flex-col items-center justify-center gap-2 bg-[#00000099]",
             className
           )}
           ref={ref}

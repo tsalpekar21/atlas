@@ -35,3 +35,7 @@ trusted_origins = "https://your-domain.example.com"
 
 # Public URL of the API service (custom domain or Cloud Run URL).
 # api_url = "https://api.your-domain.example.com"
+
+firecrawl_signing_secret = "test"
+
+firecrawl_api_key = "test"

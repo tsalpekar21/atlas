@@ -13,8 +13,14 @@ import { chatRoutes } from "./routes/chat.ts";
 import { researchJsonRoutes } from "./routes/research-json.ts";
 import { researchRoutes } from "./routes/research.ts";
 import { threadRoutes } from "./routes/threads.ts";
+import { firecrawlWebhookRoutes } from "./routes/webhooks/firecrawl.ts";
 
 const trustedOrigins = getTrustedOrigins();
+
+// ---------------------------------------------------------------------------
+// Root app — owns CORS, request logging, and route composition.
+// Mastra gets its own sub-app so its middleware stays scoped.
+// ---------------------------------------------------------------------------
 
 const app = new Hono<{ Bindings: HonoBindings; Variables: HonoVariables }>();
 
@@ -43,14 +49,6 @@ app.use(
 	}),
 );
 
-app.on(["GET", "POST", "OPTIONS"], "/api/auth/*", (c) => {
-	return auth.handler(c.req.raw);
-});
-
-const server = new MastraServer({ app, mastra });
-
-await server.init();
-
 app.use("*", async (c, next) => {
 	const start = Date.now();
 	const method = c.req.method;
@@ -60,6 +58,37 @@ app.use("*", async (c, next) => {
 	const statusCode = c.res.status;
 	logger.info({ method, path, statusCode, durationMs }, "request");
 });
+
+// ---------------------------------------------------------------------------
+// Auth (Better Auth handler — standalone, no Mastra involvement)
+// ---------------------------------------------------------------------------
+
+app.on(["GET", "POST", "OPTIONS"], "/api/auth/*", (c) => {
+	return auth.handler(c.req.raw);
+});
+
+// ---------------------------------------------------------------------------
+// Webhooks — signature-verified, no session auth
+// ---------------------------------------------------------------------------
+
+app.route("/webhooks/firecrawl", firecrawlWebhookRoutes);
+
+// ---------------------------------------------------------------------------
+// Mastra — isolated sub-app so its global middleware (context parsing,
+// auth in production) does not bleed into custom routes above.
+// ---------------------------------------------------------------------------
+
+const mastraApp = new Hono<{
+	Bindings: HonoBindings;
+	Variables: HonoVariables;
+}>();
+const mastraServer = new MastraServer({ app: mastraApp, mastra });
+await mastraServer.init();
+app.route("/", mastraApp);
+
+// ---------------------------------------------------------------------------
+// Custom API routes — session-authenticated via their own middleware
+// ---------------------------------------------------------------------------
 
 const appWithRoutes = app
 	.route("/", threadRoutes)
