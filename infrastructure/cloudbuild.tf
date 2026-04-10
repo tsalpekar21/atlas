@@ -57,18 +57,6 @@ resource "google_secret_manager_secret_iam_member" "build_sa_api_database_url" {
   member    = "serviceAccount:${local.build_sa}"
 }
 
-resource "google_secret_manager_secret_iam_member" "build_sa_inngest_event_key" {
-  secret_id = google_secret_manager_secret.inngest_event_key.secret_id
-  role      = "roles/secretmanager.secretAccessor"
-  member    = "serviceAccount:${local.build_sa}"
-}
-
-resource "google_secret_manager_secret_iam_member" "build_sa_inngest_signing_key" {
-  secret_id = google_secret_manager_secret.inngest_signing_key.secret_id
-  role      = "roles/secretmanager.secretAccessor"
-  member    = "serviceAccount:${local.build_sa}"
-}
-
 resource "google_cloudbuild_trigger" "atlas_web" {
   name            = "atlas-web-deploy"
   location        = var.region

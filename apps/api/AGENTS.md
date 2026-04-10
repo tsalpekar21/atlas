@@ -63,6 +63,32 @@ Top-level files define how your Mastra project is configured, built, and connect
 | `package.json`        | Defines project metadata, dependencies, and available npm scripts.                                                |
 | `tsconfig.json`       | Configures TypeScript options such as path aliases, compiler settings, and build output.                          |
 
+## API Client Convention — Always Use Hono RPC
+
+When calling API endpoints from the web app (`apps/web`), **always use the typed
+Hono RPC client** created by `createTriageApiClient()` in
+`apps/web/src/lib/triage-api-client.ts`. Do **not** assemble base URLs and call
+`fetch()` directly.
+
+The RPC client gives you end-to-end type safety: request params, query strings,
+and JSON bodies are validated at compile time against the `zValidator` schemas
+defined on the API routes.
+
+### Exceptions (do NOT convert these)
+
+| Call site | Why it cannot use RPC |
+|---|---|
+| `apps/web/src/hooks/use-research-status.ts` | Uses `EventSource` for SSE — a fundamentally different transport that Hono RPC does not support. |
+| `apps/web/src/lib/auth-client.ts` | Uses `better-auth/react` `createAuthClient`, a library-managed HTTP client. |
+
+### Adding new API routes
+
+When you add a **JSON** endpoint, include it in the `AppType` chain in
+`apps/api/src/app.ts` so the RPC client can see it. If the endpoint uses
+`streamSSE` or returns a bare `Response`, keep it out of `AppType` (mount it
+separately like `researchRoutes`) — otherwise it will collapse the RPC type
+to `unknown`.
+
 ## Mastra Skills
 
 Skills are modular capabilities that extend agent functionalities. They provide pre-built tools, integrations, and workflows that agents can leverage to accomplish tasks more effectively.

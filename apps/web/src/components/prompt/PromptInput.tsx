@@ -69,7 +69,7 @@ export function PromptInput({
 					onKeyDown={handleKeyDown}
 				/>
 			</TextArea>
-			<div className="pointer-events-none absolute bottom-3 right-3 z-10">
+			<div className="pointer-events-none absolute bottom-3 right-3">
 				<div className="pointer-events-auto">
 					<IconButton
 						className="transition-transform motion-safe:hover:scale-105 motion-safe:active:scale-95"

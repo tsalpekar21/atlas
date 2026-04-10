@@ -1,6 +1,5 @@
 import { MastraAuthBetterAuth } from "@mastra/auth-better-auth";
 import { Mastra } from "@mastra/core/mastra";
-import { serve as inngestServe } from "@mastra/inngest";
 import { PinoLogger } from "@mastra/loggers";
 import {
 	CloudExporter,
@@ -12,7 +11,6 @@ import { PostgresStore } from "@mastra/pg";
 import type { Auth } from "better-auth";
 import { auth } from "../auth.ts";
 import { env } from "../env.ts";
-import { inngest } from "../inngest/client.ts";
 import { getTrustedOrigins } from "../lib/trusted-origins.ts";
 import { healthAssistant } from "./agents/health-assistant/index.ts";
 import { researchSynthesizer } from "./agents/research/synthesizer.ts";
@@ -57,17 +55,6 @@ export const mastra = new Mastra({
 			credentials: true,
 			maxAge: 600,
 		},
-		apiRoutes: [
-			{
-				// `@mastra/inngest`'s `serve()` auto-discovers every Mastra workflow
-				// registered above that uses the Inngest execution engine and
-				// exposes them as Inngest functions under this endpoint. We don't
-				// pass `functions: [...]` — the workflow registration is enough.
-				path: "/api/inngest",
-				method: "ALL",
-				createHandler: async ({ mastra }) => inngestServe({ mastra, inngest }),
-			},
-		],
 	},
 	logger: new PinoLogger({
 		name: "Mastra",

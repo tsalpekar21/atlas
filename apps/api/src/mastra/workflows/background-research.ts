@@ -1,7 +1,6 @@
 import { logger } from "@atlas/logger";
-import { init } from "@mastra/inngest";
+import { createStep, createWorkflow } from "@mastra/core/workflows";
 import { z } from "zod";
-import { inngest } from "../../inngest/client.ts";
 import { publishResearchStatus } from "../../inngest/realtime-bus.ts";
 import {
 	computeChartHash,
@@ -15,8 +14,6 @@ import {
 	type PlannerBrief,
 	type ResearchSynthesis,
 } from "../../services/research.ts";
-
-const { createWorkflow, createStep } = init(inngest);
 
 // ---------- Schemas (piped between steps via `.then(...)` / `.parallel(...)`) ----------
 
@@ -576,26 +573,14 @@ Now emit the JSON synthesis object.`;
  *   synthesize                                               ~  8-12s
  *                                                   total    ~ 20-30s
  *
- * Inngest flow control:
- * - `throttle`: at most 1 run per 30s per thread. The first event after a
- *   quiet period fires immediately (leading edge); rapid back-to-back
- *   turns queue and drain at 1 per 30s. Queued rounds whose chart is
- *   unchanged bail cheaply at `gate-by-hash`.
- * - `concurrency`: singleton per thread + global cap of 5.
+ * Flow control: the `gateByHash` step cheaply skips rounds whose chart
+ * is unchanged since the last completed round, so rapid back-to-back
+ * triggers are safe — they bail early without burning LLM calls.
  */
 export const backgroundResearchWorkflow = createWorkflow({
 	id: "backgroundResearch",
 	inputSchema: workflowInputSchema,
 	outputSchema: workflowOutputSchema,
-	throttle: {
-		limit: 1,
-		period: "30s",
-		key: "event.data.inputData.threadId",
-	},
-	concurrency: [
-		{ scope: "fn", key: "event.data.inputData.threadId", limit: 1 },
-		{ limit: 5 },
-	],
 })
 	.then(loadContextStep)
 	.then(gateByHashStep)

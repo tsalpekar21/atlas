@@ -1,9 +1,0 @@
-{
-  "name": "@atlas/inngest-dev",
-  "version": "0.0.0",
-  "private": true,
-  "description": "Spawns `inngest-cli dev` under Turbo so background research functions run locally alongside the API. No runtime deps — the CLI is fetched via npx on first run.",
-  "scripts": {
-    "dev": "npx --yes inngest-cli@latest dev -u http://localhost:4111/api/inngest"
-  }
-}

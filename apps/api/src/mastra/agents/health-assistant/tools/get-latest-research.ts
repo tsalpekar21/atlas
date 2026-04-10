@@ -1,6 +1,6 @@
 import { createTool } from "@mastra/core/tools";
 import { z } from "zod";
-import { getLatestCompletedRound } from "../../../../services/research.ts";
+import { awaitInflightResearch } from "../../../../services/research.ts";
 
 const evidenceItemSchema = z.object({
 	claim: z.string(),
@@ -56,7 +56,7 @@ export const getLatestResearchTool = createTool({
 				escalationFlags: [],
 			};
 		}
-		const row = await getLatestCompletedRound(threadId);
+		const row = await awaitInflightResearch(threadId);
 		if (!row) {
 			return {
 				available: false,

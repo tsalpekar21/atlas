@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { DebugSnapshot } from "@/components/chat/debug-format";
-import { env } from "@/env";
+import { createTriageApiClient } from "@/lib/triage-api-client";
 
 type UseDebugSnapshotsResult = {
 	byMessageId: Map<string, DebugSnapshot>;
@@ -34,17 +34,23 @@ export function useDebugSnapshots(
 	const fetchSnapshots = useCallback(async () => {
 		if (import.meta.env.MODE === "production") return;
 		if (!threadId) return;
-		const base = env.VITE_API_URL.replace(/\/$/, "");
 		try {
-			const res = await fetch(
-				`${base}/debug/${encodeURIComponent(threadId)}/snapshots`,
-				{ credentials: "include" },
-			);
+			const client = createTriageApiClient();
+			const res = await client.debug[":threadId"].snapshots.$get({
+				param: { threadId },
+			});
 			if (!res.ok) return;
-			const body = (await res.json()) as { snapshots: DebugSnapshot[] };
+			const body = await res.json();
 			const next = new Map<string, DebugSnapshot>();
 			for (const snap of body.snapshots) {
-				next.set(snap.messageId, snap);
+				if (!snap.researchRound) continue;
+				next.set(snap.messageId, {
+					...snap,
+					researchRound: {
+						...snap.researchRound,
+						workerOutputs: snap.researchRound.workerOutputs ?? null,
+					},
+				});
 			}
 			setByMessageId(next);
 			setLoaded(true);

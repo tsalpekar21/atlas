@@ -4,6 +4,7 @@ import type { Mastra } from "@mastra/core/mastra";
 import { and, desc, eq } from "drizzle-orm";
 import { db } from "../db/index.ts";
 import { researchFindings } from "../db/schema.ts";
+import { subscribeResearchStatus } from "../inngest/realtime-bus.ts";
 import { HEALTH_ASSISTANT_AGENT_ID } from "./threads/constants.ts";
 
 /**
@@ -633,6 +634,82 @@ export async function getLastCompletedHash(
 	return row?.chartHash ?? null;
 }
 
+/**
+ * Returns the most recent running research round for a thread, or null.
+ */
+export async function getRunningRound(
+	threadId: string,
+): Promise<{ id: string } | null> {
+	const rows = await db
+		.select({ id: researchFindings.id })
+		.from(researchFindings)
+		.where(
+			and(
+				eq(researchFindings.threadId, threadId),
+				eq(researchFindings.status, "running"),
+			),
+		)
+		.orderBy(desc(researchFindings.createdAt))
+		.limit(1);
+	return rows[0] ?? null;
+}
+
+/**
+ * If there is a "running" research round for this thread, waits for it to
+ * reach a terminal status (complete | failed | skipped) via the in-process
+ * EventEmitter, then returns the latest completed round.
+ *
+ * If nothing is running, returns immediately — identical to
+ * `getLatestCompletedRound`.
+ */
+export async function awaitInflightResearch(
+	threadId: string,
+	timeoutMs = 15_000,
+): Promise<typeof researchFindings.$inferSelect | null> {
+	const running = await getRunningRound(threadId);
+
+	if (running) {
+		let timedOut = false;
+		let unsubscribe: (() => void) | undefined;
+		try {
+			await Promise.race([
+				new Promise<void>((resolve) => {
+					unsubscribe = subscribeResearchStatus(threadId, (event) => {
+						if (
+							event.status === "complete" ||
+							event.status === "failed" ||
+							event.status === "skipped"
+						) {
+							resolve();
+						}
+					});
+				}),
+				new Promise<void>((resolve) =>
+					setTimeout(() => {
+						timedOut = true;
+						resolve();
+					}, timeoutMs),
+				),
+			]);
+		} finally {
+			unsubscribe?.();
+		}
+		if (timedOut) {
+			logger.warn(
+				{
+					component: "research.await",
+					threadId,
+					roundId: running.id,
+					timeoutMs,
+				},
+				"timed out waiting for in-flight research; returning best available data",
+			);
+		}
+	}
+
+	return getLatestCompletedRound(threadId);
+}
+
 /** Small history list for the `/research/:threadId` endpoint. */
 export async function listResearchHistory(threadId: string, limit = 20) {
 	return db
@@ -653,11 +730,11 @@ export async function listResearchHistory(threadId: string, limit = 20) {
 /**
  * Fire-and-forget: start a background research workflow run for this thread.
  *
- * Uses `startAsync` so we return immediately after the Inngest event is
- * queued — the workflow then runs independently inside Inngest. Inngest
- * applies soft debounce + singleton-per-thread concurrency (configured on
- * `backgroundResearchWorkflow`), so calling this after every chat turn is
- * safe: tight back-and-forth coalesces into a single round.
+ * Uses `startAsync` so we return immediately — the workflow then runs
+ * in-process via Mastra's native execution engine. The `gateByHash` step
+ * cheaply skips rounds whose chart is unchanged, so calling this after
+ * every chat turn is safe: rapid back-to-back turns bail early without
+ * burning LLM calls.
  */
 export async function enqueueResearchEvaluation(args: {
 	mastra: Mastra;

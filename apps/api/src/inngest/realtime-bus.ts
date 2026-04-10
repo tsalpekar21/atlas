@@ -5,11 +5,9 @@ import { EventEmitter } from "node:events";
  * status from the workflow runner to the SSE route that the web app
  * subscribes to.
  *
- * This works because the Inngest function and the Hono SSE handler live in
- * the same Node process — Inngest devserver (and the managed Inngest Cloud
- * executor) both call back into our `/api/inngest` handler to execute
- * function steps, and that handler runs here. For multi-instance deploys
- * this needs to be swapped for Redis pub/sub or Postgres LISTEN/NOTIFY.
+ * This works because the Mastra workflow executor and the Hono SSE handler
+ * live in the same Node process. For multi-instance deploys this needs to
+ * be swapped for Redis pub/sub or Postgres LISTEN/NOTIFY.
  */
 export type ResearchStatus =
 	| "planning"
