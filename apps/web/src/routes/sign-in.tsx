@@ -20,9 +20,12 @@ export const Route = createFileRoute("/sign-in")({
 
 function SignInPage() {
 	const navigate = useNavigate();
-	const handleSuccess = useCallback(() => {
-		void navigate({ to: "/" });
-	}, [navigate]);
+	const handleSuccess = useCallback(
+		({ isAdmin }: { isAdmin: boolean }) => {
+			void navigate({ to: isAdmin ? "/admin" : "/" });
+		},
+		[navigate],
+	);
 
 	return (
 		<AuthShell>

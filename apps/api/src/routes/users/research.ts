@@ -5,9 +5,9 @@ import { z } from "zod";
 import {
 	type ResearchStatusEvent,
 	subscribeResearchStatus,
-} from "../inngest/realtime-bus.ts";
-import { requireSessionMiddleware } from "../middleware/require-session.ts";
-import type { AppEnv } from "../types.ts";
+} from "../../inngest/realtime-bus.ts";
+import { requireSessionMiddleware } from "../../middleware/require-session.ts";
+import type { AppEnv } from "../../types.ts";
 
 const threadParamSchema = z.object({
 	threadId: z.string().min(1),

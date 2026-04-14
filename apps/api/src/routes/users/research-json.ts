@@ -1,14 +1,14 @@
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import { z } from "zod";
-import { env } from "../env.ts";
-import { requireSessionMiddleware } from "../middleware/require-session.ts";
-import { getDebugSnapshotsForThread } from "../services/debug.ts";
+import { env } from "../../env.ts";
+import { requireSessionMiddleware } from "../../middleware/require-session.ts";
+import { getDebugSnapshotsForThread } from "../../services/debug.ts";
 import {
 	getLatestCompletedRound,
 	listResearchHistory,
-} from "../services/research.ts";
-import type { AppEnv } from "../types.ts";
+} from "../../services/research.ts";
+import type { AppEnv } from "../../types.ts";
 
 const threadParamSchema = z.object({
 	threadId: z.string().min(1),

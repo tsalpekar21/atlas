@@ -2,11 +2,11 @@ import { getThreadMessagesResponseSchema } from "@atlas/schemas/api";
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import { z } from "zod";
-import { requireSessionMiddleware } from "../middleware/require-session.ts";
-import { deleteThreadById } from "../services/threads/delete-thread.ts";
-import { getThreadMessagesForResource } from "../services/threads/get-thread-messages.ts";
-import { listThreadsForResource } from "../services/threads/list-threads.ts";
-import type { AppEnv } from "../types.ts";
+import { requireSessionMiddleware } from "../../middleware/require-session.ts";
+import { deleteThreadById } from "../../services/threads/delete-thread.ts";
+import { getThreadMessagesForResource } from "../../services/threads/get-thread-messages.ts";
+import { listThreadsForResource } from "../../services/threads/list-threads.ts";
+import type { AppEnv } from "../../types.ts";
 
 const threadParamSchema = z.object({
 	threadId: z.string().min(1),
