@@ -7,6 +7,11 @@ import { Hono } from "hono";
 import { requireAdminMiddleware } from "../../middleware/require-admin.ts";
 import type { AppEnv } from "../../types.ts";
 import { adminUserRoutes } from "./users.ts";
+import { adminWebsiteRoutes } from "./websites.ts";
 
 const base = new Hono<AppEnv>().use("*", requireAdminMiddleware);
-export const adminApp = base.route("/", adminUserRoutes);
+export const adminApp = base
+	.route("/", adminUserRoutes)
+	.route("/", adminWebsiteRoutes);
+
+export type AdminAppType = typeof adminApp;

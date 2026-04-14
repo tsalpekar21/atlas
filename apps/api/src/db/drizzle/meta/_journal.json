@@ -57,6 +57,13 @@
 			"when": 1776191125506,
 			"tag": "0007_complex_dormammu",
 			"breakpoints": true
+		},
+		{
+			"idx": 8,
+			"version": "7",
+			"when": 1776199813743,
+			"tag": "0008_fat_switch",
+			"breakpoints": true
 		}
 	]
 }
