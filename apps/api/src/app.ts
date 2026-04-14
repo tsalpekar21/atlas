@@ -106,9 +106,12 @@ appWithRoutes.route("/", researchRoutes);
  * Admin routes — mounted at `/admin/*`, guarded by `requireAdminMiddleware`
  * at the sub-app level. Intentionally NOT folded into `AppType` so admin
  * shapes cannot leak into the public `hc<AppType>` RPC client used by the
- * web app. Admin UIs should use a dedicated client (see
- * `apps/web/src/lib/admin/admin-api-client.ts`).
+ * web app. Admin UIs use a dedicated typed `hc<AdminAppType>` client (see
+ * `apps/web/src/lib/admin/admin-api-client.ts`), which is why we re-export
+ * `AdminAppType` here as a separate symbol.
  */
 appWithRoutes.route("/admin", adminApp);
+
+export type { AdminAppType } from "./routes/admin/index.ts";
 
 export default appWithRoutes;

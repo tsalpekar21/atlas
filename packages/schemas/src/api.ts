@@ -48,6 +48,45 @@ export const deleteThreadResponseSchema = z.object({
 
 export type DeleteThreadResponse = z.infer<typeof deleteThreadResponseSchema>;
 
+// --- Admin API response schemas ---
+
+export const adminUserSchema = z.object({
+	id: z.string(),
+	email: z.string(),
+	name: z.string(),
+	role: z.string().nullable(),
+	banned: z.boolean().nullable(),
+	createdAt: z.string(),
+});
+
+export type AdminUser = z.infer<typeof adminUserSchema>;
+
+export const listAdminUsersResponseSchema = z.object({
+	users: z.array(adminUserSchema),
+});
+
+export type ListAdminUsersResponse = z.infer<
+	typeof listAdminUsersResponseSchema
+>;
+
+export const adminWebsiteSchema = z.object({
+	id: z.string().uuid(),
+	title: z.string(),
+	rootDomain: z.string(),
+	pageCount: z.number().int().nonnegative(),
+	createdAt: z.string(),
+});
+
+export type AdminWebsite = z.infer<typeof adminWebsiteSchema>;
+
+export const listAdminWebsitesResponseSchema = z.object({
+	websites: z.array(adminWebsiteSchema),
+});
+
+export type ListAdminWebsitesResponse = z.infer<
+	typeof listAdminWebsitesResponseSchema
+>;
+
 // --- Chat request schema ---
 
 export const chatRequestSchema = z.object({

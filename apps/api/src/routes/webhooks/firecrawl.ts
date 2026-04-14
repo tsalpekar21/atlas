@@ -3,8 +3,25 @@ import { logger } from "@atlas/logger";
 import { Hono } from "hono";
 import * as z from "zod";
 import { db } from "../../db/index.ts";
-import { scrapedPages } from "../../db/schema.ts";
+import { scrapedPages, scrapedWebsites } from "../../db/schema.ts";
 import { env } from "../../env.ts";
+
+/**
+ * Derive the "root domain" key we group scraped pages under. Matches the
+ * URL column style used by the admin UI (`who.int`, `mayoclinic.org`,
+ * `pubmed.ncbi.nlm.nih.gov`) — i.e., the page's hostname with a leading
+ * `www.` stripped. We deliberately do NOT collapse to eTLD+1 so subdomains
+ * that publish distinct corpora (pubmed vs other NIH sites) remain separate
+ * `scraped_websites` rows.
+ */
+function extractRootDomain(url: string): string | null {
+	try {
+		const hostname = new URL(url).hostname.toLowerCase();
+		return hostname.startsWith("www.") ? hostname.slice(4) : hostname;
+	} catch {
+		return null;
+	}
+}
 
 // ---------------------------------------------------------------------------
 // Zod schema — validate top-level shape only; `data` varies by event
@@ -83,6 +100,25 @@ export const firecrawlWebhookRoutes = new Hono().post("", async (c) => {
 			const url = doc.metadata?.url;
 			if (!url) continue;
 
+			// Resolve the parent `scraped_websites` row for this page's root
+			// domain. Atomically create-or-fetch via ON CONFLICT DO UPDATE
+			// RETURNING so concurrent webhooks for pages on the same domain
+			// don't race. `title` defaults to the root domain itself on first
+			// insert — admins can rename it later from the websites list.
+			let scrapedWebsiteId: string | null = null;
+			const rootDomain = extractRootDomain(url);
+			if (rootDomain) {
+				const [row] = await db
+					.insert(scrapedWebsites)
+					.values({ title: rootDomain, rootDomain })
+					.onConflictDoUpdate({
+						target: scrapedWebsites.rootDomain,
+						set: { updatedAt: new Date() },
+					})
+					.returning({ id: scrapedWebsites.id });
+				scrapedWebsiteId = row?.id ?? null;
+			}
+
 			await db
 				.insert(scrapedPages)
 				.values({
@@ -91,6 +127,7 @@ export const firecrawlWebhookRoutes = new Hono().post("", async (c) => {
 					description: doc.metadata?.description ?? null,
 					markdown: doc.markdown ?? null,
 					metadata: doc.metadata ?? null,
+					scrapedWebsiteId,
 				})
 				.onConflictDoUpdate({
 					target: scrapedPages.url,
@@ -99,11 +136,15 @@ export const firecrawlWebhookRoutes = new Hono().post("", async (c) => {
 						description: doc.metadata?.description ?? null,
 						markdown: doc.markdown ?? null,
 						metadata: doc.metadata ?? null,
+						scrapedWebsiteId,
 					},
 				});
 
 			upserted++;
-			logger.info({ url }, "Firecrawl page upserted");
+			logger.info(
+				{ url, rootDomain, scrapedWebsiteId },
+				"Firecrawl page upserted",
+			);
 		}
 		logger.info({ jobId: id, upserted }, "Firecrawl page event processed");
 	} else if (type.endsWith(".completed")) {

@@ -180,6 +180,26 @@ export const messageDebugSnapshots = pgTable(
 );
 
 /**
+ * Canonical website rows that group many `scraped_pages` together by root
+ * domain. Created so the admin UI can present the scrape corpus at the
+ * website level (title + root domain + page counts) instead of page-by-page.
+ */
+export const scrapedWebsites = pgTable(
+	"scraped_websites",
+	{
+		id: uuid("id").primaryKey().defaultRandom(),
+		title: text("title").notNull(),
+		rootDomain: text("root_domain").notNull().unique(),
+		createdAt: timestamp("created_at").defaultNow().notNull(),
+		updatedAt: timestamp("updated_at")
+			.defaultNow()
+			.$onUpdate(() => /* @__PURE__ */ new Date())
+			.notNull(),
+	},
+	(table) => [index("scraped_websites_root_domain_idx").on(table.rootDomain)],
+);
+
+/**
  * Scraped web pages from Firecrawl. One row per unique URL.
  * Used by the `scripts/scrape-rupa.ts` batch script.
  */
@@ -192,6 +212,10 @@ export const scrapedPages = pgTable(
 		description: text("description"),
 		markdown: text("markdown"),
 		metadata: jsonb("metadata"),
+		scrapedWebsiteId: uuid("scraped_website_id").references(
+			() => scrapedWebsites.id,
+			{ onDelete: "cascade" },
+		),
 		scrapedAt: timestamp("scraped_at").defaultNow().notNull(),
 		createdAt: timestamp("created_at").defaultNow().notNull(),
 		updatedAt: timestamp("updated_at")
@@ -199,5 +223,8 @@ export const scrapedPages = pgTable(
 			.$onUpdate(() => /* @__PURE__ */ new Date())
 			.notNull(),
 	},
-	(table) => [index("scraped_pages_url_idx").on(table.url)],
+	(table) => [
+		index("scraped_pages_url_idx").on(table.url),
+		index("scraped_pages_scraped_website_id_idx").on(table.scrapedWebsiteId),
+	],
 );
