@@ -10,7 +10,7 @@ import { authClient } from "@/lib/auth-client";
 type FieldErrors = Partial<Record<keyof SignInValues | "form", string>>;
 
 interface SignInFormProps {
-	onSuccess: () => void;
+	onSuccess: (result: { isAdmin: boolean }) => void;
 }
 
 export function SignInForm({ onSuccess }: SignInFormProps) {
@@ -60,7 +60,7 @@ export function SignInForm({ onSuccess }: SignInFormProps) {
 					});
 					return;
 				}
-				onSuccess();
+				onSuccess({ isAdmin: signInResult.data?.user.role === "admin" });
 			} catch (err) {
 				setErrors({
 					form: err instanceof Error ? err.message : "Could not sign in",

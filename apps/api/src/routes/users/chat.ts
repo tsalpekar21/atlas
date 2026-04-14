@@ -1,9 +1,9 @@
 import { chatRequestSchema } from "@atlas/schemas/api";
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
-import { requireSessionMiddleware } from "../middleware/require-session.ts";
-import { buildChatUiResponse } from "../services/chat.ts";
-import type { AppEnv } from "../types.ts";
+import { requireSessionMiddleware } from "../../middleware/require-session.ts";
+import { buildChatUiResponse } from "../../services/chat.ts";
+import type { AppEnv } from "../../types.ts";
 
 export const chatRoutes = new Hono<AppEnv>()
 	.use("*", requireSessionMiddleware)

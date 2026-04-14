@@ -1,7 +1,10 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { LandingPage } from "@/components/landing/LandingPage";
+import { authClient } from "@/lib/auth-client";
 
 export const Route = createFileRoute("/")({
+	// Session lookup depends on browser cookies, so beforeLoad must run client-side.
+	ssr: false,
 	head: () => ({
 		meta: [
 			{ title: "Atlas Health — Every patient deserves a care team" },
@@ -12,6 +15,12 @@ export const Route = createFileRoute("/")({
 			},
 		],
 	}),
+	beforeLoad: async () => {
+		const session = await authClient.getSession();
+		if (session.data?.user.role === "admin") {
+			throw redirect({ to: "/admin" });
+		}
+	},
 	component: Home,
 });
 

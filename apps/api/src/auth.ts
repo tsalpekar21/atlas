@@ -1,6 +1,6 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { anonymous } from "better-auth/plugins";
+import { admin, anonymous } from "better-auth/plugins";
 import { db } from "./db/index.ts";
 import * as schema from "./db/schema.ts";
 import { env } from "./env.ts";
@@ -60,6 +60,10 @@ export const auth = betterAuth({
 					toUserId: newUser.user.id,
 				});
 			},
+		}),
+		admin({
+			defaultRole: "user",
+			adminRoles: ["admin"],
 		}),
 	],
 });

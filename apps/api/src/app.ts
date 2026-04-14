@@ -9,10 +9,11 @@ import { cors } from "hono/cors";
 import { auth } from "./auth.ts";
 import { getTrustedOrigins } from "./lib/trusted-origins.ts";
 import { mastra } from "./mastra/index.ts";
-import { chatRoutes } from "./routes/chat.ts";
-import { researchRoutes } from "./routes/research.ts";
-import { researchJsonRoutes } from "./routes/research-json.ts";
-import { threadRoutes } from "./routes/threads.ts";
+import { adminApp } from "./routes/admin/index.ts";
+import { chatRoutes } from "./routes/users/chat.ts";
+import { researchRoutes } from "./routes/users/research.ts";
+import { researchJsonRoutes } from "./routes/users/research-json.ts";
+import { threadRoutes } from "./routes/users/threads.ts";
 import { firecrawlWebhookRoutes } from "./routes/webhooks/firecrawl.ts";
 
 const trustedOrigins = getTrustedOrigins();
@@ -100,5 +101,14 @@ export type AppType = typeof appWithRoutes;
  * `AppType` for typed RPC access.
  */
 appWithRoutes.route("/", researchRoutes);
+
+/**
+ * Admin routes — mounted at `/admin/*`, guarded by `requireAdminMiddleware`
+ * at the sub-app level. Intentionally NOT folded into `AppType` so admin
+ * shapes cannot leak into the public `hc<AppType>` RPC client used by the
+ * web app. Admin UIs should use a dedicated client (see
+ * `apps/web/src/lib/admin/admin-api-client.ts`).
+ */
+appWithRoutes.route("/admin", adminApp);
 
 export default appWithRoutes;

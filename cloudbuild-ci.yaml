@@ -1,0 +1,60 @@
+# Cloud Build: PR validation — lint + typecheck + build.
+# Triggered on every push to a branch other than main (see the
+# `atlas_ci` trigger in infrastructure/cloudbuild.tf). No docker build,
+# no push, no deploy — this config is validation-only.
+
+substitutions:
+  _VITE_API_URL: "http://localhost:4111"
+  _VITE_FRONTEND_URL: "http://localhost:3000"
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+  machineType: E2_HIGHCPU_8
+
+steps:
+  - name: node:22-bookworm-slim
+    id: install
+    entrypoint: bash
+    args:
+      - -c
+      - |
+        set -e
+        corepack enable
+        corepack prepare pnpm@latest --activate
+        pnpm install --frozen-lockfile
+
+  - name: node:22-bookworm-slim
+    id: lint
+    entrypoint: bash
+    args:
+      - -c
+      - |
+        set -e
+        corepack enable
+        pnpm lint
+    waitFor: ["install"]
+
+  - name: node:22-bookworm-slim
+    id: typecheck
+    entrypoint: bash
+    args:
+      - -c
+      - |
+        set -e
+        corepack enable
+        pnpm typecheck
+    waitFor: ["install"]
+
+  - name: node:22-bookworm-slim
+    id: build
+    entrypoint: bash
+    env:
+      - "VITE_API_URL=${_VITE_API_URL}"
+      - "VITE_FRONTEND_URL=${_VITE_FRONTEND_URL}"
+    args:
+      - -c
+      - |
+        set -e
+        corepack enable
+        pnpm build
+    waitFor: ["install"]
