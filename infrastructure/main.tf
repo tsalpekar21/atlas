@@ -61,6 +61,23 @@ resource "google_secret_manager_secret_version" "firecrawl_webhook_secret" {
   secret_data = var.firecrawl_webhook_secret
 }
 
+# Mastra SimpleAuth bearer token — used at runtime by the API to authenticate
+# Mastra Studio and any other direct callers of /api/* Mastra routes.
+resource "google_secret_manager_secret" "mastra_api_key" {
+  secret_id = "atlas-api-mastra-api-key"
+
+  replication {
+    auto {}
+  }
+
+  depends_on = [google_project_service.secretmanager]
+}
+
+resource "google_secret_manager_secret_version" "mastra_api_key" {
+  secret      = google_secret_manager_secret.mastra_api_key.id
+  secret_data = var.mastra_api_key
+}
+
 # Artifact Registry repository for Docker images
 resource "google_artifact_registry_repository" "atlas" {
   location      = var.region
@@ -205,6 +222,15 @@ resource "google_cloud_run_v2_service" "atlas_api" {
           }
         }
       }
+      env {
+        name = "MASTRA_API_KEY"
+        value_source {
+          secret_key_ref {
+            secret  = google_secret_manager_secret.mastra_api_key.secret_id
+            version = "latest"
+          }
+        }
+      }
     }
   }
 
@@ -212,5 +238,6 @@ resource "google_cloud_run_v2_service" "atlas_api" {
     google_project_service.run,
     google_artifact_registry_repository.atlas,
     google_secret_manager_secret_version.firecrawl_webhook_secret,
+    google_secret_manager_secret_version.mastra_api_key,
   ]
 }

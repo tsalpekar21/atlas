@@ -28,9 +28,9 @@ export const mastra = new Mastra({
 	server: {
 		auth: new SimpleAuth({
 			tokens: {
-				"test-api-key": {
-					id: "user-id-1",
-					name: "Test User",
+				[env.MASTRA_API_KEY]: {
+					id: "mastra-studio",
+					name: "Mastra Studio",
 					role: "admin",
 				},
 			},

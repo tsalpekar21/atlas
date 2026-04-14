@@ -63,6 +63,12 @@ resource "google_secret_manager_secret_iam_member" "build_sa_firecrawl_webhook_s
   member    = "serviceAccount:${local.build_sa}"
 }
 
+resource "google_secret_manager_secret_iam_member" "build_sa_mastra_api_key" {
+  secret_id = google_secret_manager_secret.mastra_api_key.secret_id
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${local.build_sa}"
+}
+
 resource "google_cloudbuild_trigger" "atlas_web" {
   name            = "atlas-web-deploy"
   location        = var.region

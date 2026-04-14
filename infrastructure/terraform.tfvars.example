@@ -39,3 +39,8 @@ trusted_origins = "https://your-domain.example.com"
 firecrawl_signing_secret = "test"
 
 firecrawl_api_key = "test"
+
+# Mastra SimpleAuth bearer token for /api/* (Mastra Studio + direct callers).
+# Generate with: `openssl rand -hex 48`. Stored in Secret Manager as
+# `atlas-api-mastra-api-key` and injected into the API Cloud Run service.
+mastra_api_key = "replace-with-openssl-rand-hex-48-output"
