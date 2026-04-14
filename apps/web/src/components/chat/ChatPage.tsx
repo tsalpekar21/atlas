@@ -2,11 +2,10 @@
 
 import { useChat } from "@ai-sdk/react";
 import { Button } from "@atlas/subframe/components/Button";
-import { FeatherStethoscope } from "@subframe/core";
-import { Link, useNavigate } from "@tanstack/react-router";
+import { useNavigate } from "@tanstack/react-router";
 import type { UIMessage } from "ai";
 import { DefaultChatTransport } from "ai";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence } from "framer-motion";
 import {
 	useCallback,
 	useEffect,
@@ -21,27 +20,12 @@ import { ChatMarkdown } from "@/components/chat/ChatMarkdown";
 import { toMessageText } from "@/components/chat/chat-utils";
 import { DebugMessageActions } from "@/components/chat/DebugMessageActions";
 import { ResearchIndicator } from "@/components/chat/ResearchIndicator";
+import { FadeIn } from "@/components/motion";
 import { PromptInput } from "@/components/prompt/PromptInput";
 import { env } from "@/env";
 import { useDebugSnapshots } from "@/hooks/use-debug-snapshots";
 import { useResearchStatus } from "@/hooks/use-research-status";
-
-export function ChatHeader() {
-	return (
-		<div className="flex items-center gap-3 border-b border-solid border-neutral-border px-6 py-4 mobile:px-4">
-			<Link to="/">
-				<div className="flex h-10 w-10 flex-none items-center justify-center rounded-lg bg-brand-600">
-					<FeatherStethoscope className="text-heading-3 font-heading-3 text-white" />
-				</div>
-			</Link>
-			<div className="flex flex-col items-start">
-				<span className="text-heading-3 font-heading-3 text-default-font">
-					Atlas Health
-				</span>
-			</div>
-		</div>
-	);
-}
+import { SiteNavbar } from "../ui/SiteNavbar";
 
 type ChatPageProps = {
 	threadId: string;
@@ -90,11 +74,19 @@ export function ChatPage({
 		[],
 	);
 
-	const { messages, sendMessage, status, stop } = useChat({
+	const { messages, sendMessage, status, stop, setMessages } = useChat({
 		transport,
 		messages: threadMessages,
 		experimental_throttle: 50,
 	});
+
+	const syncedThreadMessagesRef = useRef(threadMessages);
+	useEffect(() => {
+		if (syncedThreadMessagesRef.current === threadMessages) return;
+		if (status === "submitted" || status === "streaming") return;
+		syncedThreadMessagesRef.current = threadMessages;
+		setMessages(threadMessages);
+	}, [threadMessages, setMessages, status]);
 
 	const { status: researchStatus, active: researchActive } = useResearchStatus(
 		sessionError ? null : threadId,
@@ -163,7 +155,7 @@ export function ChatPage({
 
 	return (
 		<div className="flex h-dvh max-h-dvh w-full flex-col overflow-hidden bg-default-background">
-			<ChatHeader />
+			<SiteNavbar />
 
 			<div className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-y-contain [overflow-anchor:auto]">
 				<div className="mx-auto flex min-h-full w-full max-w-[768px] flex-col px-6 py-6 mobile:px-4 mobile:py-4">
@@ -197,12 +189,8 @@ export function ChatPage({
 
 								const isUser = message.role === "user";
 								return (
-									<motion.div
+									<FadeIn
 										key={message.id}
-										initial={{ opacity: 0, y: 8 }}
-										animate={{ opacity: 1, y: 0 }}
-										exit={{ opacity: 0, y: -4 }}
-										transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
 										className={`flex w-full min-w-0 flex-col ${isUser ? "items-end" : "items-start"}`}
 									>
 										<div
@@ -220,7 +208,7 @@ export function ChatPage({
 												snapshot={debugSnapshots.get(message.id)}
 											/>
 										) : null}
-									</motion.div>
+									</FadeIn>
 								);
 							})}
 							<ChatMessageLoadingIndicator show={awaitingContent} />

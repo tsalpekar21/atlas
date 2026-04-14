@@ -2,14 +2,15 @@ import interLatinExtWoff2 from "@fontsource-variable/inter/files/inter-latin-ext
 import interLatinWoff2 from "@fontsource-variable/inter/files/inter-latin-wght-normal.woff2?url";
 import { TanStackDevtools } from "@tanstack/react-devtools";
 import type { QueryClient } from "@tanstack/react-query";
+import { ReactQueryDevtoolsPanel } from "@tanstack/react-query-devtools";
 import {
 	createRootRouteWithContext,
 	HeadContent,
+	Outlet,
 	Scripts,
 } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 
-import TanStackQueryDevtools from "../integrations/tanstack-query/devtools";
 import TanStackQueryProvider from "../integrations/tanstack-query/root-provider";
 import appCss from "../styles.css?url";
 
@@ -52,7 +53,7 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 			},
 		],
 	}),
-	shellComponent: RootDocument,
+	shellComponent: RootComponent,
 	notFoundComponent: function NotFound() {
 		return (
 			<div style={{ padding: "3rem", textAlign: "center" }}>
@@ -68,6 +69,14 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 		);
 	},
 });
+
+function RootComponent() {
+	return (
+		<RootDocument>
+			<Outlet />
+		</RootDocument>
+	);
+}
 
 function RootDocument({ children }: { children: React.ReactNode }) {
 	return (
@@ -87,7 +96,10 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 								name: "Tanstack Router",
 								render: <TanStackRouterDevtoolsPanel />,
 							},
-							TanStackQueryDevtools,
+							{
+								name: "Tanstack Query",
+								render: <ReactQueryDevtoolsPanel />,
+							},
 						]}
 					/>
 				</TanStackQueryProvider>

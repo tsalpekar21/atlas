@@ -2,7 +2,6 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import Firecrawl from "@mendable/firecrawl-js";
 import { env } from "../env.ts";
-import { db, schema } from "../db/index.ts";
 
 // ---------------------------------------------------------------------------
 // Configuration
@@ -17,7 +16,7 @@ const WEBHOOK_URL = "https://api.atlashealth.dev/webhooks/firecrawl";
 
 const sitemapPath = resolve(
 	new URL(".", import.meta.url).pathname,
-	"../src/data/rupa-health-sitemap.json",
+	"../data/rupa-health-sitemap.json",
 );
 const sitemap = JSON.parse(readFileSync(sitemapPath, "utf-8")) as {
 	links: { url: string; title?: string; description?: string }[];
@@ -46,15 +45,7 @@ const firecrawl = new Firecrawl({
 
 async function main() {
 	// Idempotency: filter out URLs already in the database
-	const existing = await db
-		.select({ url: schema.scrapedPages.url })
-		.from(schema.scrapedPages);
-	const existingUrls = new Set(existing.map((r) => r.url));
-
-	const pending = postUrls.filter((u) => !existingUrls.has(u));
-	console.log(
-		`${existingUrls.size} already scraped, ${pending.length} remaining`,
-	);
+	const pending = postUrls;
 
 	if (pending.length === 0) {
 		console.log("Nothing to scrape.");
@@ -67,6 +58,7 @@ async function main() {
 		options: {
 			formats: ["markdown"],
 			onlyMainContent: true,
+			includeTags: ["#magazine-content-area"],
 			timeout: 60_000,
 			waitFor: 10_000,
 			maxAge: 604800000,

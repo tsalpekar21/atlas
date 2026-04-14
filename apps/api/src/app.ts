@@ -10,8 +10,8 @@ import { auth } from "./auth.ts";
 import { getTrustedOrigins } from "./lib/trusted-origins.ts";
 import { mastra } from "./mastra/index.ts";
 import { chatRoutes } from "./routes/chat.ts";
-import { researchJsonRoutes } from "./routes/research-json.ts";
 import { researchRoutes } from "./routes/research.ts";
+import { researchJsonRoutes } from "./routes/research-json.ts";
 import { threadRoutes } from "./routes/threads.ts";
 import { firecrawlWebhookRoutes } from "./routes/webhooks/firecrawl.ts";
 
@@ -27,23 +27,8 @@ const app = new Hono<{ Bindings: HonoBindings; Variables: HonoVariables }>();
 app.use(
 	"/*",
 	cors({
-		origin: (origin) => {
-			if (!origin) {
-				return trustedOrigins[0];
-			}
-			if (trustedOrigins.includes(origin)) {
-				return origin;
-			}
-			return undefined;
-		},
+		origin: trustedOrigins,
 		allowMethods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-		allowHeaders: [
-			"Content-Type",
-			"Authorization",
-			"Cookie",
-			"X-Requested-With",
-		],
-		exposeHeaders: ["Content-Length", "Set-Cookie"],
 		credentials: true,
 		maxAge: 600,
 	}),
@@ -82,7 +67,10 @@ const mastraApp = new Hono<{
 	Bindings: HonoBindings;
 	Variables: HonoVariables;
 }>();
-const mastraServer = new MastraServer({ app: mastraApp, mastra });
+const mastraServer = new MastraServer({
+	app: mastraApp,
+	mastra,
+});
 await mastraServer.init();
 app.route("/", mastraApp);
 
@@ -94,6 +82,10 @@ const appWithRoutes = app
 	.route("/", threadRoutes)
 	.route("/", chatRoutes)
 	.route("/", researchJsonRoutes);
+
+appWithRoutes.get("/", (c) => {
+	return c.json({ ok: true });
+});
 
 export type AppType = typeof appWithRoutes;
 

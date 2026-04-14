@@ -4,13 +4,13 @@
 @source "../../../packages/subframe/**";
 
 @theme {
-  --font-caption: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
-  --font-caption-bold: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
-  --font-body: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
-  --font-body-bold: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
-  --font-heading-3: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
-  --font-heading-2: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
-  --font-heading-1: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-caption: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-caption-bold: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-body: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-body-bold: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-heading-3: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-heading-2: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-heading-1: "Inter", ui-sans-serif, system-ui, sans-serif;
 
   --animate-shimmer: shimmer 1.5s ease-in-out infinite;
 }
@@ -23,7 +23,7 @@
 body {
   @apply m-0;
   font-family:
-    "Inter Variable",
+    "Inter",
     ui-sans-serif,
     system-ui,
     -apple-system,

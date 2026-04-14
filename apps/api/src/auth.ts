@@ -5,6 +5,7 @@ import { db } from "./db/index.ts";
 import * as schema from "./db/schema.ts";
 import { env } from "./env.ts";
 import { getTrustedOrigins } from "./lib/trusted-origins.ts";
+import { migrateAnonymousUserData } from "./services/auth/migrate-anonymous-user.ts";
 
 const secret = env.BETTER_AUTH_SECRET;
 const baseURL = env.BETTER_AUTH_URL;
@@ -26,7 +27,7 @@ export const auth = betterAuth({
 	user: {
 		additionalFields: {
 			birthdate: {
-				type: "date",
+				type: "string",
 				required: false,
 				input: true,
 			},
@@ -51,5 +52,14 @@ export const auth = betterAuth({
 			httpOnly: true,
 		},
 	},
-	plugins: [anonymous()],
+	plugins: [
+		anonymous({
+			onLinkAccount: async ({ anonymousUser, newUser }) => {
+				await migrateAnonymousUserData({
+					fromUserId: anonymousUser.user.id,
+					toUserId: newUser.user.id,
+				});
+			},
+		}),
+	],
 });

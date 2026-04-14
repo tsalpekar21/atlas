@@ -117,3 +117,11 @@ variable "firecrawl_webhook_secret" {
   type        = string
   sensitive   = true
 }
+
+# --- Mastra ---
+
+variable "mastra_api_key" {
+  description = "Bearer token for Mastra SimpleAuth on /api/* (Mastra Studio + direct consumers). Generate with `openssl rand -hex 48`."
+  type        = string
+  sensitive   = true
+}

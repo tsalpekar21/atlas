@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { FadeIn } from "@/components/motion";
 
 type ChatLoadingIndicatorProps = {
 	show: boolean;
@@ -12,15 +12,11 @@ export function ChatMessageLoadingIndicator({
 	if (!show) return null;
 
 	return (
-		<motion.div
+		<FadeIn
 			key="thinking"
 			role="status"
 			aria-live="polite"
 			aria-label="Assistant is thinking"
-			initial={{ opacity: 0, y: 8 }}
-			animate={{ opacity: 1, y: 0 }}
-			exit={{ opacity: 0, y: -4 }}
-			transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
 			className="flex w-full min-w-0 justify-start"
 		>
 			<div className="relative overflow-hidden rounded-lg px-4 py-3">
@@ -28,6 +24,6 @@ export function ChatMessageLoadingIndicator({
 					Thinking…
 				</span>
 			</div>
-		</motion.div>
+		</FadeIn>
 	);
 }

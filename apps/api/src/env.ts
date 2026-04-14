@@ -30,6 +30,12 @@ export const env = createEnv({
 		NCBI_API_KEY: z.string().optional(),
 		FIRECRAWL_API_KEY: z.string().min(1),
 		FIRECRAWL_WEBHOOK_SECRET: z.string().min(1),
+		/**
+		 * Bearer token required by Mastra's SimpleAuth for `/api/*` Mastra
+		 * routes (used by Mastra Studio and any direct API consumers). Must be
+		 * a long, high-entropy random string.
+		 */
+		MASTRA_API_KEY: z.string().min(32),
 		PORT: portSchema,
 		NODE_ENV: z.string().optional(),
 	},
@@ -43,6 +49,7 @@ export const env = createEnv({
 		NCBI_API_KEY: process.env.NCBI_API_KEY,
 		FIRECRAWL_API_KEY: process.env.FIRECRAWL_API_KEY,
 		FIRECRAWL_WEBHOOK_SECRET: process.env.FIRECRAWL_WEBHOOK_SECRET,
+		MASTRA_API_KEY: process.env.MASTRA_API_KEY,
 		PORT: process.env.PORT,
 		NODE_ENV: process.env.NODE_ENV,
 	},

@@ -1,4 +1,9 @@
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence } from "framer-motion";
+import {
+	FadeIn,
+	MOTION_DURATION_FAST,
+	MOTION_FADE_Y_SM,
+} from "@/components/motion";
 import type { ResearchStatus } from "@/hooks/use-research-status";
 
 type Props = {
@@ -23,12 +28,10 @@ export function ResearchIndicator({ status, active }: Props) {
 	return (
 		<AnimatePresence>
 			{active && label ? (
-				<motion.div
+				<FadeIn
 					key="research-indicator"
-					initial={{ opacity: 0, y: 4 }}
-					animate={{ opacity: 1, y: 0 }}
-					exit={{ opacity: 0, y: -4 }}
-					transition={{ duration: 0.25 }}
+					y={MOTION_FADE_Y_SM}
+					duration={MOTION_DURATION_FAST}
 					className="flex items-center gap-2 rounded-full border border-solid border-neutral-border bg-neutral-50 px-3 py-0.5"
 					aria-live="polite"
 				>
@@ -39,7 +42,7 @@ export function ResearchIndicator({ status, active }: Props) {
 					<span className="text-caption font-caption text-subtext-color">
 						{label}
 					</span>
-				</motion.div>
+				</FadeIn>
 			) : null}
 		</AnimatePresence>
 	);

@@ -8,11 +8,12 @@
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
+    "typecheck": "tsc --noEmit",
     "studio": "pnpm mastra studio --port 3001",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio",
-    "scrape:rupa": "tsx scripts/scrape-rupa.ts"
+    "scrape:rupa": "tsx src/scripts/scrape-rupa.ts"
   },
   "dependencies": {
     "@ai-sdk/google": "^3.0.43",

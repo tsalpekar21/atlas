@@ -1,7 +1,7 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { ChatHeader } from "./ChatPage";
+import { FadeIn } from "@/components/motion";
+import { SiteNavbar } from "../ui/SiteNavbar";
 
 function SkeletonLine({
 	width = "full",
@@ -53,44 +53,24 @@ function SkeletonBubble({
 export function ChatThreadPending() {
 	return (
 		<div className="flex h-dvh max-h-dvh w-full flex-col overflow-hidden bg-default-background">
-			<ChatHeader />
+			<SiteNavbar />
 
 			<div className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-y-contain">
 				<div className="mx-auto flex min-h-full w-full max-w-[768px] flex-col px-6 py-6 mobile:px-4 mobile:py-4">
 					<div className="flex-1" aria-hidden="true" />
 
 					<div className="flex shrink-0 flex-col gap-4">
-						<motion.div
-							initial={{ opacity: 0, y: 8 }}
-							animate={{ opacity: 1, y: 0 }}
-							transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-						>
+						<FadeIn withExit={false}>
 							<SkeletonBubble align="left" />
-						</motion.div>
+						</FadeIn>
 
-						<motion.div
-							initial={{ opacity: 0, y: 8 }}
-							animate={{ opacity: 1, y: 0 }}
-							transition={{
-								duration: 0.35,
-								ease: [0.22, 1, 0.36, 1],
-								delay: 0.1,
-							}}
-						>
+						<FadeIn withExit={false} delay={0.1}>
 							<SkeletonBubble align="right" isUser />
-						</motion.div>
+						</FadeIn>
 
-						<motion.div
-							initial={{ opacity: 0, y: 8 }}
-							animate={{ opacity: 1, y: 0 }}
-							transition={{
-								duration: 0.35,
-								ease: [0.22, 1, 0.36, 1],
-								delay: 0.2,
-							}}
-						>
+						<FadeIn withExit={false} delay={0.2}>
 							<SkeletonBubble align="left" />
-						</motion.div>
+						</FadeIn>
 					</div>
 
 					<div
