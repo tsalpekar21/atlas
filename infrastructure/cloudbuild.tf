@@ -107,6 +107,29 @@ resource "google_cloudbuild_trigger" "atlas_web" {
   ]
 }
 
+resource "google_cloudbuild_trigger" "atlas_ci" {
+  name            = "atlas-ci"
+  location        = var.region
+  description     = "Lint + typecheck + build on every push to non-main branches"
+  service_account = "projects/${var.project_id}/serviceAccounts/${local.build_sa}"
+
+  repository_event_config {
+    repository = local.github_repository_id
+    push {
+      branch       = "^${var.github_branch}$"
+      invert_regex = true
+    }
+  }
+
+  # No included_files — we want to validate every change on every push.
+
+  filename = "cloudbuild-ci.yaml"
+
+  depends_on = [
+    google_project_service.cloudbuild,
+  ]
+}
+
 resource "google_cloudbuild_trigger" "atlas_api" {
   name            = "atlas-api-deploy"
   location        = var.region
