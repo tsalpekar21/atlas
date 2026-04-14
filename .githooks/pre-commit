@@ -1,0 +1,11 @@
+#!/usr/bin/env sh
+set -e
+
+echo "→ biome check (staged)"
+pnpm exec biome check --write --staged --no-errors-on-unmatched --reporter=summary
+
+# Re-stage any fixes biome wrote to already-staged files.
+git update-index --again
+
+echo "→ turbo typecheck"
+pnpm turbo run typecheck --output-logs=errors-only
