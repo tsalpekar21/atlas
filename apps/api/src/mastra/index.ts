@@ -1,4 +1,5 @@
 import { Mastra } from "@mastra/core/mastra";
+import { SimpleAuth } from "@mastra/core/server";
 import { PinoLogger } from "@mastra/loggers";
 import {
 	CloudExporter,
@@ -23,6 +24,17 @@ export const mastra = new Mastra({
 	},
 	workflows: {
 		backgroundResearch: backgroundResearchWorkflow,
+	},
+	server: {
+		auth: new SimpleAuth({
+			tokens: {
+				"test-api-key": {
+					id: "user-id-1",
+					name: "Test User",
+					role: "admin",
+				},
+			},
+		}),
 	},
 	storage: new PostgresStore({
 		id: "mastra-storage",

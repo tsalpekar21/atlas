@@ -27,23 +27,8 @@ const app = new Hono<{ Bindings: HonoBindings; Variables: HonoVariables }>();
 app.use(
 	"/*",
 	cors({
-		origin: (origin) => {
-			if (!origin) {
-				return trustedOrigins[0];
-			}
-			if (trustedOrigins.includes(origin)) {
-				return origin;
-			}
-			return undefined;
-		},
+		origin: trustedOrigins,
 		allowMethods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-		allowHeaders: [
-			"Content-Type",
-			"Authorization",
-			"Cookie",
-			"X-Requested-With",
-		],
-		exposeHeaders: ["Content-Length", "Set-Cookie"],
 		credentials: true,
 		maxAge: 600,
 	}),
