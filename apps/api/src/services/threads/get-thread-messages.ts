@@ -1,3 +1,4 @@
+import { logger } from "@atlas/logger";
 import type { GetThreadMessagesResponse } from "@atlas/schemas/api";
 import { toAISdkV5Messages } from "@mastra/ai-sdk/ui";
 import type { Mastra } from "@mastra/core/mastra";
@@ -13,17 +14,18 @@ export async function getThreadMessagesForResource(
 	if (!memory) {
 		return { messages: [] };
 	}
-	const thread = await memory.getThreadById({ threadId });
-	if (!thread) {
+	try {
+		const result = await memory.recall({
+			threadId,
+			resourceId,
+			perPage: false,
+		});
+		const messages = toAISdkV5Messages(result.messages);
+		return {
+			messages: messages as GetThreadMessagesResponse["messages"],
+		};
+	} catch (error) {
+		logger.error({ error }, "getThreadMessagesForResource error");
 		return { messages: [] };
 	}
-	const result = await memory.recall({
-		threadId,
-		resourceId,
-		perPage: false,
-	});
-	const messages = toAISdkV5Messages(result.messages);
-	return {
-		messages: messages as GetThreadMessagesResponse["messages"],
-	};
 }

@@ -50,10 +50,6 @@ export const firecrawlWebhookRoutes = new Hono().post("", async (c) => {
 	const rawBody = await c.req.text();
 	const signature = c.req.header("x-firecrawl-signature");
 
-	console.log("signature", signature);
-	console.log("rawBody", rawBody);
-	console.log("verifySignature", verifySignature(rawBody, signature ?? ""));
-
 	if (!signature || !verifySignature(rawBody, signature)) {
 		logger.warn("Firecrawl webhook signature verification failed");
 		return c.json({ error: "Invalid signature" }, 401);

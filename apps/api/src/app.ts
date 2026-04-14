@@ -10,8 +10,8 @@ import { auth } from "./auth.ts";
 import { getTrustedOrigins } from "./lib/trusted-origins.ts";
 import { mastra } from "./mastra/index.ts";
 import { chatRoutes } from "./routes/chat.ts";
-import { researchJsonRoutes } from "./routes/research-json.ts";
 import { researchRoutes } from "./routes/research.ts";
+import { researchJsonRoutes } from "./routes/research-json.ts";
 import { threadRoutes } from "./routes/threads.ts";
 import { firecrawlWebhookRoutes } from "./routes/webhooks/firecrawl.ts";
 
@@ -82,7 +82,10 @@ const mastraApp = new Hono<{
 	Bindings: HonoBindings;
 	Variables: HonoVariables;
 }>();
-const mastraServer = new MastraServer({ app: mastraApp, mastra });
+const mastraServer = new MastraServer({
+	app: mastraApp,
+	mastra,
+});
 await mastraServer.init();
 app.route("/", mastraApp);
 
@@ -94,6 +97,10 @@ const appWithRoutes = app
 	.route("/", threadRoutes)
 	.route("/", chatRoutes)
 	.route("/", researchJsonRoutes);
+
+appWithRoutes.get("/", (c) => {
+	return c.json({ ok: true });
+});
 
 export type AppType = typeof appWithRoutes;
 

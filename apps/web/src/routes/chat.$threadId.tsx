@@ -1,4 +1,5 @@
 import type { GetThreadMessagesResponse } from "@atlas/schemas/api";
+import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import type { UIMessage } from "ai";
 import { z } from "zod";
@@ -7,14 +8,21 @@ import { ChatThreadPending } from "@/components/chat/ChatThreadPending";
 import { ensureSessionForTriage } from "@/lib/ensure-session-for-triage";
 import { createTriageApiClient } from "@/lib/triage-api-client";
 
-type ThreadLoaderData = {
-	threadMessages: UIMessage[];
-	threadMessagesError: string | null;
-};
-
 const chatSearchSchema = z.object({
 	initialMessage: z.string().optional(),
 });
+
+async function fetchThreadMessages(threadId: string): Promise<UIMessage[]> {
+	const client = createTriageApiClient();
+	const res = await client.threads[":threadId"].messages.$get({
+		param: { threadId },
+	});
+	if (!res.ok) {
+		throw new Error(`Failed to load thread messages (${res.status})`);
+	}
+	const data = (await res.json()) as GetThreadMessagesResponse;
+	return data.messages;
+}
 
 export const Route = createFileRoute("/chat/$threadId")({
 	validateSearch: chatSearchSchema,
@@ -38,35 +46,6 @@ export const Route = createFileRoute("/chat/$threadId")({
 			},
 		};
 	},
-	loader: async ({ params, context: routeContext }) => {
-		if (routeContext.context.triageSessionError) {
-			return {
-				threadMessages: [],
-				threadMessagesError: null,
-			} satisfies ThreadLoaderData;
-		}
-		try {
-			const client = createTriageApiClient();
-			const res = await client.threads[":threadId"].messages.$get({
-				param: { threadId: params.threadId },
-			});
-			if (!res.ok) {
-				throw new Error(`Failed to load thread messages (${res.status})`);
-			}
-			const data = (await res.json()) as GetThreadMessagesResponse;
-			const { messages: threadMessages } = data;
-			return {
-				threadMessages,
-				threadMessagesError: null,
-			} satisfies ThreadLoaderData;
-		} catch (e) {
-			return {
-				threadMessages: [],
-				threadMessagesError:
-					e instanceof Error ? e.message : "Could not load this conversation.",
-			} satisfies ThreadLoaderData;
-		}
-	},
 	pendingComponent: ChatThreadPending,
 	component: ChatThreadRoute,
 });
@@ -74,17 +53,37 @@ export const Route = createFileRoute("/chat/$threadId")({
 function ChatThreadRoute() {
 	const { threadId } = Route.useParams();
 	const { initialMessage } = Route.useSearch();
-	const loaderData = Route.useLoaderData();
 	const routeContext = Route.useRouteContext();
+	const sessionError = routeContext.context.triageSessionError;
+
+	const {
+		data: threadMessages,
+		error: threadMessagesQueryError,
+		isLoading: threadMessagesLoading,
+	} = useQuery({
+		queryKey: ["thread-messages", threadId],
+		queryFn: () => fetchThreadMessages(threadId),
+		enabled: !sessionError,
+	});
+
+	if (!sessionError && threadMessagesLoading) {
+		return <ChatThreadPending />;
+	}
+
+	const threadMessagesError = threadMessagesQueryError
+		? threadMessagesQueryError instanceof Error
+			? threadMessagesQueryError.message
+			: "Could not load this conversation."
+		: null;
 
 	return (
 		<ChatPage
 			key={threadId}
 			threadId={threadId}
 			initialMessage={initialMessage}
-			sessionError={routeContext.context.triageSessionError}
-			threadMessages={loaderData.threadMessages}
-			threadMessagesError={loaderData.threadMessagesError}
+			sessionError={sessionError}
+			threadMessages={threadMessages ?? []}
+			threadMessagesError={threadMessagesError}
 		/>
 	);
 }
