@@ -22,6 +22,14 @@ export type QueueDef<
 		payload: z.infer<TSchema>,
 		c: Context,
 	) => Promise<Response> | Response;
+	/**
+	 * Optional per-queue dispatch deadline in seconds. Cloud Tasks kills the
+	 * HTTP request after this window and retries per the queue's retry
+	 * config. Default (if unset) is 10 minutes; max for HTTP targets is
+	 * 1800 (30 minutes). Set this for queues whose handler is expected to
+	 * run longer than the default.
+	 */
+	dispatchDeadlineSeconds?: number;
 };
 
 export function defineQueue<

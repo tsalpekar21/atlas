@@ -10,10 +10,11 @@ import { enqueueResearchEvaluation } from "./research.ts";
  * Mastra bundles AI SDK v5 typings that diverge slightly from the workspace `ai`
  * package; streams are compatible at runtime.
  *
- * After the stream finishes we fire an Inngest event to trigger a background
- * research evaluation for this thread. Inngest applies soft debounce + a
- * singleton-per-thread concurrency limit on the receiving function, so
- * calling this after every turn is safe.
+ * After the stream finishes we enqueue a Cloud Task to trigger a background
+ * research evaluation for this thread. The task handler runs the workflow
+ * inside a fresh HTTP request so Cloud Run keeps CPU allocated for the
+ * workflow's full duration. The workflow's own `gateByHash` step skips
+ * rounds whose chart is unchanged, so calling this after every turn is safe.
  */
 export async function buildChatUiResponse(
 	mastra: Mastra,
@@ -58,7 +59,6 @@ export async function buildChatUiResponse(
 			});
 			try {
 				await enqueueResearchEvaluation({
-					mastra,
 					threadId: threadIdStr,
 					userId,
 				});
