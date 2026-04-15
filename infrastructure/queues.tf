@@ -37,8 +37,8 @@ resource "google_cloud_tasks_queue" "embed_page" {
   location = var.region
 
   rate_limits {
-    max_dispatches_per_second = 10
-    max_concurrent_dispatches = 20
+    max_dispatches_per_second = 5
+    max_concurrent_dispatches = 3
   }
 
   retry_config {
