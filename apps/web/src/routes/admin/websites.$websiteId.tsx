@@ -70,6 +70,7 @@ function AdminWebsiteDetailPage() {
 	const queryClient = useQueryClient();
 	const [selectedPageId, setSelectedPageId] = useState<string | null>(null);
 	const [filter, setFilter] = useState("");
+	const [isStartingPageReembed, setIsStartingPageReembed] = useState(false);
 
 	const detailQuery = useQuery({
 		queryKey: ["admin", "websites", websiteId],
@@ -137,6 +138,23 @@ function AdminWebsiteDetailPage() {
 
 	const selectedPage = pages.find((p) => p.id === selectedPageId) ?? null;
 	const chunks: AdminChunk[] = chunksQuery.data?.chunks ?? [];
+	const hasPendingChunk = chunks.some((c) => c.status === "pending");
+	const isPageReembedding =
+		isStartingPageReembed || embedPageMutation.isPending || hasPendingChunk;
+
+	// Drop the synchronous starter flag once the refetched chunks reflect the
+	// new pending state — from then on `hasPendingChunk` keeps the spinner up.
+	useEffect(() => {
+		if (isStartingPageReembed && hasPendingChunk) {
+			setIsStartingPageReembed(false);
+		}
+	}, [isStartingPageReembed, hasPendingChunk]);
+
+	// Clear if the user switches pages mid-embed so the spinner doesn't
+	// bleed over onto the newly selected page.
+	useEffect(() => {
+		setIsStartingPageReembed(false);
+	}, [selectedPageId]);
 
 	return (
 		<div className="flex h-full w-full flex-col items-start bg-neutral-50">
@@ -286,18 +304,26 @@ function AdminWebsiteDetailPage() {
 							) : null}
 						</div>
 						{selectedPage ? (
-							<Button
-								variant="neutral-secondary"
-								size="small"
-								icon={<FeatherRefreshCw />}
-								loading={embedPageMutation.isPending}
-								disabled={embedMutation.isPending}
-								onClick={() => {
-									embedPageMutation.mutate(selectedPage.id);
-								}}
-							>
-								Re-embed page
-							</Button>
+							<div className="flex items-center gap-2">
+								<Button
+									variant="neutral-secondary"
+									size="small"
+									icon={<FeatherRefreshCw />}
+									loading={embedPageMutation.isPending}
+									disabled={embedMutation.isPending}
+									onClick={() => {
+										setIsStartingPageReembed(true);
+										embedPageMutation.mutate(selectedPage.id, {
+											onError: () => setIsStartingPageReembed(false),
+										});
+									}}
+								>
+									Re-embed page
+								</Button>
+								{isPageReembedding ? (
+									<FeatherLoader className="h-4 w-4 animate-spin text-subtext-color" />
+								) : null}
+							</div>
 						) : null}
 					</div>
 					<div className="flex w-full grow shrink-0 basis-0 flex-col items-start gap-4 px-24 py-6 overflow-y-auto mobile:px-6 mobile:py-4">
@@ -332,8 +358,8 @@ function AdminWebsiteDetailPage() {
 											onCopy={() => {}}
 										/>
 									</div>
-									<div className="flex w-full flex-col items-start rounded-md border border-solid border-neutral-200 bg-neutral-50 px-4 py-3">
-										<span className="text-monospace-body font-monospace-body text-default-font whitespace-pre-wrap">
+									<div className="flex w-full min-w-0 flex-col items-start rounded-md border border-solid border-neutral-200 bg-neutral-50 px-4 py-3">
+										<span className="w-full min-w-0 text-monospace-body font-monospace-body text-default-font whitespace-pre-wrap wrap-break-word">
 											{chunk.content}
 										</span>
 									</div>

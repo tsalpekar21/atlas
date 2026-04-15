@@ -125,3 +125,11 @@ variable "mastra_api_key" {
   type        = string
   sensitive   = true
 }
+
+# --- Cloud Tasks ---
+
+variable "cloud_tasks_auth_secret" {
+  description = "Shared HMAC secret used by apps/api to sign and verify Cloud Tasks request bodies. Generate with `openssl rand -hex 32`. Must be >= 32 chars."
+  type        = string
+  sensitive   = true
+}

@@ -16,6 +16,7 @@ import { researchRoutes } from "./routes/users/research.ts";
 import { researchJsonRoutes } from "./routes/users/research-json.ts";
 import { threadRoutes } from "./routes/users/threads.ts";
 import { firecrawlWebhookRoutes } from "./routes/webhooks/firecrawl.ts";
+import { createTasksRouter } from "./tasks/router.ts";
 
 const trustedOrigins = getTrustedOrigins();
 
@@ -55,6 +56,13 @@ app.on(["GET", "POST", "OPTIONS"], "/api/auth/*", (c) => {
 // ---------------------------------------------------------------------------
 
 app.route("/webhooks/firecrawl", firecrawlWebhookRoutes);
+
+// ---------------------------------------------------------------------------
+// Cloud Tasks — HMAC-verified task handler routes, auto-generated from
+// the registry in `src/tasks/registry.ts`.
+// ---------------------------------------------------------------------------
+
+app.route("/tasks", createTasksRouter());
 
 // ---------------------------------------------------------------------------
 // Mastra — isolated sub-app so its global middleware (context parsing,
