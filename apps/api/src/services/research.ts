@@ -5,6 +5,8 @@ import { and, desc, eq } from "drizzle-orm";
 import { db } from "../db/index.ts";
 import { researchFindings } from "../db/schema.ts";
 import { subscribeResearchStatus } from "../inngest/realtime-bus.ts";
+import { mastra } from "../mastra/index.ts";
+import { enqueue } from "../tasks/enqueue.ts";
 import { HEALTH_ASSISTANT_AGENT_ID } from "./threads/constants.ts";
 
 /**
@@ -728,33 +730,36 @@ export async function listResearchHistory(threadId: string, limit = 20) {
 }
 
 /**
- * Fire-and-forget: start a background research workflow run for this thread.
+ * Fire-and-forget: enqueue a background research workflow run for this
+ * thread via Cloud Tasks.
  *
- * Uses `startAsync` so we return immediately — the workflow then runs
- * in-process via Mastra's native execution engine. The `gateByHash` step
- * cheaply skips rounds whose chart is unchanged, so calling this after
- * every chat turn is safe: rapid back-to-back turns bail early without
- * burning LLM calls.
+ * Cloud Run throttles CPU to ~0 after an HTTP response is sent and may
+ * tear down the instance at any time, so running the workflow in-process
+ * after the chat stream completes is unreliable. Instead we enqueue a
+ * Cloud Task whose HTTP handler runs the workflow as a foreground
+ * request — Cloud Run then keeps CPU allocated for the full workflow
+ * duration.
+ *
+ * The workflow's own `gateByHash` step cheaply skips rounds whose chart
+ * is unchanged, so calling this after every chat turn is safe: rapid
+ * back-to-back turns bail early without burning LLM calls.
  */
 export async function enqueueResearchEvaluation(args: {
-	mastra: Mastra;
 	threadId: string;
 	userId: string;
 }): Promise<void> {
 	try {
-		const workflow = args.mastra.getWorkflow("backgroundResearch");
-		const run = await workflow.createRun();
-		await run.startAsync({
-			inputData: { threadId: args.threadId, userId: args.userId },
+		await enqueue("runResearch", {
+			threadId: args.threadId,
+			userId: args.userId,
 		});
 		logger.info(
 			{
 				component: "research.workflow",
 				event: "enqueued",
 				threadId: args.threadId,
-				runId: run.runId,
 			},
-			"background research enqueued",
+			"background research enqueued to cloud tasks",
 		);
 	} catch (err) {
 		logger.error(
@@ -764,7 +769,58 @@ export async function enqueueResearchEvaluation(args: {
 				err,
 				threadId: args.threadId,
 			},
-			"failed to start background research workflow",
+			"failed to enqueue background research task",
 		);
 	}
+}
+
+/**
+ * Cloud Tasks handler for the `runResearch` queue. Runs the background
+ * research workflow to completion inside the task's HTTP request. Cloud
+ * Run keeps CPU allocated for the lifetime of the request, so the
+ * workflow is not at risk of being torn down like it would be if we
+ * fired it post-response from the chat route.
+ *
+ * Idempotency: Cloud Tasks retries non-2xx responses. The workflow's
+ * `gateByHash` step handles the "chart unchanged" case, but two
+ * concurrent runs for the same thread would still fan out workers
+ * twice, so we also short-circuit if a round is already marked running.
+ */
+export async function runResearchWorkflowForTask(args: {
+	threadId: string;
+	userId: string;
+}): Promise<{ status: "completed" | "already_running" }> {
+	const running = await getRunningRound(args.threadId);
+	if (running) {
+		logger.info(
+			{
+				component: "research.workflow",
+				event: "already_running",
+				threadId: args.threadId,
+				roundId: running.id,
+			},
+			"skipping cloud task; research already running for thread",
+		);
+		return { status: "already_running" };
+	}
+
+	const workflow = mastra.getWorkflow("backgroundResearch");
+	const run = await workflow.createRun();
+	// `start` (not `startAsync`) awaits the full workflow to completion.
+	// We want this — the Cloud Tasks HTTP request stays open for that
+	// duration, keeping Cloud Run CPU allocated until the workflow is
+	// done.
+	await run.start({
+		inputData: { threadId: args.threadId, userId: args.userId },
+	});
+	logger.info(
+		{
+			component: "research.workflow",
+			event: "completed",
+			threadId: args.threadId,
+			runId: run.runId,
+		},
+		"background research workflow completed",
+	);
+	return { status: "completed" };
 }

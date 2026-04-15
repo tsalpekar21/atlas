@@ -1,5 +1,5 @@
 import { zValidator } from "@hono/zod-validator";
-import { Hono } from "hono";
+import { type Context, Hono } from "hono";
 import { requireCloudTasksAuth } from "./middleware.ts";
 import { queues } from "./registry.ts";
 
@@ -15,9 +15,18 @@ export function createTasksRouter(): Hono {
 
 	for (const queue of Object.values(queues)) {
 		const localPath = queue.path.replace(/^\/tasks/, "") || "/";
+		// Iterating over the registry collapses each queue's generic to a
+		// union, which makes `queue.handler` require the intersection of
+		// every queue's payload type. The runtime guarantee is tighter:
+		// zValidator has already parsed the body against *this* queue's
+		// schema, so payload is whatever this queue expects.
+		const handler = queue.handler as (
+			payload: unknown,
+			c: Context,
+		) => Promise<Response> | Response;
 		app.post(localPath, zValidator("json", queue.schema), async (c) => {
 			const payload = c.req.valid("json");
-			return queue.handler(payload, c);
+			return handler(payload, c);
 		});
 	}
 

@@ -52,6 +52,39 @@ resource "google_cloud_tasks_queue" "embed_page" {
   depends_on = [google_project_service.cloudtasks]
 }
 
+# --- run-research queue ---
+# Handler: POST /tasks/run-research on apps/api. One task per chat turn,
+# dispatched from apps/api/src/services/chat.ts flush() after the chat
+# stream completes. The task handler runs the backgroundResearch Mastra
+# workflow to completion inside the HTTP request, so a single task can
+# realistically hold a Cloud Run request open for several minutes.
+# `dispatchDeadlineSeconds: 1800` is set on the queue definition in
+# apps/api/src/tasks/registry.ts.
+#
+# Concurrency is intentionally lower than embed-page: research rounds are
+# expensive (parallel LLM agent workers + synthesis), and the workflow's
+# own `gateByHash` step plus `getRunningRound` dedupe at the handler
+# entry already absorb duplicate triggers.
+resource "google_cloud_tasks_queue" "run_research" {
+  name     = "run-research"
+  location = var.region
+
+  rate_limits {
+    max_dispatches_per_second = 2
+    max_concurrent_dispatches = 10
+  }
+
+  retry_config {
+    max_attempts       = 3
+    min_backoff        = "30s"
+    max_backoff        = "600s"
+    max_doublings      = 3
+    max_retry_duration = "7200s"
+  }
+
+  depends_on = [google_project_service.cloudtasks]
+}
+
 # --- IAM ---
 # The atlas_api Cloud Run service runs as the default compute SA (same
 # `local.build_sa` declared in cloudbuild.tf). It needs:
@@ -64,6 +97,14 @@ resource "google_cloud_tasks_queue_iam_member" "api_embed_page_enqueuer" {
   project  = google_cloud_tasks_queue.embed_page.project
   location = google_cloud_tasks_queue.embed_page.location
   name     = google_cloud_tasks_queue.embed_page.name
+  role     = "roles/cloudtasks.enqueuer"
+  member   = "serviceAccount:${local.build_sa}"
+}
+
+resource "google_cloud_tasks_queue_iam_member" "api_run_research_enqueuer" {
+  project  = google_cloud_tasks_queue.run_research.project
+  location = google_cloud_tasks_queue.run_research.location
+  name     = google_cloud_tasks_queue.run_research.name
   role     = "roles/cloudtasks.enqueuer"
   member   = "serviceAccount:${local.build_sa}"
 }
