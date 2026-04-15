@@ -17,6 +17,7 @@ export default defineConfig(({ mode }) => {
 		runtimeEnvStrict: {
 			VITE_API_URL: loaded.VITE_API_URL,
 			VITE_FRONTEND_URL: loaded.VITE_FRONTEND_URL,
+			VITE_SHOW_DEBUG_SNAPSHOTS: loaded.VITE_SHOW_DEBUG_SNAPSHOTS,
 		},
 		emptyStringAsUndefined: true,
 	});
