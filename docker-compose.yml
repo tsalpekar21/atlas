@@ -16,6 +16,28 @@ services:
       - ./docker/postgres/init:/docker-entrypoint-initdb.d
     networks:
       - atlas_default
+
+  # Google Cloud Tasks emulator — same gRPC surface as the real service, so
+  # the Node SDK talks to it with just a host/port override. See
+  # apps/api/src/tasks/client.ts for the emulator-vs-prod switch. Queues are
+  # created on API startup via `ensureQueuesExist()` from the registry, so
+  # adding a new queue only requires editing `src/tasks/registry.ts`.
+  cloud-tasks-emulator:
+    image: ghcr.io/aertje/cloud-tasks-emulator:latest
+    container_name: atlas-cloud-tasks
+    restart: unless-stopped
+    command:
+      - -host=0.0.0.0
+      - -port=8123
+    ports:
+      - "8123:8123"
+    extra_hosts:
+      # Lets tasks dispatched by the emulator reach the API running on the
+      # host machine at CLOUD_TASKS_TARGET_BASE_URL=http://host.docker.internal:4111.
+      - "host.docker.internal:host-gateway"
+    networks:
+      - atlas_default
+
 volumes:
   postgres_pgvector_data:
 

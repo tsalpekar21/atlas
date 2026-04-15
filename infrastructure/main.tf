@@ -231,13 +231,42 @@ resource "google_cloud_run_v2_service" "atlas_api" {
           }
         }
       }
+      env {
+        name  = "GCLOUD_PROJECT"
+        value = var.project_id
+      }
+      env {
+        name  = "GCLOUD_LOCATION"
+        value = var.region
+      }
+      # Public URL Cloud Tasks will POST to when dispatching a task. Same
+      # origin as the API itself — task routes live at /tasks/* on the
+      # Cloud Run service.
+      env {
+        name  = "CLOUD_TASKS_TARGET_BASE_URL"
+        value = var.api_url
+      }
+      env {
+        name = "CLOUD_TASKS_AUTH_SECRET"
+        value_source {
+          secret_key_ref {
+            secret  = google_secret_manager_secret.cloud_tasks_auth_secret.secret_id
+            version = "latest"
+          }
+        }
+      }
     }
   }
 
   depends_on = [
     google_project_service.run,
+    google_project_service.cloudtasks,
     google_artifact_registry_repository.atlas,
     google_secret_manager_secret_version.firecrawl_webhook_secret,
     google_secret_manager_secret_version.mastra_api_key,
+    google_secret_manager_secret_version.cloud_tasks_auth_secret,
+    google_secret_manager_secret_iam_member.api_cloud_tasks_auth_secret_accessor,
+    google_cloud_tasks_queue.embed_page,
+    google_cloud_tasks_queue_iam_member.api_embed_page_enqueuer,
   ]
 }

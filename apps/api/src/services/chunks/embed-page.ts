@@ -9,6 +9,7 @@ import {
 	CHUNKS_INDEX_NAME,
 	pgVectorChunks,
 } from "../../mastra/rag/page-chunks-store.ts";
+import { enqueueMany } from "../../tasks/enqueue.ts";
 
 const EMBEDDING_MODEL_ID = "gemini-embedding-001";
 const CHUNK_MAX_SIZE = 512;
@@ -150,37 +151,28 @@ export async function embedPage(pageId: string): Promise<EmbedPageResult> {
 }
 
 /**
- * Re-embed every page belonging to a website. Pages are processed serially so
- * we don't thunder the embedding API or the DB transaction slot. Failures on
- * one page are logged and do not abort the rest of the website.
+ * Fan every page of a website out onto the `embed-page` Cloud Tasks queue.
+ * Returns once the tasks are enqueued, not once they run — the queue
+ * handles retries and parallelism. Failures inside individual tasks are
+ * surfaced via `chunks.status` as before.
  */
-export async function reembedWebsite(
+export async function enqueueWebsiteReembed(
 	websiteId: string,
-): Promise<{ websiteId: string; pagesProcessed: number; pagesFailed: number }> {
+): Promise<{ websiteId: string; pagesEnqueued: number }> {
 	const pageRows = await db
 		.select({ id: scrapedPages.id })
 		.from(scrapedPages)
 		.where(eq(scrapedPages.scrapedWebsiteId, websiteId))
 		.orderBy(asc(scrapedPages.createdAt));
 
-	let processed = 0;
-	let failed = 0;
-	for (const row of pageRows) {
-		try {
-			await embedPage(row.id);
-			processed++;
-		} catch (error) {
-			failed++;
-			logger.error(
-				{ websiteId, pageId: row.id, err: error },
-				"reembedWebsite: page failed (continuing)",
-			);
-		}
-	}
+	await enqueueMany(
+		"embedPage",
+		pageRows.map((row) => ({ pageId: row.id })),
+	);
 
 	logger.info(
-		{ websiteId, pagesProcessed: processed, pagesFailed: failed },
-		"reembedWebsite: complete",
+		{ websiteId, pagesEnqueued: pageRows.length },
+		"enqueueWebsiteReembed: complete",
 	);
-	return { websiteId, pagesProcessed: processed, pagesFailed: failed };
+	return { websiteId, pagesEnqueued: pageRows.length };
 }

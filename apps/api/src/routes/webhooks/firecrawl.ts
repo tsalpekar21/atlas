@@ -5,7 +5,7 @@ import * as z from "zod";
 import { db } from "../../db/index.ts";
 import { scrapedPages, scrapedWebsites } from "../../db/schema.ts";
 import { env } from "../../env.ts";
-import { embedPage } from "../../services/chunks/embed-page.ts";
+import { enqueueMany } from "../../tasks/enqueue.ts";
 
 /**
  * Derive the "root domain" key we group scraped pages under. Matches the
@@ -87,6 +87,7 @@ export const firecrawlWebhookRoutes = new Hono().post("", async (c) => {
 
 	if (type.endsWith(".page")) {
 		let upserted = 0;
+		const pageIdsToEmbed: string[] = [];
 		for (const item of data) {
 			const doc = item as {
 				markdown?: string;
@@ -148,16 +149,27 @@ export const firecrawlWebhookRoutes = new Hono().post("", async (c) => {
 				"Firecrawl page upserted",
 			);
 
-			// Kick off chunking + embedding in the background so webhook
-			// latency stays flat. Failures are logged on the chunk rows as
-			// status='failed' — see embedPage.
-			if (upsertedRow?.id) {
-				const pageId = upsertedRow.id;
-				void embedPage(pageId).catch((err) => {
-					logger.error({ err, pageId }, "embedPage: background task failed");
-				});
+			if (upsertedRow?.id) pageIdsToEmbed.push(upsertedRow.id);
+		}
+
+		// Fan out chunking + embedding via Cloud Tasks so webhook latency
+		// stays flat and retries are managed by the queue. Enqueue failures
+		// are logged but do not fail the webhook — Firecrawl would retry the
+		// whole batch and we'd double-upsert pages.
+		if (pageIdsToEmbed.length > 0) {
+			try {
+				await enqueueMany(
+					"embedPage",
+					pageIdsToEmbed.map((pageId) => ({ pageId })),
+				);
+			} catch (err) {
+				logger.error(
+					{ err, count: pageIdsToEmbed.length },
+					"Failed to enqueue embedPage tasks from Firecrawl webhook",
+				);
 			}
 		}
+
 		logger.info({ jobId: id, upserted }, "Firecrawl page event processed");
 	} else if (type.endsWith(".completed")) {
 		logger.info({ jobId: id }, "Firecrawl job completed");

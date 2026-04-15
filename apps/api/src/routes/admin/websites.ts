@@ -1,4 +1,3 @@
-import { logger } from "@atlas/logger";
 import {
 	adminWebsiteDetailResponseSchema,
 	embedWebsiteResponseSchema,
@@ -9,7 +8,7 @@ import {
 	getAdminWebsiteDetail,
 	listAdminWebsites,
 } from "../../services/admin/websites.ts";
-import { reembedWebsite } from "../../services/chunks/embed-page.ts";
+import { enqueueWebsiteReembed } from "../../services/chunks/embed-page.ts";
 import type { AppEnv } from "../../types.ts";
 
 // No .use(requireAdminMiddleware) here — applied at the parent adminApp level.
@@ -29,14 +28,9 @@ export const adminWebsiteRoutes = new Hono<AppEnv>()
 	})
 	.post("/websites/:id/embed", async (c) => {
 		const websiteId = c.req.param("id");
-		// Fire-and-forget so the admin UI returns immediately; failures are
-		// per-page and surfaced via chunks.status in later GETs.
-		void reembedWebsite(websiteId).catch((err) => {
-			logger.error(
-				{ err, websiteId },
-				"reembedWebsite: background task failed",
-			);
-		});
+		// Fan out one Cloud Tasks job per page. Returns once tasks are
+		// enqueued; per-page failures surface via chunks.status in later GETs.
+		await enqueueWebsiteReembed(websiteId);
 		const body = embedWebsiteResponseSchema.parse({ started: true });
 		return c.json(body, 202);
 	});

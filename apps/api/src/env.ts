@@ -36,6 +36,38 @@ export const env = createEnv({
 		 * a long, high-entropy random string.
 		 */
 		MASTRA_API_KEY: z.string().min(32),
+		/**
+		 * Google Cloud project the Cloud Tasks client targets. Set to `dev`
+		 * when running against the emulator; set to the real GCP project id
+		 * in production. The emulator doesn't validate project names but the
+		 * client library requires one to form queue/task resource paths.
+		 */
+		GCLOUD_PROJECT: z.string().min(1),
+		/**
+		 * Cloud Tasks location (region). Use `here` for the emulator (its
+		 * default), e.g. `us-central1` in production.
+		 */
+		GCLOUD_LOCATION: z.string().min(1).default("us-central1"),
+		/**
+		 * When set, the Cloud Tasks client connects to the local emulator
+		 * instead of Google's API. Format: `host:port` (e.g. `localhost:8123`).
+		 * Leave unset in production so the client uses Application Default
+		 * Credentials to reach the real service.
+		 */
+		CLOUD_TASKS_EMULATOR_HOST: z.string().optional(),
+		/**
+		 * Base URL Cloud Tasks will POST to when dispatching a task. In local
+		 * dev the emulator runs in Docker and hits the API on the host via
+		 * `http://host.docker.internal:4111`; in production this is the
+		 * public API URL reachable from Google Cloud Tasks.
+		 */
+		CLOUD_TASKS_TARGET_BASE_URL: z.string().url(),
+		/**
+		 * Shared secret used to HMAC-sign the body of every Cloud Tasks
+		 * request so task routes can verify the caller. Must be identical on
+		 * enqueue and handler sides. Min 32 chars.
+		 */
+		CLOUD_TASKS_AUTH_SECRET: z.string().min(32),
 		PORT: portSchema,
 		NODE_ENV: z.string().optional(),
 	},
@@ -50,6 +82,11 @@ export const env = createEnv({
 		FIRECRAWL_API_KEY: process.env.FIRECRAWL_API_KEY,
 		FIRECRAWL_WEBHOOK_SECRET: process.env.FIRECRAWL_WEBHOOK_SECRET,
 		MASTRA_API_KEY: process.env.MASTRA_API_KEY,
+		GCLOUD_PROJECT: process.env.GCLOUD_PROJECT,
+		GCLOUD_LOCATION: process.env.GCLOUD_LOCATION,
+		CLOUD_TASKS_EMULATOR_HOST: process.env.CLOUD_TASKS_EMULATOR_HOST,
+		CLOUD_TASKS_TARGET_BASE_URL: process.env.CLOUD_TASKS_TARGET_BASE_URL,
+		CLOUD_TASKS_AUTH_SECRET: process.env.CLOUD_TASKS_AUTH_SECRET,
 		PORT: process.env.PORT,
 		NODE_ENV: process.env.NODE_ENV,
 	},
