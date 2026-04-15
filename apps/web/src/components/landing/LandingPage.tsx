@@ -9,6 +9,7 @@ import {
 	FeatherSmartphone,
 	FeatherUser,
 } from "@subframe/core";
+import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useState } from "react";
 import { RecentThreads } from "@/components/landing/RecentThreads";
 import { FadeStack, PressScale } from "@/components/motion";
@@ -28,6 +29,7 @@ function newThreadId(): string {
 }
 
 export function LandingPage() {
+	const queryClient = useQueryClient();
 	const [draft, setDraft] = useState("");
 	const [isStartingTriage, setIsStartingTriage] = useState(false);
 	const [triageStartError, setTriageStartError] = useState<string | null>(null);
@@ -42,7 +44,7 @@ export function LandingPage() {
 			}
 			setIsStartingTriage(true);
 			setTriageStartError(null);
-			const session = await ensureSessionForTriage();
+			const session = await ensureSessionForTriage(queryClient);
 			if (!session.ok) {
 				setTriageStartError(session.message);
 				setIsStartingTriage(false);
@@ -52,7 +54,7 @@ export function LandingPage() {
 			const href = buildPatientTriageHref({ threadId, initialMessage });
 			window.location.assign(href);
 		},
-		[isStartingTriage],
+		[isStartingTriage, queryClient],
 	);
 
 	const shuffleExamples = useCallback(() => {

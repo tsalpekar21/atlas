@@ -2,10 +2,12 @@ import { type SignInValues, signInSchema } from "@atlas/schemas/auth";
 import { Button } from "@atlas/subframe/components/Button";
 import { LinkButton } from "@atlas/subframe/components/LinkButton";
 import { FeatherArrowRight, FeatherLock, FeatherMail } from "@subframe/core";
+import { useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { type FormEvent, useCallback, useState } from "react";
 import { FormField } from "@/components/ui/forms/FormField";
 import { authClient } from "@/lib/auth-client";
+import { SESSION_QUERY_KEY } from "@/lib/session-query";
 
 type FieldErrors = Partial<Record<keyof SignInValues | "form", string>>;
 
@@ -14,6 +16,7 @@ interface SignInFormProps {
 }
 
 export function SignInForm({ onSuccess }: SignInFormProps) {
+	const queryClient = useQueryClient();
 	const [values, setValues] = useState<SignInValues>({
 		email: "",
 		password: "",
@@ -60,6 +63,7 @@ export function SignInForm({ onSuccess }: SignInFormProps) {
 					});
 					return;
 				}
+				await queryClient.invalidateQueries({ queryKey: SESSION_QUERY_KEY });
 				onSuccess({ isAdmin: signInResult.data?.user.role === "admin" });
 			} catch (err) {
 				setErrors({
@@ -69,7 +73,7 @@ export function SignInForm({ onSuccess }: SignInFormProps) {
 				setSubmitting(false);
 			}
 		},
-		[values, onSuccess, submitting],
+		[values, onSuccess, submitting, queryClient],
 	);
 
 	return (

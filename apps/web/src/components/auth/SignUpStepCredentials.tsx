@@ -12,10 +12,12 @@ import {
 	FeatherLock,
 	FeatherMail,
 } from "@subframe/core";
+import { useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { type FormEvent, useCallback, useState } from "react";
 import { FormField } from "@/components/ui/forms/FormField";
 import { authClient } from "@/lib/auth-client";
+import { SESSION_QUERY_KEY } from "@/lib/session-query";
 
 type FieldErrors = Partial<Record<keyof SignUpCredentials | "form", string>>;
 
@@ -30,6 +32,7 @@ export function SignUpStepCredentials({
 	onBack,
 	onSuccess,
 }: SignUpStepCredentialsProps) {
+	const queryClient = useQueryClient();
 	const [values, setValues] = useState<SignUpCredentials>({
 		email: "",
 		password: "",
@@ -88,6 +91,7 @@ export function SignUpStepCredentials({
 					});
 					return;
 				}
+				await queryClient.invalidateQueries({ queryKey: SESSION_QUERY_KEY });
 				onSuccess();
 			} catch (err) {
 				setErrors({
@@ -97,7 +101,7 @@ export function SignUpStepCredentials({
 				setSubmitting(false);
 			}
 		},
-		[values, details, onSuccess, submitting],
+		[values, details, onSuccess, submitting, queryClient],
 	);
 
 	return (
