@@ -6,6 +6,7 @@
 substitutions:
   _VITE_API_URL: "http://localhost:4111"
   _VITE_FRONTEND_URL: "http://localhost:3000"
+  _VITE_SHOW_DEBUG_SNAPSHOTS: "false"
 
 options:
   logging: CLOUD_LOGGING_ONLY
@@ -51,6 +52,7 @@ steps:
     env:
       - "VITE_API_URL=${_VITE_API_URL}"
       - "VITE_FRONTEND_URL=${_VITE_FRONTEND_URL}"
+      - "VITE_SHOW_DEBUG_SNAPSHOTS=${_VITE_SHOW_DEBUG_SNAPSHOTS}"
     args:
       - -c
       - |

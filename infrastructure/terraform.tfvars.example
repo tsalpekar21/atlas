@@ -33,6 +33,10 @@ trusted_origins = "https://your-domain.example.com"
 # Optional: public web URL for absolute client links (VITE_FRONTEND_URL).
 # vite_frontend_url = "https://your-domain.example.com"
 
+# Optional: set to "true" to bake VITE_SHOW_DEBUG_SNAPSHOTS into the web build
+# and expose the in-app debug snapshot panels on the deployed Cloud Run instance.
+# show_debug_snapshots = "true"
+
 # Public URL of the API service (custom domain or Cloud Run URL).
 # api_url = "https://api.your-domain.example.com"
 
