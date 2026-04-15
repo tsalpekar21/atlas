@@ -1,4 +1,4 @@
-# Cloud Build: PR validation — lint + typecheck + build.
+# Cloud Build: PR validation — lint + typecheck + build + test.
 # Triggered on every push to a branch other than main (see the
 # `atlas_ci` trigger in infrastructure/cloudbuild.tf). No docker build,
 # no push, no deploy — this config is validation-only.
@@ -58,3 +58,43 @@ steps:
         corepack enable
         pnpm build
     waitFor: ["install"]
+
+  # Unit tests: turbo fans `pnpm test` out to every workspace that
+  # defines a `test` script. Packages without one are silently skipped,
+  # so adding tests to a new service is just "add a `test` script".
+  # Fast, no containers, no external services — runs on every PR.
+  - name: node:22-bookworm-slim
+    id: test
+    entrypoint: bash
+    args:
+      - -c
+      - |
+        set -e
+        corepack enable
+        pnpm test
+    waitFor: ["install"]
+
+  # Integration tests: boot Postgres + the Cloud Tasks emulator via
+  # Testcontainers. Cloud Build's VM auto-mounts `/var/run/docker.sock`
+  # into every step, so we only need the docker CLI in the step image —
+  # installed inline with `apt-get install docker.io` (~20s, cached layer
+  # is not reused across builds but the apt index is small enough that
+  # it's cheaper than maintaining a custom base image for now).
+  #
+  # Testcontainers pulls `pgvector/pgvector:pg17` (~400MB) + the
+  # cloud-tasks-emulator image on first run; expect the first green
+  # build on a fresh worker to take ~60–90s longer than steady state.
+  - name: node:22-bookworm-slim
+    id: test-integration
+    entrypoint: bash
+    args:
+      - -c
+      - |
+        set -e
+        apt-get update -qq
+        apt-get install -y -qq --no-install-recommends docker.io ca-certificates
+        corepack enable
+        pnpm --filter @atlas/api test:integration
+    waitFor: ["install"]
+
+timeout: 1500s

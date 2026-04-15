@@ -13,7 +13,11 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio",
-    "scrape:rupa": "tsx src/scripts/scrape-rupa.ts"
+    "scrape:rupa": "tsx src/scripts/scrape-rupa.ts",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:integration": "vitest run -c vitest.integration.config.ts",
+    "test:all": "pnpm test && pnpm test:integration"
   },
   "dependencies": {
     "@ai-sdk/google": "^3.0.43",
@@ -48,8 +52,11 @@
   },
   "devDependencies": {
     "@mastra/deployer-vercel": "^1.1.4",
+    "@testcontainers/postgresql": "^11.14.0",
     "@types/node": "^25.5.2",
+    "testcontainers": "^11.14.0",
     "tsx": "^4.21.0",
-    "typescript": "^5.7.2"
+    "typescript": "^5.7.2",
+    "vitest": "^4.1.4"
   }
 }
