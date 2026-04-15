@@ -51,6 +51,9 @@ function buildCreateTaskRequest<K extends QueueKey>(
 						seconds: Math.floor(options.scheduleTime.getTime() / 1000),
 					}
 				: undefined,
+			dispatchDeadline: queue.dispatchDeadlineSeconds
+				? { seconds: queue.dispatchDeadlineSeconds }
+				: undefined,
 			httpRequest: {
 				httpMethod: "POST",
 				url: `${getTargetBaseUrl()}${queue.path}`,
