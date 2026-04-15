@@ -4,4 +4,5 @@ import * as z from "zod";
 export const webClientEnv = {
 	VITE_API_URL: z.string().url(),
 	VITE_FRONTEND_URL: z.string().url(),
+	VITE_SHOW_DEBUG_SNAPSHOTS: z.string().optional(),
 };

@@ -41,6 +41,7 @@ Terraform config for **Cloud Run** (service `atlas-web`), **Artifact Registry**,
 | `better_auth_secret` | Better Auth secret (≥ 32 random characters); set as `BETTER_AUTH_SECRET` on the API service |
 | `trusted_origins` | Comma-separated browser origins for CORS and Better Auth; must include the public web app URL (e.g. `https://app.atlashealth.dev`) |
 | `vite_frontend_url` | Optional. Sets `VITE_FRONTEND_URL` for the web image build and Cloud Run (empty = relative links) |
+| `show_debug_snapshots` | Optional. Set to `"true"` to bake `VITE_SHOW_DEBUG_SNAPSHOTS` into the web build and enable in-app debug snapshot panels (default off) |
 | `api_url` | Public URL of the API service (e.g. `https://api.atlashealth.dev`) |
 
 ### Environment variables wired by Terraform
@@ -52,9 +53,10 @@ Terraform config for **Cloud Run** (service `atlas-web`), **Artifact Registry**,
 | `TRUSTED_ORIGINS` | `atlas-api` | `trusted_origins` variable |
 | `VITE_API_URL` | `atlas-web` (runtime) + Docker build via Cloud Build | `api_url` variable |
 | `VITE_FRONTEND_URL` | `atlas-web` | `vite_frontend_url` variable (may be empty for same-origin links) |
+| `VITE_SHOW_DEBUG_SNAPSHOTS` | `atlas-web` (build-time only) | `show_debug_snapshots` variable (baked into the client bundle) |
 | `SERVER_URL` | `atlas-web` | `api_url` variable (server-side calls to the API) |
 
-The web Cloud Build trigger passes `_VITE_API_URL` and `_VITE_FRONTEND_URL` into `docker build` so the Vite client bundle embeds the correct API and frontend origins.
+The web Cloud Build trigger passes `_VITE_API_URL`, `_VITE_FRONTEND_URL`, and `_VITE_SHOW_DEBUG_SNAPSHOTS` into `docker build` so the Vite client bundle embeds the correct origins and flag values.
 
 **`trusted_origins`:** Set this to your custom domain (e.g. `https://app.atlashealth.dev`). If you don't have a custom domain yet, use the Cloud Run URL from `terraform output bot_cloud_run_url` after the first apply.
 

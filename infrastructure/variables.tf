@@ -99,6 +99,12 @@ variable "vite_frontend_url" {
   default     = ""
 }
 
+variable "show_debug_snapshots" {
+  description = "Set to \"true\" to bake VITE_SHOW_DEBUG_SNAPSHOTS into the web build, enabling in-app debug snapshot panels. Default off."
+  type        = string
+  default     = ""
+}
+
 variable "api_url" {
   description = "Public URL of the API service"
   type        = string

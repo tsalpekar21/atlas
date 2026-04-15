@@ -11,6 +11,7 @@ substitutions:
   _REPO: atlas
   _VITE_API_URL: http://localhost:4111
   _VITE_FRONTEND_URL: ""
+  _VITE_SHOW_DEBUG_SNAPSHOTS: ""
 
 options:
   logging: CLOUD_LOGGING_ONLY
@@ -27,6 +28,8 @@ steps:
       - "VITE_API_URL=${_VITE_API_URL}"
       - "--build-arg"
       - "VITE_FRONTEND_URL=${_VITE_FRONTEND_URL}"
+      - "--build-arg"
+      - "VITE_SHOW_DEBUG_SNAPSHOTS=${_VITE_SHOW_DEBUG_SNAPSHOTS}"
       - "-t"
       - "${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/${_SERVICE}:${SHORT_SHA}"
       - "-t"

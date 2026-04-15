@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { DebugSnapshot } from "@/components/chat/debug-format";
+import { env } from "@/env";
 import { createTriageApiClient } from "@/lib/triage-api-client";
 
 type UseDebugSnapshotsResult = {
@@ -11,16 +12,17 @@ type UseDebugSnapshotsResult = {
 const EMPTY_MAP = new Map<string, DebugSnapshot>();
 
 /**
- * Fetch the dev-only `/debug/:threadId/snapshots` endpoint once per
- * thread and on each assistant-turn completion, keyed by `isBusy`
- * transitioning from true → false. Returns a message-id indexed map
- * that the debug panel components look up per message.
+ * Fetch the `/debug/:threadId/snapshots` endpoint once per thread and on
+ * each assistant-turn completion, keyed by `isBusy` transitioning from
+ * true → false. Returns a message-id indexed map that the debug panel
+ * components look up per message.
  *
- * Deliberately built without TanStack Query — it's a tiny dev endpoint
- * that runs twice per conversation turn and we don't want to add
- * complexity for something that's not going to ship to end users.
+ * Deliberately built without TanStack Query — it's a tiny endpoint that
+ * runs twice per conversation turn and we don't want to add complexity
+ * for something that's gated behind a dev flag.
  *
- * In production builds the hook does nothing and returns an empty map.
+ * Gated on `VITE_SHOW_DEBUG_SNAPSHOTS === "true"` — when unset the hook
+ * does nothing and returns an empty map.
  */
 export function useDebugSnapshots(
 	threadId: string | null,
@@ -32,7 +34,7 @@ export function useDebugSnapshots(
 	const prevBusyRef = useRef(isBusy);
 
 	const fetchSnapshots = useCallback(async () => {
-		if (import.meta.env.MODE === "production") return;
+		if (env.VITE_SHOW_DEBUG_SNAPSHOTS !== "true") return;
 		if (!threadId) return;
 		try {
 			const client = createTriageApiClient();
