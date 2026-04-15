@@ -11,13 +11,13 @@
     "dev": "tsc --watch --project tsconfig.json"
   },
   "dependencies": {
-    "hono": "^4.12.12",
     "pino": "^9.5.0",
     "pino-http": "^10.4.0",
     "pino-pretty": "^11.3.0"
   },
   "devDependencies": {
     "@types/node": "^25.5.0",
+    "hono": "^4.12.12",
     "typescript": "^5.7.2"
   }
 }

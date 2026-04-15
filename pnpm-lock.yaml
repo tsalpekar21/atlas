@@ -268,9 +268,6 @@ importers:
 
   packages/logger:
     dependencies:
-      hono:
-        specifier: ^4.12.12
-        version: 4.12.12
       pino:
         specifier: ^9.5.0
         version: 9.14.0
@@ -284,6 +281,9 @@ importers:
       '@types/node':
         specifier: ^25.5.0
         version: 25.5.2
+      hono:
+        specifier: ^4.12.12
+        version: 4.12.12
       typescript:
         specifier: ^5.7.2
         version: 5.9.3
