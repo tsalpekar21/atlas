@@ -1,4 +1,4 @@
-import { logger } from "@atlas/logger";
+import { honoHttpLogger, logger, runWithRequestContext } from "@atlas/logger";
 import {
 	type HonoBindings,
 	type HonoVariables,
@@ -6,6 +6,7 @@ import {
 } from "@mastra/hono";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
+import { requestId } from "hono/request-id";
 import { auth } from "./auth.ts";
 import { getTrustedOrigins } from "./lib/trusted-origins.ts";
 import { mastra } from "./mastra/index.ts";
@@ -35,15 +36,11 @@ app.use(
 	}),
 );
 
-app.use("*", async (c, next) => {
-	const start = Date.now();
-	const method = c.req.method;
-	const path = c.req.path;
-	await next();
-	const durationMs = Date.now() - start;
-	const statusCode = c.res.status;
-	logger.info({ method, path, statusCode, durationMs }, "request");
-});
+app.use("*", requestId());
+app.use("*", (c, next) =>
+	runWithRequestContext({ requestId: c.var.requestId }, next),
+);
+app.use("*", honoHttpLogger());
 
 // ---------------------------------------------------------------------------
 // Auth (Better Auth handler — standalone, no Mastra involvement)
@@ -111,6 +108,14 @@ appWithRoutes.route("/", researchRoutes);
  * `AdminAppType` here as a separate symbol.
  */
 appWithRoutes.route("/admin", adminApp);
+
+appWithRoutes.onError((err, c) => {
+	logger.error(
+		{ err, method: c.req.method, path: c.req.path },
+		"unhandled exception",
+	);
+	return c.json({ error: "Internal server error" }, 500);
+});
 
 export type { AdminAppType } from "./routes/admin/index.ts";
 
