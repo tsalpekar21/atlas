@@ -17,6 +17,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as ChatThreadIdRouteImport } from './routes/chat.$threadId'
 import { Route as AdminUsersRouteImport } from './routes/admin/users'
+import { Route as AdminWebsitesWebsiteIdRouteImport } from './routes/admin/websites.$websiteId'
 
 const SignUpRoute = SignUpRouteImport.update({
   id: '/sign-up',
@@ -58,6 +59,11 @@ const AdminUsersRoute = AdminUsersRouteImport.update({
   path: '/users',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminWebsitesWebsiteIdRoute = AdminWebsitesWebsiteIdRouteImport.update({
+  id: '/websites/$websiteId',
+  path: '/websites/$websiteId',
+  getParentRoute: () => AdminRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -68,6 +74,7 @@ export interface FileRoutesByFullPath {
   '/admin/users': typeof AdminUsersRoute
   '/chat/$threadId': typeof ChatThreadIdRoute
   '/admin/': typeof AdminIndexRoute
+  '/admin/websites/$websiteId': typeof AdminWebsitesWebsiteIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -77,6 +84,7 @@ export interface FileRoutesByTo {
   '/admin/users': typeof AdminUsersRoute
   '/chat/$threadId': typeof ChatThreadIdRoute
   '/admin': typeof AdminIndexRoute
+  '/admin/websites/$websiteId': typeof AdminWebsitesWebsiteIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -88,6 +96,7 @@ export interface FileRoutesById {
   '/admin/users': typeof AdminUsersRoute
   '/chat/$threadId': typeof ChatThreadIdRoute
   '/admin/': typeof AdminIndexRoute
+  '/admin/websites/$websiteId': typeof AdminWebsitesWebsiteIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -100,6 +109,7 @@ export interface FileRouteTypes {
     | '/admin/users'
     | '/chat/$threadId'
     | '/admin/'
+    | '/admin/websites/$websiteId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -109,6 +119,7 @@ export interface FileRouteTypes {
     | '/admin/users'
     | '/chat/$threadId'
     | '/admin'
+    | '/admin/websites/$websiteId'
   id:
     | '__root__'
     | '/'
@@ -119,6 +130,7 @@ export interface FileRouteTypes {
     | '/admin/users'
     | '/chat/$threadId'
     | '/admin/'
+    | '/admin/websites/$websiteId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -188,17 +200,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminUsersRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/websites/$websiteId': {
+      id: '/admin/websites/$websiteId'
+      path: '/websites/$websiteId'
+      fullPath: '/admin/websites/$websiteId'
+      preLoaderRoute: typeof AdminWebsitesWebsiteIdRouteImport
+      parentRoute: typeof AdminRoute
+    }
   }
 }
 
 interface AdminRouteChildren {
   AdminUsersRoute: typeof AdminUsersRoute
   AdminIndexRoute: typeof AdminIndexRoute
+  AdminWebsitesWebsiteIdRoute: typeof AdminWebsitesWebsiteIdRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
   AdminUsersRoute: AdminUsersRoute,
   AdminIndexRoute: AdminIndexRoute,
+  AdminWebsitesWebsiteIdRoute: AdminWebsitesWebsiteIdRoute,
 }
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)

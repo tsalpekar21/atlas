@@ -5,6 +5,7 @@ import * as z from "zod";
 import { db } from "../../db/index.ts";
 import { scrapedPages, scrapedWebsites } from "../../db/schema.ts";
 import { env } from "../../env.ts";
+import { embedPage } from "../../services/chunks/embed-page.ts";
 
 /**
  * Derive the "root domain" key we group scraped pages under. Matches the
@@ -119,7 +120,7 @@ export const firecrawlWebhookRoutes = new Hono().post("", async (c) => {
 				scrapedWebsiteId = row?.id ?? null;
 			}
 
-			await db
+			const [upsertedRow] = await db
 				.insert(scrapedPages)
 				.values({
 					url,
@@ -138,13 +139,24 @@ export const firecrawlWebhookRoutes = new Hono().post("", async (c) => {
 						metadata: doc.metadata ?? null,
 						scrapedWebsiteId,
 					},
-				});
+				})
+				.returning({ id: scrapedPages.id });
 
 			upserted++;
 			logger.info(
 				{ url, rootDomain, scrapedWebsiteId },
 				"Firecrawl page upserted",
 			);
+
+			// Kick off chunking + embedding in the background so webhook
+			// latency stays flat. Failures are logged on the chunk rows as
+			// status='failed' — see embedPage.
+			if (upsertedRow?.id) {
+				const pageId = upsertedRow.id;
+				void embedPage(pageId).catch((err) => {
+					logger.error({ err, pageId }, "embedPage: background task failed");
+				});
+			}
 		}
 		logger.info({ jobId: id, upserted }, "Firecrawl page event processed");
 	} else if (type.endsWith(".completed")) {

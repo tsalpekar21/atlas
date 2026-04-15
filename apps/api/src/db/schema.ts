@@ -3,6 +3,7 @@ import {
 	boolean,
 	date,
 	index,
+	integer,
 	jsonb,
 	pgTable,
 	text,
@@ -226,5 +227,45 @@ export const scrapedPages = pgTable(
 	(table) => [
 		index("scraped_pages_url_idx").on(table.url),
 		index("scraped_pages_scraped_website_id_idx").on(table.scrapedWebsiteId),
+	],
+);
+
+/**
+ * Chunks of scraped page markdown, split by Mastra's MDocument chunker and
+ * embedded via Google `text-embedding-004` for RAG retrieval. The embedding
+ * vectors themselves live in a Mastra-managed `PgVector` index keyed by this
+ * row's UUID; this table holds the authoritative text + FK metadata so the
+ * admin UI and future retrieval joins can reference chunks without touching
+ * the vector index directly.
+ */
+export const chunks = pgTable(
+	"chunks",
+	{
+		id: uuid("id").primaryKey().defaultRandom(),
+		scrapedPageId: uuid("scraped_page_id")
+			.notNull()
+			.references(() => scrapedPages.id, { onDelete: "cascade" }),
+		scrapedWebsiteId: uuid("scraped_website_id").references(
+			() => scrapedWebsites.id,
+			{ onDelete: "cascade" },
+		),
+		chunkIndex: integer("chunk_index").notNull(),
+		content: text("content").notNull(),
+		tokenCount: integer("token_count").notNull(),
+		status: text("status").notNull().default("pending"),
+		errorMessage: text("error_message"),
+		createdAt: timestamp("created_at").defaultNow().notNull(),
+		updatedAt: timestamp("updated_at")
+			.defaultNow()
+			.$onUpdate(() => /* @__PURE__ */ new Date())
+			.notNull(),
+	},
+	(table) => [
+		index("chunks_scraped_page_id_idx").on(
+			table.scrapedPageId,
+			table.chunkIndex,
+		),
+		index("chunks_scraped_website_id_idx").on(table.scrapedWebsiteId),
+		index("chunks_status_idx").on(table.status),
 	],
 );

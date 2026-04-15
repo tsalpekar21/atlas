@@ -2,7 +2,7 @@ import type { AdminWebsite } from "@atlas/schemas/api";
 import { Table } from "@atlas/subframe/components/Table";
 import { FeatherGlobe } from "@subframe/core";
 import { useQuery } from "@tanstack/react-query";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import {
 	createColumnHelper,
 	flexRender,
@@ -25,12 +25,16 @@ const columns = [
 	columnHelper.accessor("title", {
 		header: "Name",
 		cell: (info) => (
-			<div className="flex items-center gap-2">
+			<Link
+				to="/admin/websites/$websiteId"
+				params={{ websiteId: info.row.original.id }}
+				className="flex items-center gap-2 no-underline"
+			>
 				<FeatherGlobe className="text-body font-body text-subtext-color" />
-				<span className="whitespace-nowrap text-body-bold font-body-bold text-neutral-700">
+				<span className="whitespace-nowrap text-body-bold font-body-bold text-neutral-700 hover:text-brand-700">
 					{info.getValue()}
 				</span>
-			</div>
+			</Link>
 		),
 	}),
 	columnHelper.accessor("rootDomain", {
