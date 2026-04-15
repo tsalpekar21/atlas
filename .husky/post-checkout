@@ -1,0 +1,26 @@
+[ "$3" = "1" ] || exit 0
+
+GIT_DIR=$(git rev-parse --git-dir)
+GIT_COMMON_DIR=$(git rev-parse --git-common-dir)
+[ "$GIT_DIR" = "$GIT_COMMON_DIR" ] && exit 0
+
+[ -f apps/api/.env ] && [ -f apps/web/.env ] && exit 0
+
+MAIN=$(git worktree list --porcelain | awk '/^worktree/ {print $2; exit}')
+[ -z "$MAIN" ] && exit 0
+
+echo "→ bootstrapping worktree from $MAIN"
+
+for app in api web; do
+  src="$MAIN/apps/$app/.env"
+  dst="apps/$app/.env"
+  if [ -f "$src" ] && [ ! -f "$dst" ]; then
+    cp "$src" "$dst"
+    echo "  copied apps/$app/.env"
+  fi
+done
+
+if command -v pnpm >/dev/null 2>&1; then
+  echo "→ pnpm install"
+  pnpm install
+fi

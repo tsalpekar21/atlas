@@ -151,6 +151,28 @@ export async function embedPage(pageId: string): Promise<EmbedPageResult> {
 }
 
 /**
+ * Flip all existing chunks for a page to `pending` so the admin UI's
+ * status poll starts immediately, before the Cloud Tasks worker picks up
+ * the job. Without this the UI refetch races the worker and sees stale
+ * `embedded` rows, stopping its poll before progress is visible.
+ */
+export async function markPageChunksPending(pageId: string): Promise<void> {
+	await db
+		.update(chunks)
+		.set({ status: "pending", errorMessage: null })
+		.where(eq(chunks.scrapedPageId, pageId));
+}
+
+export async function markWebsiteChunksPending(
+	websiteId: string,
+): Promise<void> {
+	await db
+		.update(chunks)
+		.set({ status: "pending", errorMessage: null })
+		.where(eq(chunks.scrapedWebsiteId, websiteId));
+}
+
+/**
  * Fan every page of a website out onto the `embed-page` Cloud Tasks queue.
  * Returns once the tasks are enqueued, not once they run — the queue
  * handles retries and parallelism. Failures inside individual tasks are
@@ -164,6 +186,8 @@ export async function enqueueWebsiteReembed(
 		.from(scrapedPages)
 		.where(eq(scrapedPages.scrapedWebsiteId, websiteId))
 		.orderBy(asc(scrapedPages.createdAt));
+
+	await markWebsiteChunksPending(websiteId);
 
 	await enqueueMany(
 		"embedPage",
