@@ -7,6 +7,7 @@ import { logger } from "@atlas/logger";
 import { serve } from "@hono/node-server";
 import app from "./app.ts";
 import { env } from "./env.ts";
+import { ensureDevelopmentQueuesExist } from "./tasks/setup.ts";
 
 const port = env.PORT;
 serve({ fetch: app.fetch, port }, (info) => {
@@ -15,3 +16,5 @@ serve({ fetch: app.fetch, port }, (info) => {
 		`Hono server running on http://localhost:${info.port}`,
 	);
 });
+
+void ensureDevelopmentQueuesExist();
