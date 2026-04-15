@@ -23,7 +23,11 @@ import {
 import { useCallback } from "react";
 import { AdminLayoutPending } from "@/components/admin/AdminLayoutPending";
 import { authClient } from "@/lib/auth-client";
-import { SESSION_QUERY_KEY, sessionQueryOptions } from "@/lib/session-query";
+import {
+	SESSION_QUERY_KEY,
+	type Session,
+	sessionQueryOptions,
+} from "@/lib/session-query";
 
 // Parent layout route at `/admin` — every file under src/routes/admin/ renders
 // through this component, so its `beforeLoad` acts as the single client-side
@@ -33,8 +37,12 @@ import { SESSION_QUERY_KEY, sessionQueryOptions } from "@/lib/session-query";
 export const Route = createFileRoute("/admin")({
 	ssr: false,
 	loader: async ({ context }) => {
-		const session =
-			await context.queryClient.ensureQueryData(sessionQueryOptions);
+		let session: Session | null;
+		try {
+			session = await context.queryClient.ensureQueryData(sessionQueryOptions);
+		} catch {
+			throw redirect({ to: "/sign-in" });
+		}
 		if (!session?.user) {
 			throw redirect({ to: "/sign-in" });
 		}
