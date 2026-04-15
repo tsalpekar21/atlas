@@ -4,6 +4,7 @@ import {
 } from "@atlas/schemas/api";
 import { Hono } from "hono";
 import { listPageChunks } from "../../services/admin/chunks.ts";
+import { markPageChunksPending } from "../../services/chunks/embed-page.ts";
 import { enqueue } from "../../tasks/enqueue.ts";
 import type { AppEnv } from "../../types.ts";
 
@@ -16,8 +17,10 @@ export const adminChunkRoutes = new Hono<AppEnv>()
 	})
 	.post("/pages/:id/embed", async (c) => {
 		const pageId = c.req.param("id");
-		// Enqueue via Cloud Tasks; the queue handles retries and the admin UI
-		// polls chunks.status to surface progress.
+		// Flip existing chunks to `pending` before enqueueing so the admin
+		// UI's immediate post-mutation refetch sees pending rows and starts
+		// polling, instead of racing the Cloud Tasks worker.
+		await markPageChunksPending(pageId);
 		await enqueue("embedPage", { pageId });
 		const body = embedWebsiteResponseSchema.parse({ started: true });
 		return c.json(body, 202);
