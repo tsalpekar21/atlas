@@ -7,8 +7,12 @@
     },
     "build": {
       "dependsOn": ["^build"],
+      "outputs": [".output/**", ".mastra/**", "dist/**"]
+    },
+    "web#build": {
+      "dependsOn": ["^build"],
       "outputs": [".output/**", ".mastra/**", "dist/**"],
-      "env": ["VITE_API_URL", "VITE_FRONTEND_URL"]
+      "env": ["VITE_API_URL", "VITE_FRONTEND_URL", "VITE_SHOW_DEBUG_SNAPSHOTS"]
     },
     "lint": {
       "dependsOn": ["^build"]
@@ -19,6 +23,10 @@
     },
     "test": {
       "dependsOn": ["^build"]
+    },
+    "test:integration": {
+      "dependsOn": ["^build"],
+      "cache": false
     }
   }
 }

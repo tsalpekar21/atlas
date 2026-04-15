@@ -2,6 +2,18 @@
 # Triggered on every push to a branch other than main (see the
 # `atlas_ci` trigger in infrastructure/cloudbuild.tf). No docker build,
 # no push, no deploy — this config is validation-only.
+#
+# Step topology is `install → build → (lint, typecheck, test, test-integration)`.
+# `build` is on the critical path so that downstream steps hit Turbo's
+# `/workspace/.turbo/cache` for `^build` of their upstream workspace
+# deps instead of re-compiling `@atlas/logger` / `@atlas/schemas` /
+# `@atlas/api` four times in parallel (which is what happens if lint,
+# typecheck, test, and test-integration all `waitFor: ["install"]`).
+#
+# The `build` task's VITE env vars live on `web#build` in turbo.json,
+# not the global `build` task — otherwise every package's build hash
+# includes those vars and the cache built by this step is useless to a
+# subsequent step that doesn't set them.
 
 substitutions:
   _VITE_API_URL: "http://localhost:4111"
@@ -25,28 +37,6 @@ steps:
         pnpm install --frozen-lockfile
 
   - name: node:22-bookworm-slim
-    id: lint
-    entrypoint: bash
-    args:
-      - -c
-      - |
-        set -e
-        corepack enable
-        pnpm lint
-    waitFor: ["install"]
-
-  - name: node:22-bookworm-slim
-    id: typecheck
-    entrypoint: bash
-    args:
-      - -c
-      - |
-        set -e
-        corepack enable
-        pnpm typecheck
-    waitFor: ["install"]
-
-  - name: node:22-bookworm-slim
     id: build
     entrypoint: bash
     env:
@@ -61,10 +51,32 @@ steps:
         pnpm build
     waitFor: ["install"]
 
-  # Unit tests: turbo fans `pnpm test` out to every workspace that
-  # defines a `test` script. Packages without one are silently skipped,
-  # so adding tests to a new service is just "add a `test` script".
-  # Fast, no containers, no external services — runs on every PR.
+  - name: node:22-bookworm-slim
+    id: lint
+    entrypoint: bash
+    args:
+      - -c
+      - |
+        set -e
+        corepack enable
+        pnpm lint
+    waitFor: ["build"]
+
+  - name: node:22-bookworm-slim
+    id: typecheck
+    entrypoint: bash
+    args:
+      - -c
+      - |
+        set -e
+        corepack enable
+        pnpm typecheck
+    waitFor: ["build"]
+
+  # Unit tests: `pnpm test` → `turbo run test`, fans out to every
+  # workspace that defines a `test` script. Packages without one are
+  # silently skipped, so adding tests to a new service is just "add a
+  # `test` script". Fast, no containers, no external services.
   - name: node:22-bookworm-slim
     id: test
     entrypoint: bash
@@ -74,18 +86,19 @@ steps:
         set -e
         corepack enable
         pnpm test
-    waitFor: ["install"]
+    waitFor: ["build"]
 
   # Integration tests: boot Postgres + the Cloud Tasks emulator via
   # Testcontainers. Cloud Build's VM auto-mounts `/var/run/docker.sock`
   # into every step, so we only need the docker CLI in the step image —
-  # installed inline with `apt-get install docker.io` (~20s, cached layer
-  # is not reused across builds but the apt index is small enough that
-  # it's cheaper than maintaining a custom base image for now).
+  # installed inline with `apt-get install docker.io` (~20s). Routed
+  # through Turbo (`test:integration` task, `cache: false`) so that
+  # (a) `^build` deps are guaranteed present before vitest imports
+  # `@atlas/logger` / `@atlas/schemas` and (b) adding integration tests
+  # to another workspace in future is the same "add a script" pattern.
   #
-  # Testcontainers pulls `pgvector/pgvector:pg17` (~400MB) + the
-  # cloud-tasks-emulator image on first run; expect the first green
-  # build on a fresh worker to take ~60–90s longer than steady state.
+  # First run on a fresh worker pulls `pgvector/pgvector:pg17` (~400MB)
+  # + the cloud-tasks-emulator image; expect ~60–90s added that time.
   - name: node:22-bookworm-slim
     id: test-integration
     entrypoint: bash
@@ -96,7 +109,7 @@ steps:
         apt-get update -qq
         apt-get install -y -qq --no-install-recommends docker.io ca-certificates
         corepack enable
-        pnpm --filter @atlas/api test:integration
-    waitFor: ["install"]
+        pnpm turbo run test:integration
+    waitFor: ["build"]
 
 timeout: 1500s
