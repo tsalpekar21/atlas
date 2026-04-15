@@ -4,22 +4,26 @@ import { DropdownMenu } from "@atlas/subframe/components/DropdownMenu";
 import { LinkButton } from "@atlas/subframe/components/LinkButton";
 import * as SubframeCore from "@subframe/core";
 import { FeatherArrowRight, FeatherLogOut, toast } from "@subframe/core";
+import { useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useCallback } from "react";
 import { authClient } from "@/lib/auth-client";
+import { SESSION_QUERY_KEY } from "@/lib/session-query";
 import { BrandMark } from "./BrandMark";
 
 export function SiteNavbar() {
 	const { data: session, isPending } = authClient.useSession();
 	const navigate = useNavigate();
+	const queryClient = useQueryClient();
 
 	const isAuthed = Boolean(session?.user && session.user.isAnonymous !== true);
 
 	const handleSignOut = useCallback(async () => {
 		await authClient.signOut();
+		await queryClient.invalidateQueries({ queryKey: SESSION_QUERY_KEY });
 		await navigate({ to: "/" });
 		toast.success("You've been signed out successfully.");
-	}, [navigate]);
+	}, [navigate, queryClient]);
 
 	const initial = (session?.user?.name?.[0] ?? "A").toUpperCase();
 

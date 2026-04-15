@@ -38,23 +38,21 @@ export const Route = createFileRoute("/chat/$threadId")({
 			},
 		],
 	}),
-	beforeLoad: async () => {
-		const result = await ensureSessionForTriage();
+	loader: async ({ context }) => {
+		const result = await ensureSessionForTriage(context.queryClient);
 		return {
-			context: {
-				triageSessionError: result.ok ? null : result.message,
-			},
+			triageSessionError: result.ok ? null : result.message,
 		};
 	},
 	pendingComponent: ChatThreadPending,
+	pendingMs: 0,
 	component: ChatThreadRoute,
 });
 
 function ChatThreadRoute() {
 	const { threadId } = Route.useParams();
 	const { initialMessage } = Route.useSearch();
-	const routeContext = Route.useRouteContext();
-	const sessionError = routeContext.context.triageSessionError;
+	const { triageSessionError: sessionError } = Route.useLoaderData();
 
 	const {
 		data: threadMessages,

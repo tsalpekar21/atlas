@@ -1,21 +1,25 @@
+import type { QueryClient } from "@tanstack/react-query";
 import { authClient } from "@/lib/auth-client";
+import { SESSION_QUERY_KEY, sessionQueryOptions } from "@/lib/session-query";
 
 /**
  * Ensures the browser has a Better Auth session before hitting triage (API requires cookies).
  * Creates an anonymous session only when there is no user yet.
  */
-export async function ensureSessionForTriage(): Promise<
-	{ ok: true } | { ok: false; message: string }
-> {
-	const session = await authClient.getSession();
-	if (session.error) {
+export async function ensureSessionForTriage(
+	queryClient: QueryClient,
+): Promise<{ ok: true } | { ok: false; message: string }> {
+	try {
+		const session = await queryClient.ensureQueryData(sessionQueryOptions);
+		if (session?.user) {
+			return { ok: true };
+		}
+	} catch (error) {
 		return {
 			ok: false,
-			message: session.error.message ?? "Could not load session",
+			message:
+				error instanceof Error ? error.message : "Could not load session",
 		};
-	}
-	if (session.data?.user) {
-		return { ok: true };
 	}
 
 	const signedIn = await authClient.signIn.anonymous();
@@ -26,5 +30,6 @@ export async function ensureSessionForTriage(): Promise<
 		};
 	}
 
+	await queryClient.invalidateQueries({ queryKey: SESSION_QUERY_KEY });
 	return { ok: true };
 }

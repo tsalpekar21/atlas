@@ -10,6 +10,7 @@ import {
 	FeatherMoreHorizontal,
 	FeatherUsers,
 } from "@subframe/core";
+import { useQueryClient } from "@tanstack/react-query";
 import {
 	createFileRoute,
 	Link,
@@ -20,7 +21,9 @@ import {
 	useRouterState,
 } from "@tanstack/react-router";
 import { useCallback } from "react";
+import { AdminLayoutPending } from "@/components/admin/AdminLayoutPending";
 import { authClient } from "@/lib/auth-client";
+import { SESSION_QUERY_KEY, sessionQueryOptions } from "@/lib/session-query";
 
 // Parent layout route at `/admin` — every file under src/routes/admin/ renders
 // through this component, so its `beforeLoad` acts as the single client-side
@@ -29,28 +32,33 @@ import { authClient } from "@/lib/auth-client";
 // requireAdminMiddleware.
 export const Route = createFileRoute("/admin")({
 	ssr: false,
-	beforeLoad: async () => {
-		const session = await authClient.getSession();
-		if (!session.data?.user) {
+	loader: async ({ context }) => {
+		const session =
+			await context.queryClient.ensureQueryData(sessionQueryOptions);
+		if (!session?.user) {
 			throw redirect({ to: "/sign-in" });
 		}
-		if (session.data.user.role !== "admin") {
+		if (session.user.role !== "admin") {
 			throw notFound();
 		}
-		return { adminUser: session.data.user };
+		return { adminUser: session.user };
 	},
+	pendingComponent: AdminLayoutPending,
+	pendingMs: 0,
 	component: AdminLayout,
 });
 
 function AdminLayout() {
-	const { adminUser } = Route.useRouteContext();
+	const { adminUser } = Route.useLoaderData();
 	const pathname = useRouterState({ select: (s) => s.location.pathname });
 	const navigate = useNavigate();
+	const queryClient = useQueryClient();
 
 	const handleSignOut = useCallback(async () => {
 		await authClient.signOut();
+		await queryClient.invalidateQueries({ queryKey: SESSION_QUERY_KEY });
 		await navigate({ to: "/sign-in" });
-	}, [navigate]);
+	}, [navigate, queryClient]);
 
 	const initial = (
 		adminUser.name?.[0] ??
