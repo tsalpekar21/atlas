@@ -36,7 +36,9 @@ export default defineConfig(({ mode }) => {
 			}),
 			tsconfigPaths({ projects: ["./tsconfig.json"] }),
 			tailwindcss(),
-			tanstackStart(),
+			tanstackStart({
+				server: { entry: "server" },
+			}),
 			viteReact({
 				babel: {
 					plugins: ["babel-plugin-react-compiler"],
