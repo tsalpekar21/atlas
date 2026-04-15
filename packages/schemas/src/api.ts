@@ -87,6 +87,60 @@ export type ListAdminWebsitesResponse = z.infer<
 	typeof listAdminWebsitesResponseSchema
 >;
 
+// Admin website detail (pages + chunks)
+
+export const adminPageSummarySchema = z.object({
+	id: z.string().uuid(),
+	path: z.string(),
+	title: z.string().nullable(),
+	chunkCount: z.number().int().nonnegative(),
+	scrapedAt: z.string(),
+});
+
+export type AdminPageSummary = z.infer<typeof adminPageSummarySchema>;
+
+export const adminWebsiteDetailSchema = z.object({
+	website: z.object({
+		id: z.string().uuid(),
+		title: z.string(),
+		rootDomain: z.string(),
+		createdAt: z.string(),
+	}),
+	pages: z.array(adminPageSummarySchema),
+});
+
+export type AdminWebsiteDetail = z.infer<typeof adminWebsiteDetailSchema>;
+
+export const adminWebsiteDetailResponseSchema = adminWebsiteDetailSchema;
+
+export const adminChunkStatusSchema = z.enum(["pending", "embedded", "failed"]);
+
+export type AdminChunkStatus = z.infer<typeof adminChunkStatusSchema>;
+
+export const adminChunkSchema = z.object({
+	id: z.string().uuid(),
+	chunkIndex: z.number().int().nonnegative(),
+	content: z.string(),
+	tokenCount: z.number().int().nonnegative(),
+	status: adminChunkStatusSchema,
+});
+
+export type AdminChunk = z.infer<typeof adminChunkSchema>;
+
+export const listPageChunksResponseSchema = z.object({
+	chunks: z.array(adminChunkSchema),
+});
+
+export type ListPageChunksResponse = z.infer<
+	typeof listPageChunksResponseSchema
+>;
+
+export const embedWebsiteResponseSchema = z.object({
+	started: z.literal(true),
+});
+
+export type EmbedWebsiteResponse = z.infer<typeof embedWebsiteResponseSchema>;
+
 // --- Chat request schema ---
 
 export const chatRequestSchema = z.object({
