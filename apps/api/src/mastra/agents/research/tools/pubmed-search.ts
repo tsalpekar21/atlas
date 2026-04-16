@@ -49,7 +49,7 @@ const articleSchema = z.object({
  * (rather than asking the LLM to construct PubMed operators) means the
  * workers can pass plain clinical English and still get the right slice.
  */
-function applyFilter(
+export function applyFilter(
 	query: string,
 	filter: z.infer<typeof filterEnum>,
 ): string {
@@ -145,7 +145,7 @@ async function esearch(
 	};
 }
 
-type ParsedArticle = z.infer<typeof articleSchema>;
+export type ParsedArticle = z.infer<typeof articleSchema>;
 
 /**
  * Parse a single `<PubmedArticle>` node (already converted to JS by
@@ -154,7 +154,7 @@ type ParsedArticle = z.infer<typeof articleSchema>;
  * children, single-paragraph abstracts have one string child, old records
  * have no abstract at all, single-author papers aren't wrapped in arrays.
  */
-function parsePubmedArticle(node: unknown): ParsedArticle | null {
+export function parsePubmedArticle(node: unknown): ParsedArticle | null {
 	if (!node || typeof node !== "object") return null;
 	const article = node as Record<string, unknown>;
 	const medline = article.MedlineCitation as

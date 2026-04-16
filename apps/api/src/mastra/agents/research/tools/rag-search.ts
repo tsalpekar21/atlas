@@ -11,6 +11,7 @@ import {
 	CHUNKS_INDEX_NAME,
 	pgVectorChunks,
 } from "../../../rag/page-chunks-store.ts";
+import { selectWithMmr } from "./mmr.ts";
 
 /**
  * Functional medicine corpus semantic-search tool backing `ragResearcher`.
@@ -120,62 +121,6 @@ type Candidate = {
 	vector: number[];
 	matchedQuery: string;
 };
-
-function cosineSimilarity(a: number[], b: number[]): number {
-	let dot = 0;
-	let na = 0;
-	let nb = 0;
-	const len = Math.min(a.length, b.length);
-	for (let i = 0; i < len; i++) {
-		const ai = a[i] ?? 0;
-		const bi = b[i] ?? 0;
-		dot += ai * bi;
-		na += ai * ai;
-		nb += bi * bi;
-	}
-	if (na === 0 || nb === 0) return 0;
-	return dot / (Math.sqrt(na) * Math.sqrt(nb));
-}
-
-/**
- * Greedy MMR: at each step pick the candidate that maximizes
- *   λ * relevance - (1-λ) * max_sim(candidate, already_selected)
- * Only called when `useMmr: true`; otherwise we take the top-N by score.
- */
-function selectWithMmr(
-	candidates: Candidate[],
-	k: number,
-	lambda: number,
-): Candidate[] {
-	if (candidates.length <= k) return candidates;
-	const remaining = [...candidates].sort((a, b) => b.score - a.score);
-	const selected: Candidate[] = [];
-	const first = remaining.shift();
-	if (!first) return selected;
-	selected.push(first);
-
-	while (selected.length < k && remaining.length > 0) {
-		let bestIdx = 0;
-		let bestMmr = -Infinity;
-		for (let i = 0; i < remaining.length; i++) {
-			const c = remaining[i];
-			if (!c) continue;
-			let maxSim = 0;
-			for (const s of selected) {
-				const sim = cosineSimilarity(c.vector, s.vector);
-				if (sim > maxSim) maxSim = sim;
-			}
-			const mmr = lambda * c.score - (1 - lambda) * maxSim;
-			if (mmr > bestMmr) {
-				bestMmr = mmr;
-				bestIdx = i;
-			}
-		}
-		const picked = remaining.splice(bestIdx, 1)[0];
-		if (picked) selected.push(picked);
-	}
-	return selected;
-}
 
 export const ragSearchTool = createTool({
 	id: "ragSearch",
