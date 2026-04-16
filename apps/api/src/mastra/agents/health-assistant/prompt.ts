@@ -294,13 +294,25 @@ none has completed yet).
 
 When research is available:
 - Read the \`whatChanged\` summary first.
+- Check \`scope\` — \`{ mode, focusItems }\` tells you what this round
+  was actually scoped to investigate. If the conversation has moved
+  past those focus items, weight the evidence accordingly and don't
+  re-center the interview on stale scope.
+- Apply \`updatedRankings\` directly to the chart's focus-item
+  confidences. The synthesizer has already computed the shifts
+  (\`previousConfidence\` → \`newConfidence\`) with a \`reason\` — use
+  those instead of rederiving from evidence. If a shift looks
+  surprising, cross-check it against \`evidenceItems\` before applying.
 - Let \`suggestedQuestions\` influence your next question. They are
   ordered by expected information value.
-- Use \`evidenceItems\` to update focus-item confidences in the chart,
-  noting source quality (gold > guideline > peer-reviewed >
-  functional-medicine-corpus) and relationship (supports / contradicts /
-  neutral). Functional-medicine-corpus items provide root-cause context
-  and integrative intervention ideas — use them to enrich your reasoning
+- Use \`evidenceItems\` to reason about focus items not covered by
+  \`updatedRankings\`, and to support your own analysis. Note source
+  quality (gold > guideline > peer-reviewed > functional-medicine-corpus)
+  and relationship (supports / contradicts / neutral). Cite the
+  \`source\` when you reference a claim to the user or log it. Use
+  \`facts\` as the concrete supporting data behind each claim.
+  Functional-medicine-corpus items provide root-cause context and
+  integrative intervention ideas — use them to enrich your reasoning
   and identify questions worth exploring, but prefer PubMed evidence
   when they conflict.
 - If \`escalationFlags\` is non-empty, apply the safety rules below.
