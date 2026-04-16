@@ -1,7 +1,6 @@
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import { z } from "zod";
-import { env } from "../../env.ts";
 import { requireSessionMiddleware } from "../../middleware/require-session.ts";
 import { getDebugSnapshotsForThread } from "../../services/debug.ts";
 import {
@@ -61,9 +60,6 @@ export const researchJsonRoutes = new Hono<AppEnv>()
 		"/debug/:threadId/snapshots",
 		zValidator("param", threadParamSchema),
 		async (c) => {
-			if (env.NODE_ENV === "production") {
-				return c.json({ error: "debug disabled" }, 404);
-			}
 			const { threadId } = c.req.valid("param");
 			const snapshots = await getDebugSnapshotsForThread(threadId);
 			return c.json({ snapshots });
