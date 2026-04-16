@@ -141,6 +141,28 @@ export const embedWebsiteResponseSchema = z.object({
 
 export type EmbedWebsiteResponse = z.infer<typeof embedWebsiteResponseSchema>;
 
+/**
+ * Shape of the JSONB `metadata` blob attached to every vector stored in the
+ * Mastra-managed `page_chunks` PgVector index. This is the single source of
+ * truth for the contract between the embedder (`embedPage`) and any future
+ * RAG consumer that queries the index — keeping the schema in
+ * `@atlas/schemas` means both sides import the same types.
+ *
+ * `scrapedWebsiteId` is nullable because `chunks.scrapedWebsiteId` is
+ * nullable in the Drizzle schema (scraped pages can exist without being
+ * linked to a website row).
+ */
+export const chunkVectorMetadataSchema = z.object({
+	chunkId: z.string().uuid(),
+	scrapedPageId: z.string().uuid(),
+	scrapedWebsiteId: z.string().uuid().nullable(),
+	chunkIndex: z.number().int().nonnegative(),
+	content: z.string(),
+	tokenCount: z.number().int().nonnegative(),
+});
+
+export type ChunkVectorMetadata = z.infer<typeof chunkVectorMetadataSchema>;
+
 // --- Chat request schema ---
 
 export const chatRequestSchema = z.object({

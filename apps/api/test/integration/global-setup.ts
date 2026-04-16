@@ -12,6 +12,7 @@ import {
 	type StartedTestContainer,
 	Wait,
 } from "testcontainers";
+import { sql } from "drizzle-orm";
 import type { TestProject } from "vitest/node";
 
 /**
@@ -62,7 +63,17 @@ export default async function setup(project: TestProject): Promise<() => Promise
 
 	const migrationClient = postgres(databaseUrl, { max: 1 });
 	try {
-		await migrate(drizzle(migrationClient), { migrationsFolder });
+		const migrationDb = drizzle(migrationClient);
+		// Mastra's PostgresStore (configured in src/mastra/index.ts with
+		// `schemaName: "mastra"`) tries to `CREATE SCHEMA IF NOT EXISTS
+		// mastra` on init. In the prod docker compose, that schema lives in
+		// a dedicated `mastra` database; here we pre-create it inside the
+		// single test DB so the init is a no-op. Mastra's table init also
+		// races on `pg_type_typname_nsp_index` when fired concurrently from
+		// multiple test files' transitive imports, so we eagerly create the
+		// tables here too (see below).
+		await migrationDb.execute(sql`CREATE SCHEMA IF NOT EXISTS mastra`);
+		await migrate(migrationDb, { migrationsFolder });
 	} finally {
 		await migrationClient.end();
 	}
@@ -86,7 +97,69 @@ export default async function setup(project: TestProject): Promise<() => Promise
 	project.provide("cloudTasksLocation", cloudTasksLocation);
 	project.provide("cloudTasksAuthSecret", cloudTasksAuthSecret);
 
+	// Eagerly initialise Mastra's Postgres tables + the `page_chunks`
+	// PgVector index in this main process before any worker spawns. Without
+	// this, tests that transitively import `src/mastra/index.ts` (e.g. via
+	// `src/tasks/registry.ts` → `src/services/research.ts`) fire
+	// `PostgresStore.init` concurrently with other tests' PgVector calls
+	// against the same DB — Mastra's parallel `CREATE TABLE IF NOT EXISTS`
+	// sub-init methods race on `pg_type_typname_nsp_index` and surface as
+	// unhandled rejections. Pre-creating the tables here makes those later
+	// CREATE TABLE IF NOT EXISTS calls true no-ops at the Postgres level.
+	//
+	// Env vars must be set before `src/env.ts` is imported (it validates at
+	// module load time), so we populate them here for the duration of this
+	// main-process setup.
+	process.env.DATABASE_URL = databaseUrl;
+	process.env.CLOUD_TASKS_EMULATOR_HOST = cloudTasksEmulatorHost;
+	process.env.GCLOUD_PROJECT = cloudTasksProject;
+	process.env.GCLOUD_LOCATION = cloudTasksLocation;
+	process.env.CLOUD_TASKS_AUTH_SECRET = cloudTasksAuthSecret;
+	process.env.BETTER_AUTH_SECRET = "b".repeat(32);
+	process.env.BETTER_AUTH_URL = "http://localhost:4111";
+	process.env.GOOGLE_GENERATIVE_AI_API_KEY = "test-key";
+	process.env.FIRECRAWL_API_KEY = "test-key";
+	process.env.FIRECRAWL_WEBHOOK_SECRET = "test-secret";
+	process.env.MASTRA_API_KEY = "c".repeat(48);
+	process.env.CLOUD_TASKS_TARGET_BASE_URL = "http://host.docker.internal:4111";
+	process.env.NODE_ENV ??= "test";
+
+	const { initialize } = await import("@atlas/logger");
+	initialize({ applicationEnvironment: "development" });
+	const { mastra } = await import("../../src/mastra/index.ts");
+	const {
+		CHUNKS_DIMENSION,
+		CHUNKS_INDEX_NAME,
+		CHUNKS_VECTOR_TYPE,
+		pgVectorChunks,
+	} = await import("../../src/mastra/rag/page-chunks-store.ts");
+
+	const mastraStorage = await mastra.getStorage();
+	if (mastraStorage) {
+		await mastraStorage.init();
+	}
+	await pgVectorChunks.createIndex({
+		indexName: CHUNKS_INDEX_NAME,
+		dimension: CHUNKS_DIMENSION,
+		vectorType: CHUNKS_VECTOR_TYPE,
+	});
+
 	return async () => {
+		// Close the pools opened in this process before stopping the
+		// container, otherwise node emits an unhandled `terminating
+		// connection due to administrator command` as Postgres tears down
+		// in-flight connections.
+		try {
+			await pgVectorChunks.disconnect();
+		} catch {
+			// best-effort — we're tearing down anyway
+		}
+		try {
+			const store = mastraStorage as { close?: () => Promise<void> } | null;
+			if (store?.close) await store.close();
+		} catch {
+			// best-effort
+		}
 		await emulatorContainer?.stop();
 		await postgresContainer?.stop();
 	};
