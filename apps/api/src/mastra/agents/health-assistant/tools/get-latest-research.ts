@@ -1,13 +1,31 @@
 import { createTool } from "@mastra/core/tools";
 import { z } from "zod";
-import { awaitInflightResearch } from "../../../../services/research.ts";
+import {
+	awaitInflightResearch,
+	type PlannerBrief,
+	type ResearchSynthesis,
+} from "../../../../services/research.ts";
 
 const evidenceItemSchema = z.object({
 	claim: z.string(),
+	source: z.string().optional(),
 	sourceQuality: z.string().optional(),
 	relationship: z.string().optional(),
 	hypothesis: z.string().optional(),
 	confidence: z.number().optional(),
+	facts: z.array(z.string()).default([]),
+});
+
+const updatedRankingSchema = z.object({
+	label: z.string(),
+	previousConfidence: z.number().optional(),
+	newConfidence: z.number().optional(),
+	reason: z.string().optional(),
+});
+
+const scopeSchema = z.object({
+	mode: z.enum(["triage", "treatment", "goals"]),
+	focusItems: z.array(z.string()),
 });
 
 const outputSchema = z.object({
@@ -15,6 +33,8 @@ const outputSchema = z.object({
 	roundId: z.string().optional(),
 	completedAt: z.string().optional(),
 	whatChanged: z.string().optional(),
+	scope: scopeSchema.optional(),
+	updatedRankings: z.array(updatedRankingSchema).default([]),
 	suggestedQuestions: z.array(z.string()).default([]),
 	evidenceItems: z.array(evidenceItemSchema).default([]),
 	escalationFlags: z
@@ -51,6 +71,7 @@ export const getLatestResearchTool = createTool({
 		if (!threadId) {
 			return {
 				available: false,
+				updatedRankings: [],
 				suggestedQuestions: [],
 				evidenceItems: [],
 				escalationFlags: [],
@@ -60,16 +81,28 @@ export const getLatestResearchTool = createTool({
 		if (!row) {
 			return {
 				available: false,
+				updatedRankings: [],
 				suggestedQuestions: [],
 				evidenceItems: [],
 				escalationFlags: [],
 			};
 		}
+		const synthesis = (row.synthesis ?? null) as ResearchSynthesis | null;
+		const brief = (row.brief ?? null) as PlannerBrief | null;
 		return {
 			available: true,
 			roundId: row.id,
 			completedAt: row.createdAt.toISOString(),
 			whatChanged: row.whatChanged ?? undefined,
+			scope: brief
+				? {
+						mode: brief.mode,
+						focusItems: brief.focusItems.map((f) => f.label),
+					}
+				: undefined,
+			updatedRankings: Array.isArray(synthesis?.updatedRankings)
+				? (synthesis.updatedRankings as z.infer<typeof updatedRankingSchema>[])
+				: [],
 			suggestedQuestions: Array.isArray(row.suggestedQuestions)
 				? (row.suggestedQuestions as string[])
 				: [],
