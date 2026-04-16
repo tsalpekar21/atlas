@@ -2,7 +2,6 @@
 
 import { Button } from "@atlas/subframe/components/Button";
 import {
-	FeatherClipboardList,
 	FeatherClock,
 	FeatherMonitor,
 	FeatherRefreshCw,
@@ -21,7 +20,7 @@ import { buildPatientTriageHref } from "@/lib/patient-triage-url";
 const EXAMPLE_PROMPTS: Array<string> = [
 	"I have a persistent headache",
 	"Should I see a specialist?",
-	"I need help understanding what my symptoms could mean",
+	"Why am I always sick?",
 ];
 
 function newThreadId(): string {
@@ -111,7 +110,6 @@ export function LandingPage() {
 				<FadeStack.Item className="flex w-full flex-wrap items-start justify-center gap-8 mobile:flex-row mobile:flex-wrap mobile:gap-6">
 					{[
 						{ icon: <FeatherClock />, label: "Symptoms" },
-						{ icon: <FeatherClipboardList />, label: "Records" },
 						{ icon: <FeatherUser />, label: "Doctors" },
 						{ icon: <FeatherMonitor />, label: "Resources" },
 						{ icon: <FeatherSmartphone />, label: "Devices" },
@@ -156,7 +154,7 @@ export function LandingPage() {
 							</PressScale>
 						))}
 					</div>
-					<FadeStack.Item className="w-full">
+					<FadeStack.Item className="w-full mobile:px-2">
 						<RecentThreads />
 					</FadeStack.Item>
 				</FadeStack.Item>

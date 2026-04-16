@@ -83,11 +83,11 @@ export function SiteNavbar({ variant = "default" }: SiteNavbarProps = {}) {
 					</SubframeCore.DropdownMenu.Root>
 				) : (
 					<>
-						<Link to="/sign-in" className="no-underline">
+						<Link to="/sign-in" className="no-underline mobile:hidden">
 							<LinkButton variant="neutral">Sign in</LinkButton>
 						</Link>
 						<Link to="/sign-up" className="no-underline">
-							<Button icon={<FeatherArrowRight />}>Get started for free</Button>
+							<Button icon={<FeatherArrowRight />}>Get started</Button>
 						</Link>
 					</>
 				)}
