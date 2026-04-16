@@ -236,7 +236,7 @@ export function ChatPage({
 						minHeight={108}
 					/>
 
-					<div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+					<div className="flex flex-row items-center justify-between gap-3 mobile:flex-col mobile:items-stretch">
 						<div className="flex flex-wrap items-center gap-3">
 							<span className="text-caption font-caption text-subtext-color">
 								For informational support only, not a medical diagnosis.

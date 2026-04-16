@@ -3,7 +3,13 @@
 import { IconButton } from "@atlas/subframe/components/IconButton";
 import { TextArea } from "@atlas/subframe/components/TextArea";
 import { FeatherArrowRight } from "@subframe/core";
-import { useCallback, useEffect, useLayoutEffect, useRef } from "react";
+import {
+	type CSSProperties,
+	useCallback,
+	useEffect,
+	useLayoutEffect,
+	useRef,
+} from "react";
 
 const useIsoLayoutEffect =
 	typeof window !== "undefined" ? useLayoutEffect : useEffect;
@@ -60,8 +66,8 @@ export function PromptInput({
 				<TextArea.Input
 					ref={textareaRef}
 					aria-label={ariaLabel}
-					className="box-border w-full resize-none px-5 py-6 pb-20 disabled:opacity-60"
-					style={{ minHeight }}
+					className="box-border w-full resize-none px-5 py-6 pb-20 min-h-[var(--prompt-min-h)] disabled:opacity-60 mobile:px-4 mobile:py-4 mobile:pb-16 mobile:min-h-[96px]"
+					style={{ "--prompt-min-h": `${minHeight}px` } as CSSProperties}
 					placeholder={placeholder}
 					value={value}
 					disabled={disabled}

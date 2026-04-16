@@ -107,7 +107,7 @@ export function SignUpStepCredentials({
 	return (
 		<>
 			<div className="flex w-full flex-col items-start gap-2">
-				<span className="text-heading-1 font-heading-1 text-default-font">
+				<span className="text-heading-1 font-heading-1 text-default-font mobile:text-heading-2 mobile:font-heading-2">
 					Create your account
 				</span>
 				<span className="text-body font-body text-subtext-color">
