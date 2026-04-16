@@ -18,7 +18,9 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:integration": "vitest run -c vitest.integration.config.ts",
-    "test:all": "pnpm test && pnpm test:integration"
+    "test:all": "pnpm test && pnpm test:integration",
+    "eval:seed": "tsx src/eval/seed/run.ts",
+    "eval:ab": "tsx src/eval/experiment/run.ts"
   },
   "dependencies": {
     "@ai-sdk/google": "^3.0.43",

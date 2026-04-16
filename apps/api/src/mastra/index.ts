@@ -10,6 +10,18 @@ import {
 } from "@mastra/observability";
 import { PostgresStore } from "@mastra/pg";
 import { env } from "../env.ts";
+import {
+	evidenceGroundednessScorer,
+	factualCorrectnessScorer,
+	finalSummaryQualityScorer,
+	mustCoverCoverageScorer,
+	questionQualityScorer,
+	redFlagRecallScorer,
+	specificityScorer,
+} from "../eval/scorers/index.ts";
+import { abCompareWorkflow } from "../eval/targets/ab-compare-workflow.ts";
+import { healthAssistantControl } from "../eval/targets/health-assistant-control.ts";
+import { patientSimulator } from "../eval/targets/patient-simulator.ts";
 import { healthAssistant } from "./agents/health-assistant/index.ts";
 import { researchSynthesizer } from "./agents/research/synthesizer.ts";
 import { guidelineResearcher } from "./agents/research/workers/guideline-researcher.ts";
@@ -26,6 +38,8 @@ import { backgroundResearchWorkflow } from "./workflows/background-research.ts";
 export const mastra = new Mastra({
 	agents: {
 		healthAssistant,
+		healthAssistantControl,
+		patientSimulator,
 		researchSynthesizer,
 		guidelineResearcher,
 		literatureResearcher,
@@ -33,6 +47,16 @@ export const mastra = new Mastra({
 	},
 	workflows: {
 		backgroundResearch: backgroundResearchWorkflow,
+		abCompare: abCompareWorkflow,
+	},
+	scorers: {
+		[questionQualityScorer.id]: questionQualityScorer,
+		[finalSummaryQualityScorer.id]: finalSummaryQualityScorer,
+		[evidenceGroundednessScorer.id]: evidenceGroundednessScorer,
+		[specificityScorer.id]: specificityScorer,
+		[factualCorrectnessScorer.id]: factualCorrectnessScorer,
+		[redFlagRecallScorer.id]: redFlagRecallScorer,
+		[mustCoverCoverageScorer.id]: mustCoverCoverageScorer,
 	},
 	server: {
 		auth: new SimpleAuth({
