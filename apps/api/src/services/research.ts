@@ -540,6 +540,19 @@ export type ResearchSynthesis = {
 	workerOutputs?: {
 		guideline?: string;
 		literature?: string;
+		rag?: string;
+	};
+	/**
+	 * Retrieval quality metrics for the functional-medicine corpus worker,
+	 * computed at synthesis time. `cited / retrieved` is the adoption rate
+	 * of RAG chunks into the final synthesis — the primary online signal
+	 * for corpus relevance. Undefined when no rag worker ran.
+	 */
+	ragMetrics?: {
+		retrieved: number;
+		cited: number;
+		adoptionRate: number;
+		uniquePagesCited: number;
 	};
 };
 

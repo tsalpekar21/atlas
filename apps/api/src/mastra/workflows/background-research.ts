@@ -69,12 +69,19 @@ const runningRoundSchema = plannedBriefSchema.extend({
  * the parallel block's output type is a record keyed by step id and
  * does not carry the previous step's input forward, so every worker
  * has to re-emit the fields the synthesizer needs.
+ *
+ * `retrievedChunkIds` is populated only by the rag worker (extracted
+ * from the agent's tool-call trace). The synthesize step uses it to
+ * compute the adoption rate of corpus chunks into final evidence —
+ * our primary online relevance metric. PubMed workers leave it
+ * undefined.
  */
 const workerOutputSchema = z.object({
 	threadId: z.string(),
 	roundId: z.string(),
 	brief: runningRoundSchema.shape.brief,
 	workerText: z.string(),
+	retrievedChunkIds: z.array(z.string()).optional(),
 });
 type WorkerOutput = z.infer<typeof workerOutputSchema>;
 
@@ -400,7 +407,7 @@ const guidelineWorkerStep = createStep({
 
 /**
  * Literature worker — same shape as guidelineWorkerStep, different agent.
- * Runs in parallel with guideline and critic workers.
+ * Runs in parallel with guideline and rag workers.
  */
 const literatureWorkerStep = createStep({
 	id: "literature-worker",
@@ -447,6 +454,150 @@ const literatureWorkerStep = createStep({
 });
 
 /**
+ * Extract the set of chunk ids the rag agent saw from the generate
+ * result's per-step tool results. Each ragSearch tool call returns
+ * `{ results: [{ chunkId, ... }], ... }` — we walk every step (the
+ * agent may tool-call more than once in theory; in practice it's
+ * once) and union the chunkIds. Defensive against missing fields so
+ * a change in Mastra's tool-result shape can't crash the workflow.
+ */
+function extractRetrievedChunkIds(steps: unknown): string[] {
+	const seen = new Set<string>();
+	if (!Array.isArray(steps)) return [];
+	for (const step of steps) {
+		const toolResults = (step as { toolResults?: unknown[] }).toolResults;
+		if (!Array.isArray(toolResults)) continue;
+		for (const tr of toolResults) {
+			const record = tr as {
+				toolName?: string;
+				output?: { results?: unknown[] };
+				result?: { results?: unknown[] };
+			};
+			if (record.toolName !== "ragSearch") continue;
+			// AI SDK v6 exposes `output` on static tool results; older shapes
+			// use `result`. Support both so a minor SDK bump doesn't break us.
+			const results = record.output?.results ?? record.result?.results;
+			if (!Array.isArray(results)) continue;
+			for (const r of results) {
+				const chunkId = (r as { chunkId?: unknown }).chunkId;
+				if (typeof chunkId === "string" && chunkId.length > 0) {
+					seen.add(chunkId);
+				}
+			}
+		}
+	}
+	return Array.from(seen);
+}
+
+/**
+ * Functional medicine corpus worker — wraps the `ragResearcher` agent.
+ * Runs in parallel with the two PubMed workers. Pulls the set of
+ * retrieved chunk ids out of the agent's tool-call trace so the
+ * synthesize step can compute corpus-chunk adoption rate.
+ */
+const ragWorkerStep = createStep({
+	id: "rag-worker",
+	inputSchema: runningRoundSchema,
+	outputSchema: workerOutputSchema,
+	execute: async ({ inputData, mastra, runId }) => {
+		const { threadId, roundId, brief } = inputData;
+		const startedAt = Date.now();
+		stepLog.info(
+			{ step: "rag-worker", threadId, runId, roundId },
+			"step start",
+		);
+
+		try {
+			const agent = mastra.getAgent("ragResearcher");
+			const result = await agent.generate(buildWorkerPrompt(brief));
+			const retrievedChunkIds = extractRetrievedChunkIds(
+				(result as { steps?: unknown }).steps,
+			);
+			stepLog.info(
+				{
+					step: "rag-worker",
+					threadId,
+					runId,
+					roundId,
+					durationMs: Date.now() - startedAt,
+					outputLength: result.text.length,
+					retrievedChunkCount: retrievedChunkIds.length,
+				},
+				"step end",
+			);
+			return {
+				threadId,
+				roundId,
+				brief,
+				workerText: result.text,
+				retrievedChunkIds,
+			};
+		} catch (err) {
+			stepLog.warn(
+				{
+					step: "rag-worker",
+					threadId,
+					runId,
+					roundId,
+					durationMs: Date.now() - startedAt,
+					err,
+				},
+				"worker failed — returning empty",
+			);
+			return {
+				threadId,
+				roundId,
+				brief,
+				workerText: "",
+				retrievedChunkIds: [],
+			};
+		}
+	},
+});
+
+/**
+ * Compute how many of the rag worker's retrieved chunks got cited in
+ * the final synthesis. Matching is done by substring on the
+ * `chunkId=<id>` suffix the rag researcher is prompted to embed in
+ * every evidence-item `source` string. This is our primary online
+ * signal for RAG relevance — low adoption over many rounds means
+ * queries or corpus content are mismatched.
+ *
+ * Returns `undefined` when no chunks were retrieved so consumers can
+ * distinguish "no-op run" from "0% adoption".
+ */
+function computeRagMetrics(
+	retrievedChunkIds: string[] | undefined,
+	evidenceItems: ResearchSynthesis["evidenceItems"],
+): ResearchSynthesis["ragMetrics"] | undefined {
+	if (!retrievedChunkIds || retrievedChunkIds.length === 0) return undefined;
+	const retrieved = retrievedChunkIds.length;
+	const citedChunkIds = new Set<string>();
+	const citedPageSources = new Set<string>();
+
+	for (const item of evidenceItems ?? []) {
+		if (item.sourceQuality !== "functional-medicine-corpus") continue;
+		const source = item.source ?? "";
+		for (const chunkId of retrievedChunkIds) {
+			if (source.includes(`chunkId=${chunkId}`)) {
+				citedChunkIds.add(chunkId);
+				// Strip the chunkId suffix so we can count unique pages cited.
+				const pageKey = source.replace(/\s*\|\s*chunkId=[^|]+$/, "").trim();
+				if (pageKey) citedPageSources.add(pageKey);
+				break;
+			}
+		}
+	}
+	const cited = citedChunkIds.size;
+	return {
+		retrieved,
+		cited,
+		adoptionRate: retrieved > 0 ? cited / retrieved : 0,
+		uniquePagesCited: citedPageSources.size,
+	};
+}
+
+/**
  * Synthesize step — the one and only LLM reasoning pass over the
  * combined worker outputs. Consumes the parallel block's output (a
  * record keyed by step id), invokes the `researchSynthesizer` agent
@@ -458,14 +609,17 @@ const synthesizeStep = createStep({
 	inputSchema: z.object({
 		"guideline-worker": workerOutputSchema,
 		"literature-worker": workerOutputSchema,
+		"rag-worker": workerOutputSchema,
 	}),
 	outputSchema: workflowOutputSchema,
 	execute: async ({ inputData, mastra, runId }) => {
-		// Both workers received the same input upstream and each re-emits
-		// threadId/roundId/brief in its output, so we can pick either one
-		// for the synthesis context + persistence.
+		// All three workers received the same input upstream and each
+		// re-emits threadId/roundId/brief in its output, so we can pick any
+		// one for the synthesis context + persistence.
 		const anyWorker: WorkerOutput =
-			inputData["guideline-worker"] ?? inputData["literature-worker"];
+			inputData["guideline-worker"] ??
+			inputData["literature-worker"] ??
+			inputData["rag-worker"];
 		const { threadId, roundId, brief } = anyWorker;
 
 		const startedAt = Date.now();
@@ -478,7 +632,7 @@ const synthesizeStep = createStep({
 		try {
 			const agent = mastra.getAgent("researchSynthesizer");
 
-			const prompt = `You are merging the outputs of two parallel research workers into a single structured synthesis. Return JSON only — see your instructions for the exact shape.
+			const prompt = `You are merging the outputs of three parallel research workers into a single structured synthesis. Return JSON only — see your instructions for the exact shape.
 
 # Research brief
 
@@ -492,6 +646,10 @@ ${inputData["guideline-worker"].workerText || "(no response)"}
 
 ${inputData["literature-worker"].workerText || "(no response)"}
 
+# Functional medicine corpus worker output
+
+${inputData["rag-worker"].workerText || "(no response)"}
+
 Now emit the JSON synthesis object.`;
 
 			const result = await agent.generate(prompt);
@@ -504,7 +662,17 @@ Now emit the JSON synthesis object.`;
 			synthesis.workerOutputs = {
 				guideline: inputData["guideline-worker"].workerText,
 				literature: inputData["literature-worker"].workerText,
+				rag: inputData["rag-worker"].workerText,
 			};
+
+			// Compute RAG chunk adoption rate — cited / retrieved. Stored on
+			// the synthesis jsonb; visible in the debug panel and queryable
+			// across rounds for aggregate relevance analysis.
+			const ragMetrics = computeRagMetrics(
+				inputData["rag-worker"].retrievedChunkIds,
+				synthesis.evidenceItems,
+			);
+			if (ragMetrics) synthesis.ragMetrics = ragMetrics;
 
 			await markRoundComplete({ id: roundId, synthesis });
 
@@ -531,6 +699,9 @@ Now emit the JSON synthesis object.`;
 					evidenceCount: synthesis.evidenceItems?.length ?? 0,
 					suggestedQuestionCount: synthesis.suggestedQuestions?.length ?? 0,
 					escalationCount: synthesis.escalationFlags?.length ?? 0,
+					ragRetrieved: ragMetrics?.retrieved,
+					ragCited: ragMetrics?.cited,
+					ragAdoptionRate: ragMetrics?.adoptionRate,
 				},
 				"step end",
 			);
@@ -563,13 +734,15 @@ Now emit the JSON synthesis object.`;
  * Background research workflow.
  *
  * Shape: linear steps → parallel worker block → synthesize. The parallel
- * block is the latency win — the two PubMed-backed workers run concurrently
- * as Inngest steps instead of going through the old LLM-driven supervisor
- * delegation loop (which the model tended to serialize).
+ * block is the latency win — three workers run concurrently as Inngest
+ * steps instead of going through the old LLM-driven supervisor
+ * delegation loop (which the model tended to serialize). The rag worker
+ * typically finishes first (~6-9s: embed + pgvector + MMR + LLM) so it
+ * adds no wall-clock time beyond the PubMed workers' ~10-15s budget.
  *
  * Wall-clock budget:
  *   loadContext + gateByHash + extractBrief + insertRunning  ~   0.5s
- *   .parallel([guideline, literature])                       ~ 10-15s (max)
+ *   .parallel([guideline, literature, rag])                  ~ 10-15s (max)
  *   synthesize                                               ~  8-12s
  *                                                   total    ~ 20-30s
  *
@@ -586,6 +759,6 @@ export const backgroundResearchWorkflow = createWorkflow({
 	.then(gateByHashStep)
 	.then(extractBriefStep)
 	.then(insertRunningStep)
-	.parallel([guidelineWorkerStep, literatureWorkerStep])
+	.parallel([guidelineWorkerStep, literatureWorkerStep, ragWorkerStep])
 	.then(synthesizeStep)
 	.commit();

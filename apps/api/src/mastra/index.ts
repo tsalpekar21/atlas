@@ -14,6 +14,7 @@ import { healthAssistant } from "./agents/health-assistant/index.ts";
 import { researchSynthesizer } from "./agents/research/synthesizer.ts";
 import { guidelineResearcher } from "./agents/research/workers/guideline-researcher.ts";
 import { literatureResearcher } from "./agents/research/workers/literature-researcher.ts";
+import { ragResearcher } from "./agents/research/workers/rag-researcher.ts";
 import {
 	CHUNKS_DIMENSION,
 	CHUNKS_INDEX_NAME,
@@ -28,6 +29,7 @@ export const mastra = new Mastra({
 		researchSynthesizer,
 		guidelineResearcher,
 		literatureResearcher,
+		ragResearcher,
 	},
 	workflows: {
 		backgroundResearch: backgroundResearchWorkflow,
