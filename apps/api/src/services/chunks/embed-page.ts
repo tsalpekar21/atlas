@@ -1,5 +1,9 @@
 import { google } from "@ai-sdk/google";
 import { logger } from "@atlas/logger";
+import {
+	type ChunkVectorMetadata,
+	chunkVectorMetadataSchema,
+} from "@atlas/schemas/api";
 import { MDocument } from "@mastra/rag";
 import { embedMany } from "ai";
 import { asc, eq } from "drizzle-orm";
@@ -116,16 +120,36 @@ export async function embedPage(pageId: string): Promise<EmbedPageResult> {
 			embeddings.push(...result.embeddings);
 		}
 
+		// Validate each metadata blob through Zod at the upsert boundary so the
+		// JSONB stored in `page_chunks` always matches the declared contract in
+		// `@atlas/schemas`. RAG consumers that re-parse on read can trust this.
+		const metadata: ChunkVectorMetadata[] = pending.map((p) => {
+			const chunkId = idByIndex.get(p.index);
+			if (!chunkId) {
+				throw new Error(`embedPage: missing id for chunk ${p.index}`);
+			}
+			return chunkVectorMetadataSchema.parse({
+				chunkId,
+				scrapedPageId: pageId,
+				scrapedWebsiteId: page.scrapedWebsiteId,
+				chunkIndex: p.index,
+				content: p.content,
+				tokenCount: p.tokenCount,
+			});
+		});
+
+		// `deleteFilter` atomically purges any prior vectors for this page
+		// before inserting the new ones, inside a single transaction. Without
+		// it, re-embedding leaves orphaned vectors in the index whose UUIDs
+		// no longer exist in the Drizzle `chunks` table — RAG hits against
+		// those rows would dangle. Mirrors the `tx.delete(chunks)` wipe we do
+		// on the relational side above.
 		await pgVectorChunks.upsert({
 			indexName: CHUNKS_INDEX_NAME,
 			vectors: embeddings,
 			ids: chunkIds,
-			metadata: pending.map((p) => ({
-				chunkId: idByIndex.get(p.index),
-				scrapedPageId: pageId,
-				scrapedWebsiteId: page.scrapedWebsiteId,
-				chunkIndex: p.index,
-			})),
+			metadata,
+			deleteFilter: { scrapedPageId: pageId },
 		});
 
 		await db
