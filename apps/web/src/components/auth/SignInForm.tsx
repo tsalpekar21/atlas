@@ -7,7 +7,7 @@ import { Link } from "@tanstack/react-router";
 import { type FormEvent, useCallback, useState } from "react";
 import { FormField } from "@/components/ui/forms/FormField";
 import { authClient } from "@/lib/auth-client";
-import { SESSION_QUERY_KEY } from "@/lib/session-query";
+import { SESSION_QUERY_KEY, sessionQueryOptions } from "@/lib/session-query";
 
 type FieldErrors = Partial<Record<keyof SignInValues | "form", string>>;
 
@@ -63,8 +63,17 @@ export function SignInForm({ onSuccess }: SignInFormProps) {
 					});
 					return;
 				}
+				// Invalidate + refetch the session so the new auth cookie is reflected
+				// in the cache before we navigate. `invalidateQueries` alone only
+				// refetches active observers; nothing on /sign-in observes the session
+				// query, so the /admin loader's `ensureQueryData` would otherwise
+				// return the stale pre-login cache (null) and bounce the user back to
+				// /sign-in. Using the refetched session is also more reliable than
+				// `signInResult.data.user.role`, which is not guaranteed to be part
+				// of Better Auth's sign-in response shape.
 				await queryClient.invalidateQueries({ queryKey: SESSION_QUERY_KEY });
-				onSuccess({ isAdmin: signInResult.data?.user.role === "admin" });
+				const freshSession = await queryClient.fetchQuery(sessionQueryOptions);
+				onSuccess({ isAdmin: freshSession?.user.role === "admin" });
 			} catch (err) {
 				setErrors({
 					form: err instanceof Error ? err.message : "Could not sign in",

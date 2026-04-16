@@ -20,8 +20,8 @@ import { buildPatientTriageHref } from "@/lib/patient-triage-url";
 
 const EXAMPLE_PROMPTS: Array<string> = [
 	"I have a persistent headache",
-	"Help me understand my lab results",
 	"Should I see a specialist?",
+	"I need help understanding what my symptoms could mean",
 ];
 
 function newThreadId(): string {

@@ -14,7 +14,6 @@ import { useQueryClient } from "@tanstack/react-query";
 import {
 	createFileRoute,
 	Link,
-	notFound,
 	Outlet,
 	redirect,
 	useNavigate,
@@ -39,7 +38,11 @@ export const Route = createFileRoute("/admin")({
 			throw redirect({ to: "/sign-in" });
 		}
 		if (session.user.role !== "admin") {
-			throw notFound();
+			// Send authenticated non-admin users back to the app home instead of
+			// surfacing a 404. Avoids leaking the existence of the admin route and
+			// gives a cleaner recovery path. The server independently enforces admin
+			// access on every admin API call via requireAdminMiddleware.
+			throw redirect({ to: "/" });
 		}
 		return { adminUser: session.user };
 	},
