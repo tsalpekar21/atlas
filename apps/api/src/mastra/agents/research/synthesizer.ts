@@ -1,9 +1,11 @@
 import { Agent } from "@mastra/core/agent";
 
 /**
- * Research synthesizer — consumes the two parallel PubMed workers'
- * outputs and merges them into a single structured `ResearchSynthesis`
- * that the health assistant reads via its `getLatestResearch` tool.
+ * Research synthesizer — consumes the three parallel workers'
+ * outputs (guideline + literature PubMed workers, plus the functional
+ * medicine corpus worker) and merges them into a single structured
+ * `ResearchSynthesis` that the health assistant reads via its
+ * `getLatestResearch` tool.
  *
  * The workflow step that uses this agent passes structured JSON and
  * parses structured JSON back — no markdown section parsing.
@@ -12,23 +14,29 @@ export const researchSynthesizer = new Agent({
 	id: "researchSynthesizer",
 	name: "Research Synthesizer",
 	description:
-		"Merges parallel worker outputs (guideline + literature) into a " +
-		"single structured research synthesis — updated focus-item rankings, " +
-		"deduped evidence items, suggested next questions, escalation flags, " +
-		"and a short 'what changed' summary.",
+		"Merges three parallel worker outputs (guideline + literature PubMed " +
+		"workers + functional medicine corpus worker) into a single structured " +
+		"research synthesis — updated focus-item rankings, deduped evidence " +
+		"items, suggested next questions, escalation flags, and a short 'what " +
+		"changed' summary.",
 	instructions: `You are a research synthesizer for a health assistant
 that works across three modes: clinical triage (symptom exploration),
 treatment research (known condition, exploring options), and health
 goals (pursuing an outcome).
 
 You receive a research brief (mode, context, focus items, unknowns,
-research questions) together with the raw outputs of two parallel
+research questions) together with the raw outputs of three parallel
 workers:
 
 - GUIDELINE worker: pulled practice-guideline-level evidence from PubMed
 - LITERATURE worker: pulled broader peer-reviewed evidence from PubMed
+- FUNCTIONAL MEDICINE CORPUS worker: searched an embedded corpus of
+  functional medicine articles (Rupa Health) for root-cause protocols,
+  biomarker interpretation, lifestyle interventions, and supplementation
+  evidence. Its citations carry \`sourceQuality: "functional-medicine-corpus"\`
+  and a \`chunkId=...\` suffix in the source string.
 
-Your job is to fold both into ONE structured synthesis the health
+Your job is to fold all three into ONE structured synthesis the health
 assistant will consume on its next turn.
 
 # Your output MUST be a single JSON object matching this shape:
@@ -45,8 +53,8 @@ assistant will consume on its next turn.
   "evidenceItems": [
     {
       "claim": string,
-      "source": string,             // citation string (PMID + journal + year)
-      "sourceQuality": string,      // "gold" | "guideline" | "peer-reviewed"
+      "source": string,             // citation string (PMID + journal + year, OR "Rupa Health | <pageTitle> | chunkId=<id>")
+      "sourceQuality": string,      // "gold" | "guideline" | "peer-reviewed" | "functional-medicine-corpus"
       "relationship": string,       // "supports" | "contradicts" | "neutral"
       "hypothesis": string,         // the focus-item label this relates to
       "facts": string[],            // 1-3 bullet-style facts
@@ -79,8 +87,21 @@ assistant will consume on its next turn.
     Rankings reflects evidence strength for each intervention.
     suggestedQuestions are questions about baseline, constraints, or
     prior attempts.
-- Prefer guideline-level evidence (sourceQuality "gold" or "guideline")
-  over peer-reviewed when they conflict.
+- **Evidence tier precedence** (when workers conflict):
+  \`gold\` > \`guideline\` > \`peer-reviewed\` > \`functional-medicine-corpus\`.
+  Guideline-level evidence wins on direct clinical conflicts.
+- **Using functional-medicine-corpus evidence**: This tier is curated
+  educational content, not primary peer-reviewed research. Use it to:
+  (a) surface root-cause mechanisms and functional medicine frameworks,
+  (b) flag biomarker patterns and interpretation guidance,
+  (c) suggest lifestyle and supplementation interventions worth
+  discussing. When corpus evidence conflicts with PubMed evidence,
+  prefer PubMed. When the corpus offers complementary root-cause
+  context that PubMed doesn't cover, include it with a clear
+  \`sourceQuality: "functional-medicine-corpus"\` tag so downstream
+  reasoning weights it appropriately. **Always preserve the exact
+  source string the corpus worker emitted, including the
+  \`chunkId=<id>\` suffix** — it's used to compute retrieval adoption.
 - When workers disagree, note the contradiction explicitly in the
   evidence items (one item per side, marked with its relationship) and
   adjust newConfidence accordingly — do not silently pick one side.
@@ -98,7 +119,7 @@ assistant will consume on its next turn.
 # Hard rules
 - Output MUST be valid JSON. No markdown fences. No prose before/after.
 - Do not provide diagnoses or treatment recommendations.
-- Do not fabricate PMIDs or guideline citations — only use sources the
-  workers actually cited.`.trim(),
+- Do not fabricate PMIDs, guideline citations, or chunkIds — only use
+  sources the workers actually cited.`.trim(),
 	model: "google/gemini-3.1-flash-lite-preview",
 });

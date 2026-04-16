@@ -5,9 +5,13 @@ import { and, desc, eq } from "drizzle-orm";
 import { db } from "../db/index.ts";
 import { researchFindings } from "../db/schema.ts";
 import { subscribeResearchStatus } from "../inngest/realtime-bus.ts";
-import { mastra } from "../mastra/index.ts";
 import { enqueue } from "../tasks/enqueue.ts";
 import { HEALTH_ASSISTANT_AGENT_ID } from "./threads/constants.ts";
+
+// NOTE: `../mastra/index.ts` is imported dynamically inside
+// `runResearchWorkflowForTask` to keep the pure chart-parsing + DB ops
+// in this module unit-testable without booting the full Mastra runtime
+// (which eagerly connects to pgvector on module load).
 
 /**
  * Sections excluded from the chart hash. Most importantly the `Research Log`,
@@ -540,6 +544,19 @@ export type ResearchSynthesis = {
 	workerOutputs?: {
 		guideline?: string;
 		literature?: string;
+		rag?: string;
+	};
+	/**
+	 * Retrieval quality metrics for the functional-medicine corpus worker,
+	 * computed at synthesis time. `cited / retrieved` is the adoption rate
+	 * of RAG chunks into the final synthesis — the primary online signal
+	 * for corpus relevance. Undefined when no rag worker ran.
+	 */
+	ragMetrics?: {
+		retrieved: number;
+		cited: number;
+		adoptionRate: number;
+		uniquePagesCited: number;
 	};
 };
 
@@ -804,6 +821,9 @@ export async function runResearchWorkflowForTask(args: {
 		return { status: "already_running" };
 	}
 
+	// Lazy-import the Mastra instance so test files that only need the
+	// pure parsers above don't eagerly boot pgvector + PostgresStore.
+	const { mastra } = await import("../mastra/index.ts");
 	const workflow = mastra.getWorkflow("backgroundResearch");
 	const run = await workflow.createRun();
 	// `start` (not `startAsync`) awaits the full workflow to completion.

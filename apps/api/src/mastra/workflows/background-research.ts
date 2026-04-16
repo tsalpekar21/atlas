@@ -12,115 +12,21 @@ import {
 	markRoundComplete,
 	markRoundFailed,
 	type PlannerBrief,
-	type ResearchSynthesis,
 } from "../../services/research.ts";
-
-// ---------- Schemas (piped between steps via `.then(...)` / `.parallel(...)`) ----------
-
-const workflowInputSchema = z.object({
-	threadId: z.string().min(1),
-	userId: z.string().min(1),
-});
-
-const workflowOutputSchema = z.object({
-	status: z.enum(["complete", "skipped", "failed"]),
-	roundId: z.string().optional(),
-	reason: z.string().optional(),
-});
-type WorkflowOutput = z.infer<typeof workflowOutputSchema>;
-
-const loadedContextSchema = z.object({
-	threadId: z.string(),
-	userId: z.string(),
-	chart: z.string(),
-	chartHash: z.string(),
-});
-
-const focusItemSchema = z.object({
-	label: z.string(),
-	kind: z.enum(["hypothesis", "condition", "goal"]),
-	systems: z.array(z.string()),
-	confidence: z.number(),
-	notes: z.array(z.string()),
-});
-
-const plannedBriefSchema = z.object({
-	threadId: z.string(),
-	userId: z.string(),
-	chartHash: z.string(),
-	brief: z.object({
-		mode: z.enum(["triage", "treatment", "goals"]),
-		context: z.string(),
-		focusItems: z.array(focusItemSchema),
-		unknowns: z.array(z.string()),
-		researchQuestions: z.array(z.string()),
-		riskLevel: z.enum(["routine", "soon", "urgent", "emergency"]),
-	}),
-});
-
-const runningRoundSchema = plannedBriefSchema.extend({
-	roundId: z.string(),
-});
-
-/**
- * Each parallel worker returns this shape. We pass through the
- * threadId + roundId + brief alongside the raw LLM text so the
- * synthesize step can pick them off any one of the three workers —
- * the parallel block's output type is a record keyed by step id and
- * does not carry the previous step's input forward, so every worker
- * has to re-emit the fields the synthesizer needs.
- */
-const workerOutputSchema = z.object({
-	threadId: z.string(),
-	roundId: z.string(),
-	brief: runningRoundSchema.shape.brief,
-	workerText: z.string(),
-});
-type WorkerOutput = z.infer<typeof workerOutputSchema>;
-
-// ---------- Helpers ----------
-
-/**
- * Parse the synthesizer's JSON response into a `ResearchSynthesis`. The
- * synthesizer is prompted to emit strict JSON, but we still guard against
- * markdown fences and stray prose so a minor formatting slip doesn't kill
- * a round — on parse failure we fall back to a minimal synthesis.
- */
-function parseSynthesisJson(raw: string): ResearchSynthesis {
-	const stripped = raw
-		.trim()
-		.replace(/^```(?:json)?\s*/i, "")
-		.replace(/\s*```$/i, "")
-		.trim();
-
-	const tryParse = (s: string): ResearchSynthesis | null => {
-		try {
-			return JSON.parse(s) as ResearchSynthesis;
-		} catch {
-			return null;
-		}
-	};
-
-	const direct = tryParse(stripped);
-	if (direct) return { ...direct, rawText: raw };
-
-	const match = stripped.match(/\{[\s\S]*\}/);
-	if (match) {
-		const fallback = tryParse(match[0]);
-		if (fallback) return { ...fallback, rawText: raw };
-	}
-
-	// Minimal synthesis when the model response can't be parsed at all —
-	// downstream still gets a valid row but with empty arrays.
-	return {
-		evidenceItems: [],
-		suggestedQuestions: [],
-		escalationFlags: [],
-		openQuestions: [],
-		whatChanged: "synthesizer returned unparseable output",
-		rawText: raw,
-	};
-}
+import {
+	buildWorkerPrompt,
+	computeRagMetrics,
+	extractRetrievedChunkIds,
+	loadedContextSchema,
+	parseSynthesisJson,
+	plannedBriefSchema,
+	runningRoundSchema,
+	type WorkerOutput,
+	type WorkflowOutput,
+	workerOutputSchema,
+	workflowInputSchema,
+	workflowOutputSchema,
+} from "./research/helpers.ts";
 
 // ---------- Steps ----------
 
@@ -335,20 +241,6 @@ const insertRunningStep = createStep({
 });
 
 /**
- * Shared prompt helper: workers all consume the same brief; the synthesizer
- * reads their raw text outputs. Keeping the prompt shape consistent across
- * workers lets the synthesizer concatenate them without per-worker parsing.
- */
-function buildWorkerPrompt(brief: RunningRoundInput["brief"]): string {
-	return `You are receiving a research brief. Use your tool (if you have one) to find evidence and then emit your response per your instructions.
-
-Brief:
-${JSON.stringify(brief, null, 2)}`;
-}
-
-type RunningRoundInput = z.infer<typeof runningRoundSchema>;
-
-/**
  * Guideline worker — wraps `mastra.getAgent('guidelineResearcher')`. The
  * agent itself owns the PubMed tool call and the prompt shape; this step
  * is a thin adapter that turns "workflow step input" into "agent prompt"
@@ -400,7 +292,7 @@ const guidelineWorkerStep = createStep({
 
 /**
  * Literature worker — same shape as guidelineWorkerStep, different agent.
- * Runs in parallel with guideline and critic workers.
+ * Runs in parallel with guideline and rag workers.
  */
 const literatureWorkerStep = createStep({
 	id: "literature-worker",
@@ -447,6 +339,72 @@ const literatureWorkerStep = createStep({
 });
 
 /**
+ * Functional medicine corpus worker — wraps the `ragResearcher` agent.
+ * Runs in parallel with the two PubMed workers. Pulls the set of
+ * retrieved chunk ids out of the agent's tool-call trace so the
+ * synthesize step can compute corpus-chunk adoption rate.
+ */
+const ragWorkerStep = createStep({
+	id: "rag-worker",
+	inputSchema: runningRoundSchema,
+	outputSchema: workerOutputSchema,
+	execute: async ({ inputData, mastra, runId }) => {
+		const { threadId, roundId, brief } = inputData;
+		const startedAt = Date.now();
+		stepLog.info(
+			{ step: "rag-worker", threadId, runId, roundId },
+			"step start",
+		);
+
+		try {
+			const agent = mastra.getAgent("ragResearcher");
+			const result = await agent.generate(buildWorkerPrompt(brief));
+			const retrievedChunkIds = extractRetrievedChunkIds(
+				(result as { steps?: unknown }).steps,
+			);
+			stepLog.info(
+				{
+					step: "rag-worker",
+					threadId,
+					runId,
+					roundId,
+					durationMs: Date.now() - startedAt,
+					outputLength: result.text.length,
+					retrievedChunkCount: retrievedChunkIds.length,
+				},
+				"step end",
+			);
+			return {
+				threadId,
+				roundId,
+				brief,
+				workerText: result.text,
+				retrievedChunkIds,
+			};
+		} catch (err) {
+			stepLog.warn(
+				{
+					step: "rag-worker",
+					threadId,
+					runId,
+					roundId,
+					durationMs: Date.now() - startedAt,
+					err,
+				},
+				"worker failed — returning empty",
+			);
+			return {
+				threadId,
+				roundId,
+				brief,
+				workerText: "",
+				retrievedChunkIds: [],
+			};
+		}
+	},
+});
+
+/**
  * Synthesize step — the one and only LLM reasoning pass over the
  * combined worker outputs. Consumes the parallel block's output (a
  * record keyed by step id), invokes the `researchSynthesizer` agent
@@ -458,14 +416,17 @@ const synthesizeStep = createStep({
 	inputSchema: z.object({
 		"guideline-worker": workerOutputSchema,
 		"literature-worker": workerOutputSchema,
+		"rag-worker": workerOutputSchema,
 	}),
 	outputSchema: workflowOutputSchema,
 	execute: async ({ inputData, mastra, runId }) => {
-		// Both workers received the same input upstream and each re-emits
-		// threadId/roundId/brief in its output, so we can pick either one
-		// for the synthesis context + persistence.
+		// All three workers received the same input upstream and each
+		// re-emits threadId/roundId/brief in its output, so we can pick any
+		// one for the synthesis context + persistence.
 		const anyWorker: WorkerOutput =
-			inputData["guideline-worker"] ?? inputData["literature-worker"];
+			inputData["guideline-worker"] ??
+			inputData["literature-worker"] ??
+			inputData["rag-worker"];
 		const { threadId, roundId, brief } = anyWorker;
 
 		const startedAt = Date.now();
@@ -478,7 +439,7 @@ const synthesizeStep = createStep({
 		try {
 			const agent = mastra.getAgent("researchSynthesizer");
 
-			const prompt = `You are merging the outputs of two parallel research workers into a single structured synthesis. Return JSON only — see your instructions for the exact shape.
+			const prompt = `You are merging the outputs of three parallel research workers into a single structured synthesis. Return JSON only — see your instructions for the exact shape.
 
 # Research brief
 
@@ -492,6 +453,10 @@ ${inputData["guideline-worker"].workerText || "(no response)"}
 
 ${inputData["literature-worker"].workerText || "(no response)"}
 
+# Functional medicine corpus worker output
+
+${inputData["rag-worker"].workerText || "(no response)"}
+
 Now emit the JSON synthesis object.`;
 
 			const result = await agent.generate(prompt);
@@ -504,7 +469,17 @@ Now emit the JSON synthesis object.`;
 			synthesis.workerOutputs = {
 				guideline: inputData["guideline-worker"].workerText,
 				literature: inputData["literature-worker"].workerText,
+				rag: inputData["rag-worker"].workerText,
 			};
+
+			// Compute RAG chunk adoption rate — cited / retrieved. Stored on
+			// the synthesis jsonb; visible in the debug panel and queryable
+			// across rounds for aggregate relevance analysis.
+			const ragMetrics = computeRagMetrics(
+				inputData["rag-worker"].retrievedChunkIds,
+				synthesis.evidenceItems,
+			);
+			if (ragMetrics) synthesis.ragMetrics = ragMetrics;
 
 			await markRoundComplete({ id: roundId, synthesis });
 
@@ -531,6 +506,9 @@ Now emit the JSON synthesis object.`;
 					evidenceCount: synthesis.evidenceItems?.length ?? 0,
 					suggestedQuestionCount: synthesis.suggestedQuestions?.length ?? 0,
 					escalationCount: synthesis.escalationFlags?.length ?? 0,
+					ragRetrieved: ragMetrics?.retrieved,
+					ragCited: ragMetrics?.cited,
+					ragAdoptionRate: ragMetrics?.adoptionRate,
 				},
 				"step end",
 			);
@@ -563,13 +541,15 @@ Now emit the JSON synthesis object.`;
  * Background research workflow.
  *
  * Shape: linear steps → parallel worker block → synthesize. The parallel
- * block is the latency win — the two PubMed-backed workers run concurrently
- * as Inngest steps instead of going through the old LLM-driven supervisor
- * delegation loop (which the model tended to serialize).
+ * block is the latency win — three workers run concurrently as Inngest
+ * steps instead of going through the old LLM-driven supervisor
+ * delegation loop (which the model tended to serialize). The rag worker
+ * typically finishes first (~6-9s: embed + pgvector + MMR + LLM) so it
+ * adds no wall-clock time beyond the PubMed workers' ~10-15s budget.
  *
  * Wall-clock budget:
  *   loadContext + gateByHash + extractBrief + insertRunning  ~   0.5s
- *   .parallel([guideline, literature])                       ~ 10-15s (max)
+ *   .parallel([guideline, literature, rag])                  ~ 10-15s (max)
  *   synthesize                                               ~  8-12s
  *                                                   total    ~ 20-30s
  *
@@ -586,6 +566,6 @@ export const backgroundResearchWorkflow = createWorkflow({
 	.then(gateByHashStep)
 	.then(extractBriefStep)
 	.then(insertRunningStep)
-	.parallel([guidelineWorkerStep, literatureWorkerStep])
+	.parallel([guidelineWorkerStep, literatureWorkerStep, ragWorkerStep])
 	.then(synthesizeStep)
 	.commit();

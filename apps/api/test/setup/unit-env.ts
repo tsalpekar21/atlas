@@ -35,3 +35,14 @@ for (const [key, value] of Object.entries(defaults)) {
 		process.env[key] = value;
 	}
 }
+
+/**
+ * Initialise the shared logger once per worker. Modules that do
+ * `logger.child(...)` at import time (notably the Mastra agents and
+ * tools transitively reached from `src/mastra/index.ts`) would
+ * otherwise throw `initialize() must be called before getLogger()`
+ * the moment a test imports them. This mirrors the integration
+ * worker-env pattern.
+ */
+const { initialize } = await import("@atlas/logger");
+initialize({ applicationEnvironment: "development" });

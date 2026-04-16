@@ -14,6 +14,7 @@
     "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio",
     "scrape:rupa": "tsx src/scripts/scrape-rupa.ts",
+    "diagnose:rag": "tsx src/scripts/diagnose-rag.ts",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:integration": "vitest run -c vitest.integration.config.ts",
