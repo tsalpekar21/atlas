@@ -16,6 +16,7 @@ export type DebugResearchRound = {
 	workerOutputs: {
 		guideline?: string;
 		literature?: string;
+		rag?: string;
 	} | null;
 };
 
@@ -71,6 +72,7 @@ export function formatResearchRoundMarkdown(
 		round.workerOutputs?.guideline?.trim() || "_(no output)_";
 	const literatureText =
 		round.workerOutputs?.literature?.trim() || "_(no output)_";
+	const ragText = round.workerOutputs?.rag?.trim() || "_(no output)_";
 
 	return [
 		`# Research round ${round.id}`,
@@ -89,6 +91,9 @@ export function formatResearchRoundMarkdown(
 		"## Literature worker — raw text",
 		"",
 		literatureText,
+		"",
+		"## RAG worker — raw text",
+		ragText,
 		"",
 		"## Synthesis",
 		"",
