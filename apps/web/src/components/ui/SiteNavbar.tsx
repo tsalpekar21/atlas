@@ -11,11 +11,7 @@ import { authClient } from "@/lib/auth-client";
 import { SESSION_QUERY_KEY } from "@/lib/session-query";
 import { BrandMark } from "./BrandMark";
 
-interface SiteNavbarProps {
-	variant?: "default" | "auth";
-}
-
-export function SiteNavbar({ variant = "default" }: SiteNavbarProps = {}) {
+export function SiteNavbar() {
 	const { data: session, isPending } = authClient.useSession();
 	const navigate = useNavigate();
 	const queryClient = useQueryClient();
@@ -30,21 +26,6 @@ export function SiteNavbar({ variant = "default" }: SiteNavbarProps = {}) {
 	}, [navigate, queryClient]);
 
 	const initial = (session?.user?.name?.[0] ?? "A").toUpperCase();
-
-	if (variant === "auth") {
-		return (
-			<div className="flex w-full items-center justify-between px-6 py-4 mobile:px-4 mobile:py-4">
-				<Link to="/" className="no-underline">
-					<div className="mobile:hidden">
-						<BrandMark size="sm" tone="light" />
-					</div>
-					<div className="hidden mobile:block">
-						<BrandMark size="sm" tone="dark" />
-					</div>
-				</Link>
-			</div>
-		);
-	}
 
 	return (
 		<div className="flex w-full items-center justify-between px-6 py-4 mobile:px-4 mobile:py-4">
