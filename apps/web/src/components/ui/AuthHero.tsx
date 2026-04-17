@@ -1,4 +1,6 @@
 import { FeatherBrain, FeatherShield, FeatherUsers } from "@subframe/core";
+import { Link } from "@tanstack/react-router";
+import { BrandMark } from "./BrandMark";
 
 interface AuthHeroProps {
 	headline?: string;
@@ -14,9 +16,13 @@ export function AuthHero({
 	subhead = DEFAULT_SUBHEAD,
 }: AuthHeroProps) {
 	return (
-		<div className="relative flex w-1/2 flex-col items-start justify-between overflow-hidden bg-neutral-900 py-12 pr-12 pl-6 mobile:hidden">
+		<div className="relative flex w-1/2 flex-col items-start justify-between overflow-hidden bg-neutral-900 px-12 py-12 mobile:hidden">
 			<div className="absolute -top-32 -left-32 flex h-96 w-96 flex-none items-start rounded-full bg-brand-600 opacity-10 blur-[100px]" />
 			<div className="absolute bottom-0 right-0 flex h-80 w-80 flex-none items-start rounded-full bg-brand-400 opacity-10 blur-[80px]" />
+
+			<Link to="/" className="z-10 no-underline">
+				<BrandMark size="md" tone="light" />
+			</Link>
 
 			<div className="z-10 flex w-full max-w-[448px] flex-col items-start gap-8">
 				<div className="flex flex-col items-start gap-6">
